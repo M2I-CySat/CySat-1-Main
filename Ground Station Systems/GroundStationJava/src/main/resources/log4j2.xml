@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration status="INFO" name="CySatLogger" xmlns="http://logging.apache.org/log4j/2.0/config">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss} %-5level %m%n"></PatternLayout>
+        </Console>
+        <RollingFile
+                name="FileAppender"
+                fileName="logs/ground_station.log"
+                filePattern="logs/ground_station.%d{yyyy-MM-dd-HH}.log"
+                createOnDemand="true">
+            <PatternLayout pattern="%d{HH:mm:ss} %m%n"></PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+        </Root>
+        <Logger name="org.m2i.cysat.communication.CommunicationController" level="INFO">
+            <AppenderRef ref="Console"></AppenderRef>
+        </Logger>
+        <Logger name="org.m2i.cysat.communication.ComPortConnectionImpl" level="INFO">
+            <AppenderRef ref="Console"></AppenderRef>
+            <AppenderRef ref="FileAppender"></AppenderRef>
+        </Logger>
+    </Loggers>
+</Configuration>

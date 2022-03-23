@@ -1,0 +1,17 @@
+parse.c:20:19:string2Int	24	static
+parse.c:29:13:decode_inst	16	static
+parse.c:48:13:decode_interval	16	static
+parse.c:56:13:decode_scq_size	16	static
+parse.c:64:13:decode_at_instr	24	static
+parse.c:143:6:parse_inst_ft_file	712	static
+parse.c:162:6:parse_inst_ft_bin	80	static
+parse.c:181:6:parse_inst_pt_file	712	static
+parse.c:199:6:parse_inst_pt_bin	80	static
+parse.c:218:6:parse_interval_ft_file	712	static
+parse.c:236:6:parse_interval_ft_bin	104	static
+parse.c:255:6:parse_interval_pt_file	712	static
+parse.c:273:6:parse_interval_pt_bin	104	static
+parse.c:292:6:parse_scq_size_file	712	static
+parse.c:311:6:parse_scq_size_bin	48	static
+parse.c:332:6:parse_at_file	152	static
+parse.c:351:6:parse_at_bin	120	static

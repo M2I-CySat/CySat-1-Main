@@ -1,0 +1,4 @@
+filter_fft.c:35:11:filter_fft_init	32	static
+filter_fft.c:55:6:filter_fft_free	24	static
+filter_fft.c:66:6:filter_fft_update_data	40	static
+filter_fft.c:86:8:filter_fft_get	24	static

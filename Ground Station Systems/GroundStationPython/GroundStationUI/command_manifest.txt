@@ -1,0 +1,23 @@
+-Place commands under their respective type
+- # marks the beginning of a subtype
+- cmd_id:com_desc:data_payload(1=True,0=False):gs_sendable(1=True,0=False)
+
+#10:OBC
+0:Ping Response:1:0
+1:Ping Request:0:1
+2:Disable Beacon Response:1:0
+3:Disable Beacon Request:0:1
+4:Basic Health Check Response:1:0
+5:Basic Health Check Request:0:1
+6:Main Operating Response:0:0
+7:Main Operating Request:0:1
+
+#30:EPS
+0:Voltage Response:1:0
+1:Voltage Request:0:1
+
+#40:SDR
+0:Power Status Response:0:0
+1:Power Status Request:0:1
+16:Time Set Response:0:0
+17:Time Set Request:1:1

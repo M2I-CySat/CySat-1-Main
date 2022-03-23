@@ -1,0 +1,12 @@
+at_compare.c:3:6:compare_int_eq	16	static
+at_compare.c:9:6:compare_int_neq	16	static
+at_compare.c:15:6:compare_int_lt	16	static
+at_compare.c:21:6:compare_int_leq	16	static
+at_compare.c:27:6:compare_int_gt	16	static
+at_compare.c:33:6:compare_int_geq	16	static
+at_compare.c:39:6:compare_double_eq	32	static
+at_compare.c:45:6:compare_double_neq	32	static
+at_compare.c:50:6:compare_double_lt	32	static
+at_compare.c:56:6:compare_double_leq	32	static
+at_compare.c:62:6:compare_double_gt	32	static
+at_compare.c:68:6:compare_double_geq	32	static

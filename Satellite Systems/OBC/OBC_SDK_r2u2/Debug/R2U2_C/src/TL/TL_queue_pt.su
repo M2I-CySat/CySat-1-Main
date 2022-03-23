@@ -1,0 +1,6 @@
+TL_queue_pt.c:10:6:peek_queue_pt	32	static
+TL_queue_pt.c:49:5:add_queue_pt	32	static
+TL_queue_pt.c:88:5:remove_tail_queue_pt	24	static
+TL_queue_pt.c:122:5:remove_head_queue_pt	24	static
+TL_queue_pt.c:157:6:isempty_queue_pt	16	static
+TL_queue_pt.c:167:6:print_pt_queue	24	static

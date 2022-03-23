@@ -1,0 +1,13 @@
+.application-base {
+    -fx-pref-width: 1280;
+    -fx-pref-height: 720;
+}
+
+.base {
+    -fx-font-family: 'Helvetica';
+    -header-color: #C00;
+    -background-grey: #eeeeee;
+    -background-grey-selected: #dddddd;
+    -header-title-color: #fff;
+    -text-selected-color: #fff;
+}

@@ -1,0 +1,4 @@
+rtGetInf.c:20:8:rtGetInf	40	static
+rtGetInf.c:69:10:rtGetInfF	16	static
+rtGetInf.c:81:8:rtGetMinusInf	40	static
+rtGetInf.c:130:10:rtGetMinusInfF	16	static

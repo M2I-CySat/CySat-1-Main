@@ -1,0 +1,3 @@
+rdivide.c:28:6:b_rdivide	40	static
+rdivide.c:49:6:c_rdivide	40	static
+rdivide.c:69:6:rdivide	40	static

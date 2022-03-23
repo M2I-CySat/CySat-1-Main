@@ -1,0 +1,19 @@
+.log-panel {
+    -fx-pref-height: 325;
+    -fx-pref-width: 1030;
+}
+
+.log-panel-header {
+    -fx-pref-width: 1030;
+    -fx-pref-height: 29;
+    -fx-border-radius: 3;
+    -fx-alignment: center;
+    -fx-text-fill: #ffffff;
+    -fx-background-color: -header-color;
+}
+
+.log-text-pane {
+    -fx-pref-height: 325;
+    -fx-pref-width: 1030;
+    -fx-padding: 0 0 0 10;
+}

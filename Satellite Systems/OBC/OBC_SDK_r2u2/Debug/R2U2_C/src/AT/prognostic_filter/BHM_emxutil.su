@@ -1,0 +1,8 @@
+BHM_emxutil.c:26:6:b_emxInit_real_T	24	static
+BHM_emxutil.c:48:6:emxEnsureCapacity	40	static
+BHM_emxutil.c:86:6:emxFree_boolean_T	16	static
+BHM_emxutil.c:104:6:emxFree_int32_T	16	static
+BHM_emxutil.c:121:6:emxFree_real_T	16	static
+BHM_emxutil.c:139:6:emxInit_boolean_T	24	static
+BHM_emxutil.c:160:6:emxInit_int32_T	24	static
+BHM_emxutil.c:181:6:emxInit_real_T	24	static

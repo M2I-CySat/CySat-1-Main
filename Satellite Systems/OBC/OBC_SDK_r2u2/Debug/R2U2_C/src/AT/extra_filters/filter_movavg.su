@@ -1,0 +1,4 @@
+filter_movavg.c:33:11:filter_movavg_init	24	static
+filter_movavg.c:51:6:filter_movavg_update_data	32	static
+filter_movavg.c:75:8:filter_movavg_get	16	static
+filter_movavg.c:79:6:filter_movavg_free	16	static

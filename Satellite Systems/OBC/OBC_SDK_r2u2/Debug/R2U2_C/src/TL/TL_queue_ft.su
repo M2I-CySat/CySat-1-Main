@@ -1,0 +1,6 @@
+TL_queue_ft.c:43:19:inc_ptr	16	static
+TL_queue_ft.c:47:19:dec_ptr	16	static
+TL_queue_ft.c:53:6:add	24	static
+TL_queue_ft.c:75:13:print_scq	24	static
+TL_queue_ft.c:87:6:isEmpty	24	static
+TL_queue_ft.c:110:16:pop	24	static

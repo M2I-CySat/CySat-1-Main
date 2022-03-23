@@ -1,0 +1,25 @@
+.application-base {
+    -fx-pref-width: 1280;
+    -fx-pref-height: 720;
+    -fx-font-family: 'Helvetica';
+    -header-color: #C00;
+    -background-grey: #e7e7e7;
+    -header-title-color: #fff;
+}
+
+
+.application-panel {
+    -fx-pref-width: 1030;
+    -fx-pref-height: 720;
+}
+
+.tab-panel {
+    -fx-pref-width: 1030;
+    -fx-pref-height: 366;
+}
+
+.titled-pane {
+    -fx-pref-height: 40;
+}
+
+

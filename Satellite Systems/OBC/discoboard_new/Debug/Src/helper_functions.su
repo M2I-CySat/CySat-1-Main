@@ -1,0 +1,5 @@
+helper_functions.c:18:19:debug_printf	48	dynamic
+helper_functions.c:47:5:debugSerialReceive	32	static
+helper_functions.c:73:6:debug_HAL_Status	16	static
+helper_functions.c:97:10:FloatToUnsigned16bits	24	static
+helper_functions.c:108:10:crc32	48	static

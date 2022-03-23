@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.9'
+}
+
+group 'org.m2i.cysat'
+version '1.0-SNAPSHOT'
+
+application {
+    mainClass = 'org.m2i.cysat.application.Main'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(12);
+    }
+}
+
+javafx {
+    version = "15.0.1"
+    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.swing' ]
+}
+
+dependencies {
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.0'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.0'
+    implementation 'com.fazecast:jSerialComm:2.6.2'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.m2i.cysat.application.Main'
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

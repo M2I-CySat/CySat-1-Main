@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<command-manifest>
+    <subsystem name="EPS" subsystemByte="0x1E">
+        <command name="Battery Pack Voltage/Current">
+            <request cbyte="0x01" datalength="0x00"></request>
+            <response cbyte="0x00" datalength="0x04"></response>
+        </command>
+        <command name="Solar Panel X Status">
+            <request cbyte="0x03" datalength="0x00"></request>
+            <response cbyte="0x02" datalength="0x06"></response>
+        </command>
+        <command name="Solar Panel Y Status">
+            <request cbyte="0x05" datalength="0x00"></request>
+            <response cbyte="0x04" datalength="0x06"></response>
+        </command>
+        <command name="Solar Panel Z Status">
+            <request cbyte="0x07" datalength="0x00"></request>
+            <response cbyte="0x06" datalength="0x06"></response>
+        </command>
+        <command name="Bus Current">
+            <request cbyte="0x09" datalength="0x00"></request>
+            <response cbyte="0x08" datalength="0x04"></response>
+        </command>
+        <command name="Temperature">
+            <request cbyte="0x0B" datalength="0x00"></request>
+            <response cbyte="0x0A" datalength="0x0A"></response>
+        </command>
+        <command name="Input/Output/Default Conditions">
+            <request cbyte="0x0D" datalength="0x00"></request>
+            <response cbyte="0x0C" datalength="0x06"></response>
+        </command>
+        <command name="Counter Check">
+            <request cbyte="0x0F" datalength="0x00"></request>
+            <response cbyte="0x0E" datalength="0x0A"></response>
+        </command>
+        <command name="Enable/Disable">
+            <request cbyte="0x11" datalength="0x02"></request>
+            <response cbyte="0x10" datalength="0x02"></response>
+        </command>
+    </subsystem>
+    <subsystem name="OBC" subsystemByte="0x0A">
+        <command name="Ping">
+            <request cbyte="0x01" datalength="0x00"></request>
+            <response cbyte="0x00" datalength="0x0C"></response>
+        </command>
+    </subsystem>
+</command-manifest>

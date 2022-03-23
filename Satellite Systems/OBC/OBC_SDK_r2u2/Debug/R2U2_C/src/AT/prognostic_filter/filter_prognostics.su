@@ -1,0 +1,6 @@
+filter_prognostics.c:34:23:filter_prognostics_init	24	static
+filter_prognostics.c:104:6:filter_prognostics_free	16	static
+filter_prognostics.c:124:6:filter_prognostics_update	104	static
+filter_prognostics.c:219:8:filter_prognostics_get_RUL_mean	16	static
+filter_prognostics.c:231:8:filter_prognostics_get_SoC_mean	16	static
+filter_prognostics.c:244:8:filter_prognostics_get_RUL_std	16	static

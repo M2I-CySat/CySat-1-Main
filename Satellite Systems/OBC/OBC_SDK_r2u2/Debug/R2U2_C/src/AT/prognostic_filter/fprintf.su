@@ -1,0 +1,2 @@
+fprintf.c:29:15:c_fprintf	32	static
+fprintf.c:54:6:b_fprintf	16	static

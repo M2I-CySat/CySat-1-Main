@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane styleClass="log-panel" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.m2i.cysat.logpane.LogPaneController">
+   <children>
+      <VBox>
+         <children>
+            <Label contentDisplay="RIGHT" graphicTextGap="0.0" styleClass="log-panel-header" text="Log" ></Label>
+            <Button fx:id="clearLog" onAction="#clearPane">Clear</Button>
+            <ScrollPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="log-panel">
+               <content>
+                  <VBox fx:id="textArea" alignment="TOP_LEFT" styleClass="log-text-pane" stylesheets="@../Base.css" />
+               </content>
+            </ScrollPane>
+         </children>
+         <stylesheets>
+            <URL value="@../Base.css" />
+            <URL value="@LogPane.css" />
+         </stylesheets>
+         <styleClass>
+            <String fx:value="log-panel" />
+            <String fx:value="base" />
+         </styleClass>
+      </VBox>
+   </children>
+   <stylesheets>
+      <URL value="@../Base.css" />
+      <URL value="@LogPane.css" />
+   </stylesheets>
+</AnchorPane>
