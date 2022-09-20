@@ -1,0 +1,14 @@
+﻿Part,Part Number,Quantity,Description
+Ccomp1,ECPU1C474MA5,1,Cap: 470 nF  Total Derated Cap: 470 nF  VDC: 16 V  ESR: 0 Ω  Package: 1206  
+Rcomp1,CRCW0402750RFKED,1,Resistance: 750 Ω  Tolerance: 1.0%  Power: 63 mW  
+Rfb1,CRCW04021K50FKED,1,Resistance: 1.5 kΩ  Tolerance: 1.0%  Power: 63 mW  
+Rfb2,CRCW04027K50FKED,1,Resistance: 7.5 kΩ  Tolerance: 1.0%  Power: 63 mW  
+Cout1,EMVY160ADA331MHA0G,1,Cap: 330 µF  Total Derated Cap: 330 µF  VDC: 16 V  ESR: 300 mΩ  Package: HA0  
+L1,NPI52W151MTRF,1,L: 150 µH  DCR: 250 mΩ  IDC: 1.5 A  
+Cin1,EEE-FK1A330UR,1,Cap: 33 µF  Total Derated Cap: 33 µF  VDC: 10 V  ESR: 1.35 Ω  Package: B  
+U1,LM2586S-ADJ/NOPB,1,
+D1,SS14FL,1,Type: Schottky  VRRM: 40 V  Io: 1 A  
+Rfreq1,,1,
+Jfreq1,2N7002LT1G,1,
+Qfreq1,87224-3,1,
+Dfreq,,,

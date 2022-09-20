@@ -1,0 +1,29 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>KiCad BOM Example 5</title>
+    </head>
+    <body>
+    <h1>/Users/aaurandt/Desktop/IowaState/CPR E 491/cysat-ece-senior-design/CubeSAT/dev/Booster Board/Revision/KiCad/Boost/Boost.sch</h1>
+    <p>Thursday, December 03, 2020 at 02:01:23 PM</p>
+    <p>Eeschema (5.1.8-0-10_14)</p>
+    <p><b>Component Count:</b>15</p>
+    <table>
+    <tr><th style='width:640px'>Ref</th><th>Qnty</th><th>Value</th><th>Part</th><th>Footprint</th><th>Description</th><th>Vendor</th></tr>
+    <tr><td>Ccomp1</td><td>1</td><td>C</td><td>:C</td><td>Capacitor_SMD:C_1206_3216Metric</td><td></td><td></td></tr>
+    <tr><td>Cin1, Cout1</td><td>2</td><td>CP1</td><td>:CP1</td><td>Capacitor_SMD:C_1206_3216Metric</td><td></td><td></td></tr>
+    <tr><td>D1</td><td>1</td><td>D_Schottky</td><td>:D_Schottky</td><td>motherboard:SODFL3617X108N</td><td></td><td></td></tr>
+    <tr><td>Dfreq1</td><td>1</td><td>D_ALT</td><td>:D_ALT</td><td>Diode_SMD:D_1206_3216Metric</td><td></td><td></td></tr>
+    <tr><td>Jfreq1</td><td>1</td><td>87224-3</td><td>:87224-3</td><td>motherboard:872243</td><td></td><td></td></tr>
+    <tr><td>L1</td><td>1</td><td>INDUCTOR</td><td>:INDUCTOR</td><td>motherboard:SDR0403</td><td></td><td></td></tr>
+    <tr><td>P1, P2</td><td>2</td><td>CONN_02X26</td><td>Boost-rescue:CONN_02X26-Header_Board-cache-2018-07-27-13-43-46</td><td>motherboard:CSK_Header</td><td></td><td></td></tr>
+    <tr><td>Qfreq1</td><td>1</td><td>Q_NJFET_DGS</td><td>:Q_NJFET_DGS</td><td>motherboard:SOT95P237X111-3N</td><td></td><td></td></tr>
+    <tr><td>Rcomp1, Rfb1, Rfb2, Rfreq1</td><td>4</td><td>R_US</td><td>:R_US</td><td>Resistor_SMD:R_0603_1608Metric</td><td></td><td></td></tr>
+    <tr><td>U1</td><td>1</td><td>LM2586S-ADJ</td><td>:LM2586S-ADJ</td><td>motherboard:LM2586S-ADJ</td><td></td><td></td></tr><!--TABLEROW-->
+    </table>
+    </body>
+</html>
+    

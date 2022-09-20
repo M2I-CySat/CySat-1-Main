@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name motherboard)(type KiCad)(uri "C:/Users/Talon/Desktop/cysat-ece-senior-design/CubeSAT/dev/Booster Board/Revision/KiCad/Libraries/motherboard.pretty")(options "")(descr ""))
+)

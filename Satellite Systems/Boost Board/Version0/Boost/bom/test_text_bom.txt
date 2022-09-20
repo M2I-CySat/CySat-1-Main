@@ -1,0 +1,18 @@
+	Sourced	Placed	References	Value	Footprint	Quantity
+1			Cgate1	22n	C_0402_1005Metric	1
+2			Cboot1	100nF	C_0805_2012Metric_Pad1.15x1.40mm_HandSolder	1
+3			Ccomp1	3.3nf	C_0805_2012Metric_Pad1.15x1.40mm_HandSolder	1
+4			Cvcc1	4.7uf	C_0805_2012Metric_Pad1.15x1.40mm_HandSolder	1
+5			Cout1, Cout2, Cout3, Cout4, Coutx1	10u	C_1206_3216Metric_Pad1.42x1.75mm_HandSolder	5
+6			Rcomp1	12.1k	R_0201_0603Metric	1
+7			Rfbb1	86.6k	R_0201_0603Metric	1
+8			Rgate1	162k	R_0201_0603Metric	1
+9			Rfbt1	453k	R_0402_1005Metric	1
+10			Rilim1	86.6k	R_0402_1005Metric	1
+11			Rt1	140k	R_0402_1005Metric	1
+12			L1	2.7uH	SDR0403	1
+13			U1	TPS611781RNWR	RNW0013A	1
+14			CIN1, CIN2, CIN3	10uF	C_1210_3225Metric_Pad1.42x2.65mm_HandSolder	3
+15			REF**, REF**, REF**, REF**	Hole_0.125-0.250	Hole_0.125-0.250	4
+16			Q1	Q_PMOS_DGS	Si6423DQ	1
+17			P1, P2	CONN_02X26	CSK_Header	2

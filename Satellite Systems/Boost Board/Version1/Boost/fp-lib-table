@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name motherboard)(type KiCad)(uri C:/Users/Talon/Documents/KiCad/Boost/motherboard.pretty)(options "")(descr ""))
+)

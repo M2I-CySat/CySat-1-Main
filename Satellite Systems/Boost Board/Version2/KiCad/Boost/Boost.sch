@@ -1,0 +1,450 @@
+EESchema Schematic File Version 4
+LIBS:Boost-cache
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Boost-rescue:GND-Header_Board-cache-2018-07-27-13-43-46 #PWR0104
+U 1 1 5DCB9648
+P 2800 6600
+F 0 "#PWR0104" H 2800 6350 50  0001 C CNN
+F 1 "GND" H 2805 6427 50  0000 C CNN
+F 2 "" H 2800 6600 50  0000 C CNN
+F 3 "" H 2800 6600 50  0000 C CNN
+	1    2800 6600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2800 6600 2800 6500
+Wire Wire Line
+	4550 5750 4550 5700
+$Comp
+L Boost-rescue:+3.3V-Header_Board-cache-2018-07-27-13-43-46 #PWR0108
+U 1 1 5DD25CC8
+P 4650 6400
+F 0 "#PWR0108" H 4650 6250 50  0001 C CNN
+F 1 "+3.3V" H 4665 6573 50  0000 C CNN
+F 2 "" H 4650 6400 50  0000 C CNN
+F 3 "" H 4650 6400 50  0000 C CNN
+	1    4650 6400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Boost-rescue:+3.3V-Header_Board-cache-2018-07-27-13-43-46 #PWR0109
+U 1 1 5DD26BE9
+P 2800 6400
+F 0 "#PWR0109" H 2800 6250 50  0001 C CNN
+F 1 "+3.3V" H 2815 6573 50  0000 C CNN
+F 2 "" H 2800 6400 50  0000 C CNN
+F 3 "" H 2800 6400 50  0000 C CNN
+	1    2800 6400
+	1    0    0    -1  
+$EndComp
+$Comp
+L LM2586S-ADJ:LM2586S-ADJ U1
+U 1 1 5E8672FF
+P 5800 2400
+F 0 "U1" H 5800 3070 50  0000 C CNN
+F 1 "LM2586S-ADJ" H 5800 2979 50  0000 C CNN
+F 2 "motherboard:LM2586S-ADJ" H 5800 2400 50  0001 L BNN
+F 3 "07B6069" H 5800 2400 50  0001 L BNN
+F 4 "TO-263-7" H 5800 2400 50  0001 L BNN "Field4"
+F 5 "LM2586S-ADJ" H 5800 2400 50  0001 L BNN "Field5"
+F 6 "NATIONAL SEMICONDUCTOR" H 5800 2400 50  0001 L BNN "Field6"
+F 7 "-" H 5800 2400 50  0001 L BNN "Field7"
+	1    5800 2400
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #vin0101
+U 1 1 5E868B2B
+P 1150 1950
+F 0 "#vin0101" H 1150 1800 50  0001 C CNN
+F 1 "+5V" H 1165 2123 50  0000 C CNN
+F 2 "" H 1150 1950 50  0001 C CNN
+F 3 "" H 1150 1950 50  0001 C CNN
+	1    1150 1950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4700 1950 4700 2100
+$Comp
+L Device:C Ccomp1
+U 1 1 5E86DA56
+P 3100 2950
+F 0 "Ccomp1" H 3215 2996 50  0000 L CNN
+F 1 "C" H 3215 2905 50  0000 L CNN
+F 2 "Capacitor_SMD:C_1206_3216Metric" H 3138 2800 50  0001 C CNN
+F 3 "~" H 3100 2950 50  0001 C CNN
+	1    3100 2950
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:CP1 Cin1
+U 1 1 5E86E89B
+P 2000 2850
+F 0 "Cin1" H 2115 2896 50  0000 L CNN
+F 1 "CP1" H 2115 2805 50  0000 L CNN
+F 2 "Capacitor_SMD:C_1206_3216Metric" H 2000 2850 50  0001 C CNN
+F 3 "~" H 2000 2850 50  0001 C CNN
+	1    2000 2850
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US Rcomp1
+U 1 1 5E874936
+P 3100 2550
+F 0 "Rcomp1" H 3168 2596 50  0000 L CNN
+F 1 "R_US" H 3168 2505 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 3140 2540 50  0001 C CNN
+F 3 "~" H 3100 2550 50  0001 C CNN
+	1    3100 2550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3100 2700 3100 2800
+Wire Wire Line
+	3100 2400 4700 2400
+Wire Wire Line
+	2000 2700 2000 1950
+Wire Wire Line
+	2000 1950 3900 1950
+$Comp
+L Boost-rescue:GND-Header_Board-cache-2018-07-27-13-43-46 #PWR0102
+U 1 1 5E880A4E
+P 2500 3650
+F 0 "#PWR0102" H 2500 3400 50  0001 C CNN
+F 1 "GND" H 2505 3477 50  0000 C CNN
+F 2 "" H 2500 3650 50  0000 C CNN
+F 3 "" H 2500 3650 50  0000 C CNN
+	1    2500 3650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2000 3000 2000 3650
+Wire Wire Line
+	2000 3650 2500 3650
+Wire Wire Line
+	3100 3100 3100 3650
+Wire Wire Line
+	3100 3650 2500 3650
+Connection ~ 2500 3650
+Wire Wire Line
+	4700 2900 4700 3650
+Wire Wire Line
+	4700 3650 3900 3650
+Connection ~ 3100 3650
+Wire Wire Line
+	4700 2800 4700 2900
+Connection ~ 4700 2900
+$Comp
+L pspice:INDUCTOR L1
+U 1 1 5E890DC3
+P 5800 1550
+F 0 "L1" H 5800 1765 50  0000 C CNN
+F 1 "INDUCTOR" H 5800 1674 50  0000 C CNN
+F 2 "motherboard:SDR0403" H 5800 1550 50  0001 C CNN
+F 3 "~" H 5800 1550 50  0001 C CNN
+	1    5800 1550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US Rfb1
+U 1 1 5E8924CC
+P 6700 800
+F 0 "Rfb1" V 6495 800 50  0000 C CNN
+F 1 "R_US" V 6586 800 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 6740 790 50  0001 C CNN
+F 3 "~" H 6700 800 50  0001 C CNN
+	1    6700 800 
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R_US Rfb2
+U 1 1 5E893E81
+P 6700 1250
+F 0 "Rfb2" V 6495 1250 50  0000 C CNN
+F 1 "R_US" V 6586 1250 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 6740 1240 50  0001 C CNN
+F 3 "~" H 6700 1250 50  0001 C CNN
+	1    6700 1250
+	0    1    1    0   
+$EndComp
+$Comp
+L Boost-rescue:GND-Header_Board-cache-2018-07-27-13-43-46 #PWR0103
+U 1 1 5E897EF8
+P 7500 900
+F 0 "#PWR0103" H 7500 650 50  0001 C CNN
+F 1 "GND" H 7505 727 50  0000 C CNN
+F 2 "" H 7500 900 50  0000 C CNN
+F 3 "" H 7500 900 50  0000 C CNN
+	1    7500 900 
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6850 800  7500 800 
+Wire Wire Line
+	7500 800  7500 900 
+Wire Wire Line
+	5550 1550 4700 1550
+Wire Wire Line
+	4700 1550 4700 1950
+Connection ~ 4700 1950
+$Comp
+L Device:D_Schottky D1
+U 1 1 5E8A2733
+P 7500 1600
+F 0 "D1" H 7500 1384 50  0000 C CNN
+F 1 "D_Schottky" H 7500 1475 50  0000 C CNN
+F 2 "motherboard:SODFL3617X108N" H 7500 1600 50  0001 C CNN
+F 3 "~" H 7500 1600 50  0001 C CNN
+	1    7500 1600
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	6050 1550 6900 1550
+Wire Wire Line
+	7350 1550 7350 1600
+Wire Wire Line
+	6900 2100 6900 1550
+Connection ~ 6900 1550
+Wire Wire Line
+	6900 1550 7350 1550
+Wire Wire Line
+	4700 2300 4550 2300
+Wire Wire Line
+	4550 2300 4550 1250
+Wire Wire Line
+	4550 1250 6150 1250
+Wire Wire Line
+	6550 800  6150 800 
+Wire Wire Line
+	6150 800  6150 1250
+Connection ~ 6150 1250
+Wire Wire Line
+	6150 1250 6550 1250
+$Comp
+L Device:CP1 Cout1
+U 1 1 5E8B6776
+P 7900 2500
+F 0 "Cout1" H 8015 2546 50  0000 L CNN
+F 1 "CP1" H 8015 2455 50  0000 L CNN
+F 2 "Capacitor_SMD:C_1206_3216Metric" H 7900 2500 50  0001 C CNN
+F 3 "~" H 7900 2500 50  0001 C CNN
+	1    7900 2500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7900 2350 7900 1600
+Wire Wire Line
+	7900 3650 4700 3650
+Wire Wire Line
+	7900 2650 7900 3650
+Connection ~ 4700 3650
+Wire Wire Line
+	7650 1600 7900 1600
+Text Label 8550 1600 0    50   ~ 0
+vout
+Wire Wire Line
+	8550 1600 8100 1600
+Connection ~ 7900 1600
+Wire Wire Line
+	6850 1250 8100 1250
+Wire Wire Line
+	8100 1250 8100 1600
+Connection ~ 8100 1600
+Wire Wire Line
+	8100 1600 7900 1600
+$Comp
+L Boost-rescue:CONN_02X26-Header_Board-cache-2018-07-27-13-43-46 P1
+U 1 1 5DBC40DD
+P 1400 6250
+F 0 "P1" H 1400 7715 50  0000 C CNN
+F 1 "CONN_02X26" H 1400 7624 50  0000 C CNN
+F 2 "motherboard:CSK_Header" H 1400 5550 50  0001 C CNN
+F 3 "" H 1400 5550 50  0000 C CNN
+	1    1400 6250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2800 6400 3450 6400
+Wire Wire Line
+	4000 6400 4650 6400
+$Comp
+L Boost-rescue:+5V-Header_Board-cache-2018-07-27-13-43-46 #PWR0105
+U 1 1 5E8F3F95
+P 3000 6300
+F 0 "#PWR0105" H 3000 6150 50  0001 C CNN
+F 1 "+5V" H 3015 6473 50  0000 C CNN
+F 2 "" H 3000 6300 50  0000 C CNN
+F 3 "" H 3000 6300 50  0000 C CNN
+	1    3000 6300
+	1    0    0    -1  
+$EndComp
+$Comp
+L Boost-rescue:+5V-Header_Board-cache-2018-07-27-13-43-46 #PWR0106
+U 1 1 5E8F54A0
+P 4500 6300
+F 0 "#PWR0106" H 4500 6150 50  0001 C CNN
+F 1 "+5V" H 4515 6473 50  0000 C CNN
+F 2 "" H 4500 6300 50  0000 C CNN
+F 3 "" H 4500 6300 50  0000 C CNN
+	1    4500 6300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3000 6300 3450 6300
+Wire Wire Line
+	3950 6300 4500 6300
+Wire Wire Line
+	2800 6500 3450 6500
+Wire Wire Line
+	3450 6600 3450 6500
+Connection ~ 3450 6500
+Wire Wire Line
+	3950 6600 3950 6500
+$Comp
+L Boost-rescue:GND-Header_Board-cache-2018-07-27-13-43-46 #PWR0107
+U 1 1 5E8FA9BA
+P 4650 6600
+F 0 "#PWR0107" H 4650 6350 50  0001 C CNN
+F 1 "GND" H 4655 6427 50  0000 C CNN
+F 2 "" H 4650 6600 50  0000 C CNN
+F 3 "" H 4650 6600 50  0000 C CNN
+	1    4650 6600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4650 6600 4650 6500
+Wire Wire Line
+	3950 6500 4650 6500
+Connection ~ 3950 6500
+Text Label 2900 7300 0    50   ~ 0
+vout
+Wire Wire Line
+	2900 7300 3450 7300
+Text Label 4500 7300 0    50   ~ 0
+vout
+Wire Wire Line
+	4500 7300 3950 7300
+Wire Wire Line
+	1150 1950 2000 1950
+Connection ~ 2000 1950
+Text Label 3150 5200 0    50   ~ 0
+0V
+$Comp
+L Boost-rescue:CONN_02X26-Header_Board-cache-2018-07-27-13-43-46 P2
+U 1 1 5DBC06FD
+P 3700 6350
+F 0 "P2" H 3700 7815 50  0000 C CNN
+F 1 "CONN_02X26" H 3700 7724 50  0000 C CNN
+F 2 "motherboard:CSK_Header" H 3700 5650 50  0001 C CNN
+F 3 "" H 3700 5650 50  0000 C CNN
+	1    3700 6350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US Rfreq1
+U 1 1 5E9CF354
+P 3900 2200
+F 0 "Rfreq1" H 3968 2246 50  0000 L CNN
+F 1 "R_US" H 3968 2155 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 3940 2190 50  0001 C CNN
+F 3 "~" H 3900 2200 50  0001 C CNN
+	1    3900 2200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3900 1950 3900 2050
+Connection ~ 3900 1950
+Wire Wire Line
+	3900 1950 4700 1950
+$Comp
+L Device:D_ALT Dfreq1
+U 1 1 5E9D10CC
+P 4350 2600
+F 0 "Dfreq1" H 4350 2384 50  0000 C CNN
+F 1 "D_ALT" H 4350 2475 50  0000 C CNN
+F 2 "Diode_SMD:D_1206_3216Metric" H 4350 2600 50  0001 C CNN
+F 3 "~" H 4350 2600 50  0001 C CNN
+	1    4350 2600
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	4200 2600 3900 2600
+Wire Wire Line
+	3900 2600 3900 2350
+Connection ~ 3900 2600
+$Comp
+L Device:Q_NJFET_DGS Qfreq1
+U 1 1 5E9D45EA
+P 3800 2800
+F 0 "Qfreq1" H 3991 2846 50  0000 L CNN
+F 1 "Q_NJFET_DGS" H 3991 2755 50  0000 L CNN
+F 2 "motherboard:SOT95P237X111-3N" H 4000 2900 50  0001 C CNN
+F 3 "~" H 3800 2800 50  0001 C CNN
+	1    3800 2800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3900 3000 3900 3650
+Connection ~ 3900 3650
+Wire Wire Line
+	3900 3650 3100 3650
+Text Label 3450 2800 0    50   ~ 0
+0V
+Wire Wire Line
+	3450 2800 3600 2800
+Wire Wire Line
+	3150 5200 3450 5200
+$Comp
+L 87224-3:87224-3 Jfreq1
+U 1 1 5EA0A4F5
+P 4400 4000
+F 0 "Jfreq1" H 5028 3946 50  0000 L CNN
+F 1 "87224-3" H 5028 3855 50  0000 L CNN
+F 2 "motherboard:872243" H 5050 4100 50  0001 L CNN
+F 3 "https://www.mouser.com/datasheet/2/418/NG_CD_87224_L3-1263161.pdf" H 5050 4000 50  0001 L CNN
+F 4 "AMPMODU II Pin Header 2.54mm 3P" H 5050 3900 50  0001 L CNN "Description"
+F 5 "10.3632" H 5050 3800 50  0001 L CNN "Height"
+F 6 "TE Connectivity" H 5050 3700 50  0001 L CNN "Manufacturer_Name"
+F 7 "87224-3" H 5050 3600 50  0001 L CNN "Manufacturer_Part_Number"
+F 8 "571-872243" H 5050 3500 50  0001 L CNN "Mouser Part Number"
+F 9 "https://www.mouser.com/Search/Refine.aspx?Keyword=571-872243" H 5050 3400 50  0001 L CNN "Mouser Price/Stock"
+F 10 "2509245151" H 5050 3300 50  0001 L CNN "RS Part Number"
+F 11 "http://uk.rs-online.com/web/p/products/2509245151" H 5050 3200 50  0001 L CNN "RS Price/Stock"
+F 12 "70087275" H 5050 3100 50  0001 L CNN "Allied_Number"
+F 13 "https://www.alliedelec.com/teconnectivity-87224-3/70087275/" H 5050 3000 50  0001 L CNN "Allied Price/Stock"
+	1    4400 4000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4500 2600 4500 3850
+Wire Wire Line
+	4500 3850 4400 3850
+Wire Wire Line
+	4400 3850 4400 4000
+Wire Wire Line
+	4400 4200 4400 4400
+Wire Wire Line
+	4400 4400 5550 4400
+Wire Wire Line
+	5550 4400 5550 3800
+Wire Wire Line
+	5550 3800 4600 3800
+Wire Wire Line
+	4600 3800 4600 2600
+Wire Wire Line
+	4600 2600 4700 2600
+$EndSCHEMATC

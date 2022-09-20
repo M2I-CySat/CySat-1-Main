@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TPS611781RNWR
+D 20-V Fully Integrated Sync Boost with Load Disconnect 
+K
+F http://www.ti.com/lit/gpn/tps61178
+$ENDCMP
+#
+#End Doc Library

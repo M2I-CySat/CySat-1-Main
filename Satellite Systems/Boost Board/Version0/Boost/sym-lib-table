@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name dk_DC-DC-Converters)(type Legacy)(uri C:/Users/Talon/Documents/KiCad/Libraries/digikey-kicad-library-master/digikey-symbols/dk_DC-DC-Converters.lib)(options "")(descr ""))
+  (lib (name Boost-rescue)(type Legacy)(uri ${KIPRJMOD}/Boost-rescue.lib)(options "")(descr ""))
+)

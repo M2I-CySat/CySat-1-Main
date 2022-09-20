@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TPS611781RNWR
+PartCategory=Undefined or Miscellaneous
+PackageCategory=Other
+PinCount=13
+Version=1.1
+Released=2017-06-02 14:32:11
+Downloaded=2019-10-24 21:43:46
+3D=N
