@@ -40,7 +40,7 @@ typedef struct BatteryMeasurement{
 
 #define MAX_STORED_BATT_MEASUREMENTS 16
 
-BatteryMeasurement_t EPS_Battery_History[MAX_STORED_BATT_MEASUREMENTS];
+//BatteryMeasurement_t EPS_Battery_History[MAX_STORED_BATT_MEASUREMENTS];
 
 float calculateEnergyDischarge(BatteryMeasurement_t e1, BatteryMeasurement_t e2);
 float calculateEnergyRecharge(BatteryMeasurement_t e1, BatteryMeasurement_t e2);
