@@ -204,7 +204,7 @@ void Magnetometer_Calibration(){
     // CubeContrl signals and motors on, and everthing else off
     TC_11(1,1,0,0,0,0,0,0,0);
     // Set control mode to Detumbling
-    TC_13(1);
+    TC_13(1, 0, 0xFFFF);
     //delay one orbit
     osDelay(5400000); //Assuming 90 minute orbit from Angular_Rate_And_Pitch_Angle_Estimation()
     //TODO rest of steps are on ground.
