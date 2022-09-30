@@ -1,4 +1,0 @@
-at_checkers.c:15:6:AT_config	16	static
-at_checkers.c:26:6:AT_init	4	static
-at_checkers.c:31:6:AT_update	16	static
-at_checkers.c:45:6:AT_free	4	static

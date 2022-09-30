@@ -1,4 +1,0 @@
-../R2U2_C/src/AT/prognostic_filter/rtGetInf.c:20:8:rtGetInf	40	static
-../R2U2_C/src/AT/prognostic_filter/rtGetInf.c:69:10:rtGetInfF	16	static
-../R2U2_C/src/AT/prognostic_filter/rtGetInf.c:81:8:rtGetMinusInf	40	static
-../R2U2_C/src/AT/prognostic_filter/rtGetInf.c:130:10:rtGetMinusInfF	16	static

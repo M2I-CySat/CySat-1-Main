@@ -1,4 +1,0 @@
-at_operations.c:76:6:op_bool	32	static
-at_operations.c:96:6:op_int	32	static
-at_operations.c:116:6:op_double	40	static
-at_operations.c:136:6:op_error	16	static
