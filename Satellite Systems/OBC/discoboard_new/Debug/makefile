@@ -60,8 +60,8 @@ all: main-build
 main-build: discoboard_new.elf secondary-outputs
 
 # Tool invocations
-discoboard_new.elf discoboard_new.map: $(OBJS) $(USER_OBJS) /Users/matgyver/GitHub/CySat-1-Main/Satellite\ Systems/OBC/discoboard_new/STM32F429ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "discoboard_new.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/matgyver/GitHub/CySat-1-Main/Satellite Systems/OBC/discoboard_new/STM32F429ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="discoboard_new.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+discoboard_new.elf discoboard_new.map: $(OBJS) $(USER_OBJS) F:\Projects\Iowa\ State\CySat-1-Main\Satellite\ Systems\OBC\discoboard_new\STM32F429ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "discoboard_new.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"F:\Projects\Iowa State\CySat-1-Main\Satellite Systems\OBC\discoboard_new\STM32F429ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="discoboard_new.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
