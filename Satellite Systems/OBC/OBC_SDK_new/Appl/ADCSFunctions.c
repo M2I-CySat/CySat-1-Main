@@ -186,8 +186,8 @@ void Magnetometer_Deployment(void){
 
     if((abs((int)(i_sampled_x - sampled_x))>0) && (abs((int)(i_sampled_y - sampled_y))>0) && (abs((int)(i_sampled_z - sampled_z))>0)){
         // Set Magnetometer Mounting Configuration
-        // Note: Will need to find alpha, beta, and gamma prior to deployment
-        TC_33(0.0, 0.0, 0.0);
+        // Alpha, beta, and gamma prior to deployment
+        TC_33(0.0, 180.0, 0.0);
 
         // Save Configuration
         TC_63();
