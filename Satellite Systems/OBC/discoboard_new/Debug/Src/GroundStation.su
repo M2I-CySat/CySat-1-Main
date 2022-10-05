@@ -1,6 +1,0 @@
-../Src/GroundStation.c:23:16:parseCySatPacket	40	static
-../Src/GroundStation.c:40:5:sendCySatPacket	64	dynamic
-../Src/GroundStation.c:66:5:sendErrorPacket	24	static
-../Src/GroundStation.c:83:5:handleCySatPacket	176	static
-../Src/GroundStation.c:558:9:generateCySatChecksum	40	static
-../Src/GroundStation.c:582:9:validateCySatChecksum	32	static

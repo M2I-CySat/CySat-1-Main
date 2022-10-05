@@ -1,5 +1,0 @@
-../Src/BatteryCapacity.c:16:7:calculateEnergyDischarge	64	static
-../Src/BatteryCapacity.c:33:6:testEnergyDischarge	64	static
-../Src/BatteryCapacity.c:55:7:calculateEnergyRecharge	24	static
-../Src/BatteryCapacity.c:65:8:addNewBatteryMeasurement	24	static
-../Src/BatteryCapacity.c:77:8:updateCapacityCallback	8	static
