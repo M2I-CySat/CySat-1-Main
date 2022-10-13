@@ -13,13 +13,29 @@
 
 #define INITIAL_BATTERY_CAPACITY 20.8 * 3600 //20.8 WH * 3600 sec/H = 74880 Joules
 
+
+float temp_batt_val; //Temporary battery value for use in batter capacity functions
+
 //float EPS_Battery_Capacity = INITIAL_BATTERY_CAPACITY;
 //#define getEPS_Battery_Capactity() EPS_Battery_Capacity
 
 typedef struct BatteryMeasurement{
     float batt_voltage; //EPS battery bus voltage in volts
     float batt_current; //EPS battery bus current in amps
-    uint64_t time; //time in microseconds since 1970
+    uint64_t time; //time in seconds since 1970
+    float bus5_voltage;
+    float bus5_current;
+    float bus3_voltage;
+    float bus3_current;
+    float solarX_voltage;
+    float solarXPos_current;
+    float solarXNeg_current;
+    float solarY_voltage;
+    float solarYPos_current;
+    float solarYNeg_current;
+    float solarZ_voltage;
+    float solarZPos_current;
+    float solarZNeg_current;
     //TODO: maybe need to add the following values to the measurement
     /*
      * 5v bus voltage
