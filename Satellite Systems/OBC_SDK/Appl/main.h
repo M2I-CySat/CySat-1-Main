@@ -38,6 +38,8 @@
 * EXTERNAL DEFINES
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+//size_t initial_beacon_length;
+//char initial_beacon_text[100];
 
 #if !defined(__FILE_defined)
 //typedef __FILE FILE;

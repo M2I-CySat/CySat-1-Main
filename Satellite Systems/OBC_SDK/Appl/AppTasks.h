@@ -22,14 +22,17 @@ extern osMutexId Num_I2C_Errors_Mutex;
 extern osMutexId Battery_Capacity_Mutex;
 extern osMutexId ADCS_Active_Mutex;
 extern osMutexId Low_Power_Mode_Mutex;
+extern osMutexId UHF_UART_Mutex;
 extern osThreadId myMainTask;
 extern osThreadId myADCSTask;
-extern osThreadId myUHFTask;
+extern osThreadId myUHFRxTask;
+extern osThreadId myUHFTxTask;
 
 void Main_Task(void const * argument);
 void ADCS_Task(void const * argument);
 void R2U2_Task(void const * argument);
-void UHF_Task(void const * argument);
+void UHF_Rx_Task(void const * argument);
+void UHF_Tx_Task(void const * argument);
 void BatteryCapacity_Task(void const * argument);
 
 void Fault_Recovery(int, int);
