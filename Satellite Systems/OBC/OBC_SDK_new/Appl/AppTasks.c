@@ -36,6 +36,15 @@ void Main_Task(void const * argument){
  */
 void UHF_Task(void const * argument){
     debug_printf("Starting UHF function.\r\n");
+    // Two separate UHF tasks, one for transmission
+    // One that listens until a packet is received and then deals with it, executing commands (outputs command outputs possibly to reception buffer)
+    // One that checks the transmission buffer every so often and assembles packets from that data, transmitting them
+    // Also need a transmission buffer
+    // TODO Transmission and reception
+
+
+
+
     while(1){
         osDelay(10000);
     }
