@@ -53,6 +53,7 @@
 uint8_t data[1];
 uint8_t GroundStationRxBuffer[7];
 uint32_t GroundStationRxDataLength;
+
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * INTERNAL TYPES DEFINITION
@@ -77,16 +78,19 @@ osMutexId Num_I2C_Errors_Mutex;
 osMutexId Battery_Capacity_Mutex;
 osMutexId ADCS_Active_Mutex;
 osMutexId Low_Power_Mode_Mutex;
-osThreadId myUHFTask;
+osMutexId UHF_UART_Mutex;
+
+
+osThreadId myUHFTxTask;
 osThreadId myADCSTask;
 osThreadId myMainTask;
+osThreadId myUHFRxTask;
 
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * INTERNAL (STATIC) VARIABLES DEFINITION/DECLARATION 
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
 
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -137,6 +141,9 @@ int main(void)
     /* Configure the system clock */
     SystemClock_Config();
 
+    HAL_Delay(INITIAL_WAIT); // Might have to move this forwards or backwards
+
+
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
     MX_I2C1_Init();
@@ -145,6 +152,36 @@ int main(void)
     MX_USART6_UART_Init();
     MX_SDIO_SD_Init();
     MX_FATFS_Init();
+
+    // Power on UHF code goes here
+    enable_UHF();
+    printf("Commanding EPS to enable UHF");
+
+    // Turns on SDR/Payload
+    enable_Payload();
+    printf("Commanding EPS to enable payload");
+
+    // Turns on Boost Board
+    enable_Boost_Board();
+    printf("Commanding EPS to enable Boost Board");
+
+    // Magnetometer Deployment
+    //TODO: Magnetometer Deployment Function Goes Here
+    // ALSO DO NOT RUN WITH ACTUAL MAGNETOMETER UNTIL FLIGHT, IT IS SINGLE USE
+    //TODO: Verify that this works by staring intensely at it
+
+    // Antenna Deployment
+    // TODO: Antenna Deployment Function Goes Here (DO NOT RUN WITH ACTUAL ANTENNA UNTIL FLIGHT, IT IS SINGLE USE)
+    //DEPLOY_ANTENNA(30);
+
+
+    // Beacon Configuration
+    uint8_t initial_beacon_text[] = "Hello, Earth! This is ISU's CySat-1!";
+    SET_BEACON_PERIOD(5);
+    SET_BEACON_TEXT(initial_beacon_text,35);
+    START_BEACON();
+
+
 
 
     osMutexDef(EPS_I2C_Mutex);
@@ -160,13 +197,20 @@ int main(void)
     osMutexDef(Low_Power_Mode_Mutex);
     Low_Power_Mode_Mutex = osMutexCreate(osMutex(Low_Power_Mode_Mutex));
 
+
+    osMutexDef(UHF_UART_Mutex);
+    UHF_UART_Mutex = osMutexCreate(osMutex(UHF_UART_Mutex));
+
    // HAL_Delay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
 
     osThreadDef(myMainTask, Main_Task, osPriorityAboveNormal, 0, 512);
     osThreadCreate(osThread(myMainTask), NULL);
 
-    osThreadDef(myUHFTask, UHF_Task, osPriorityNormal, 0, 512);
-    osThreadCreate(osThread(myUHFTask), NULL);
+    osThreadDef(myUHFRxTask, UHF_Rx_Task, osPriorityNormal, 0, 512);
+    osThreadCreate(osThread(myUHFRxTask), NULL);
+
+    osThreadDef(myUHFTxTask, UHF_Tx_Task, osPriorityNormal, 0, 512);
+    osThreadCreate(osThread(myUHFTxTask), NULL);
 
 
     osThreadDef(myADCSTask, ADCS_Task, osPriorityHigh, 0, 1024);
