@@ -1,5 +1,10 @@
 # CySat 1 - Make to Innovate at Iowa State University
+
 **Onboard Computer (OBC) firmware, Satellite Systems, and Ground Station Software** - [CySat M2I](https://m2i.aere.iastate.edu/cysat/)
+
+## Overview
+
+The EnduroSat Onboard Computer Type II (Indicated as Type I on the OBC in the lab) includes the STM32F4x Microcontroller, various communication interfaces, peripheral I/O devices, a prototyping area, and a PC-104 stack connector. EnduroSat provides an Open Software SDK which is included in this repository in addition to the main CySat 1 mission program.
 
 ## Environment Setup
 
@@ -20,6 +25,23 @@
 6. Update Software by going to `Help > Check for Updates`
 7. Build the project by clicking the "Hammer" icon on the toolbar at the top
 8. Happy Programming!
+
+## Debug/Run Code on the OBC
+
+### The following items are required to debug, run, and deploy a program on the OBC (see CySat inventory)
+
+- Pumpkin Board (or equivalent test bed equipped with a PC-104 stack connector + interface)
+- Power Supply + barrell power cable for PSU (the OBC does NOT recieve power via its onboard USB interface, this is used for other purposes)
+- ST-LINK v2 In-circuit Debugger + SWD cable (OBC <-> ST-LINK) + Mini-USB cable (ST-LINK <-> Dev computer)
+- Jumper wire (enable pin on OBC)
+    - To enable, connect pins OBC-En and 3.3V as noted in the EnduroSat OBC User Manual (pages 20-21)
+    - This sets the enable bit once so the wire can be removed once the LEDs illuminate
+    - **NOTE:** If the OBC is unplugged from/replugged in the ST-LINK or PC, the OBC will need to be disabled/re-enabled. Otherwise the STM IDE will not detect it for some reason
+![OBC-Pumpkin-Setup](https://user-images.githubusercontent.com/25646224/196340691-be1189e8-4458-4514-be5e-e68f9b84f2b4.jpg)
+
+### Then, in the STM IDE
+1. Ensure you have the OBC_SDK project selected and click the "Run" (play) button, that's it!
+2. For troubleshooting purposes, in debug/run configurations -> Debugger tab, make sure the ST-LINK S/N is filled in, the interface is set to SWD, and the reset behavior type is "Connect under reset"
 
 ## Documentation
 
