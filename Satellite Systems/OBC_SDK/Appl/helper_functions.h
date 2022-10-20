@@ -13,6 +13,8 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_def.h"
 
+
+
 HAL_StatusTypeDef debug_printf(char* format, ...);
 int debugSerialReceive(uint8_t* data);
 void debug_HAL_Status(HAL_StatusTypeDef status);

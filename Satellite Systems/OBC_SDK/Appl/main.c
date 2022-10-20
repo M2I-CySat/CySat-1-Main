@@ -54,6 +54,29 @@ uint8_t data[1];
 uint8_t GroundStationRxBuffer[7];
 uint32_t GroundStationRxDataLength;
 
+void flashGreen(int count, int period){
+    int i;
+    for (i=1; i<count; ++i)
+    {
+        GREEN_LED_ON();
+        HAL_Delay(period);
+        GREEN_LED_OFF();
+        HAL_Delay(period);
+    }
+}
+
+void flashAmber(int count, int period){
+    int i;
+    for (i=1; i<count; ++i)
+    {
+        AMBER_LED_ON();
+        HAL_Delay(period);
+        AMBER_LED_OFF();
+        HAL_Delay(period);
+    }
+}
+
+
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * INTERNAL TYPES DEFINITION
