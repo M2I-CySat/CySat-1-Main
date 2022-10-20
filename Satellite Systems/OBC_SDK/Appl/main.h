@@ -56,6 +56,12 @@
 #define AMBER_LED_OFF() GPIOC->ODR &= ~0x0020;
 #define AMBER_LED_XOR() GPIOC->ODR ^= 0x0020;
 
+
+//Functions to flash lights for debug purposes
+void flashGreen(int count, int period);
+void flashAmber(int count, int period);
+
+
 //#define HMC5883 1
 #define         LIS3MDL         1
 
