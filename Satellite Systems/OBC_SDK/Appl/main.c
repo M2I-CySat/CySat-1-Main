@@ -155,31 +155,48 @@ int main(void)
 
     // Power on UHF code goes here
     enable_UHF();
-    printf("Commanding EPS to enable UHF");
+    debug_printf("Commanding EPS to enable UHF");
 
     // Turns on SDR/Payload
     enable_Payload();
-    printf("Commanding EPS to enable payload");
+    debug_printf("Commanding EPS to enable payload");
 
     // Turns on Boost Board
     enable_Boost_Board();
-    printf("Commanding EPS to enable Boost Board");
+    debug_printf("Commanding EPS to enable Boost Board");
 
     // Magnetometer Deployment
     //TODO: Magnetometer Deployment Function Goes Here
     // ALSO DO NOT RUN WITH ACTUAL MAGNETOMETER UNTIL FLIGHT, IT IS SINGLE USE
     //TODO: Verify that this works by staring intensely at it
+    debug_printf("Commanding ??? to deploy the magnetometer");
 
     // Antenna Deployment
     // TODO: Antenna Deployment Function Goes Here (DO NOT RUN WITH ACTUAL ANTENNA UNTIL FLIGHT, IT IS SINGLE USE)
     //DEPLOY_ANTENNA(30);
-
+    debug_printf("Sending 0x1F to I2C slave address 0x33");
 
     // Beacon Configuration
     uint8_t initial_beacon_text[] = "Hello, Earth! This is ISU's CySat-1!";
     SET_BEACON_PERIOD(5);
     SET_BEACON_TEXT(initial_beacon_text,35);
     START_BEACON();
+
+    // Enable Transparent Mode
+    // TODO: Send command to UHF transceiver to enable transparent mode
+
+    // Detumbling Sequence
+    // TODO: Detumbling functions (ADCS) go here
+    debug_printf("Beginning detumbling sequence");
+
+    // Ground station will receive beacon, send "Beacon Shut Off" request
+    // TODO: OBC will shut off beacon when it receives ground station command
+    // TODO: OBC will confirm shutoff
+
+    /** Ground station will send "Initial Health Check Request" command
+    * TODO: Create health checks:
+    * EPS, ADCS, SDR, OBC, UHF transceiver
+    */
 
 
 
@@ -211,7 +228,6 @@ int main(void)
 
     osThreadDef(myUHFTxTask, UHF_Tx_Task, osPriorityNormal, 0, 512);
     osThreadCreate(osThread(myUHFTxTask), NULL);
-
 
     osThreadDef(myADCSTask, ADCS_Task, osPriorityHigh, 0, 1024);
     osThreadCreate(osThread(myADCSTask), NULL);
@@ -265,7 +281,7 @@ void assert_failed(uint8_t* file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
-    ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+    ex: debug_printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 
 }
