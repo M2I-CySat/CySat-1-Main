@@ -43,7 +43,6 @@
 #include  <stdio.h>
 #include  <stdlib.h>
 
-
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * INTERNAL DEFINES
@@ -54,28 +53,7 @@ uint8_t data[1];
 uint8_t GroundStationRxBuffer[7];
 uint32_t GroundStationRxDataLength;
 
-void flashGreen(int count, int period){
-    int i;
-    for (i=1; i<count; ++i)
-    {
-        GREEN_LED_ON();
-        HAL_Delay(period);
-        GREEN_LED_OFF();
-        HAL_Delay(period);
-    }
-}
-
-void flashAmber(int count, int period){
-    int i;
-    for (i=1; i<count; ++i)
-    {
-        AMBER_LED_ON();
-        HAL_Delay(period);
-        AMBER_LED_OFF();
-        HAL_Delay(period);
-    }
-}
-
+#define DEBUG_ENABLE 1
 
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -126,6 +104,27 @@ osThreadId myUHFRxTask;
 * EXTERNAL (NONE STATIC) ROUTINES DEFINITION
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+void flashGreen(int count, int period){
+    int i;
+    for (i=1; i<count; ++i)
+    {
+        GREEN_LED_ON();
+        HAL_Delay(period);
+        GREEN_LED_OFF();
+        HAL_Delay(period);
+    }
+}
+
+void flashAmber(int count, int period){
+    int i;
+    for (i=1; i<count; ++i)
+    {
+        AMBER_LED_ON();
+        HAL_Delay(period);
+        AMBER_LED_OFF();
+        HAL_Delay(period);
+    }
+}
 
 void I2C2_Reset (void) {
    hi2c2.Instance->CR1 |= I2C_CR1_SWRST;
@@ -153,10 +152,9 @@ void init_Satelite(void){
     disable_EPS_Batt_Heater_3();
 }
 
-
 int main(void)
 {
-      //SCB->VTOR = APPL_ADDRESS;
+    //SCB->VTOR = APPL_ADDRESS;
 
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
@@ -165,7 +163,6 @@ int main(void)
     SystemClock_Config();
 
     HAL_Delay(INITIAL_WAIT); // Might have to move this forwards or backwards
-
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
@@ -221,9 +218,6 @@ int main(void)
     * EPS, ADCS, SDR, OBC, UHF transceiver
     */
 
-
-
-
     osMutexDef(EPS_I2C_Mutex);
     EPS_I2C_Mutex = osMutexCreate(osMutex(EPS_I2C_Mutex));
     osMutexDef(UART_Mutex);
@@ -236,7 +230,6 @@ int main(void)
     ADCS_Active_Mutex = osMutexCreate(osMutex(ADCS_Active_Mutex));
     osMutexDef(Low_Power_Mode_Mutex);
     Low_Power_Mode_Mutex = osMutexCreate(osMutex(Low_Power_Mode_Mutex));
-
 
     osMutexDef(UHF_UART_Mutex);
     UHF_UART_Mutex = osMutexCreate(osMutex(UHF_UART_Mutex));
@@ -261,14 +254,10 @@ int main(void)
     /* Start scheduler */
     osKernelStart();
 
-    //GroundStationRxDataLength = 4;
-    //HAL_UART_Receive_IT(&huart6, (uint8_t*) &GroundStationRxBuffer, 4);
-
-    while(1){
-
-    }
+    /* Receive via STM UART */
+    GroundStationRxDataLength = 4;
+    HAL_UART_Receive_IT(&huart6, (uint8_t*) &GroundStationRxBuffer, 4);
 }
-
 
 /**
   * @brief  Period elapsed callback in non blocking mode
@@ -329,12 +318,8 @@ void Error_Handler(void)
 #ifdef DEBUG_ENABLE
   while(1)
   {
-      GREEN_LED_ON();
-      AMBER_LED_ON();
-      HAL_Delay(2000);
-      GREEN_LED_OFF();
-      AMBER_LED_OFF();
-      HAL_Delay(2000);
+      flashGreen(5, 2000);
+      flashAmber(5, 2000);
   }
 #endif
   /* USER CODE END Error_Handler */
