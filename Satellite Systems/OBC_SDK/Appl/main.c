@@ -151,100 +151,27 @@ int main(void)
     MX_SDIO_SD_Init();
     MX_FATFS_Init();
 
-    /* Initialize Mutexs with CMSIS RTOS - TODO NEEDS TO BE DONE IN A THREAD
-    // EPS I2C
-    osMutexDef(EPS_I2C_Mutex);
-    debug_led_green(10,100);
-    EPS_I2C_Mutex = osMutexCreate(osMutex(EPS_I2C_Mutex));
-    debug_led_amber(10,100);
 
-    // UART
-    osMutexDef(UART_Mutex);
-    debug_led_green(10,100);
-    UART_Mutex = osMutexCreate(osMutex(UART_Mutex));
-    debug_led_amber(10,100);
-
-    // I2C Errors
-    osMutexDef(Num_I2C_Errors_Mutex);
-    Num_I2C_Errors_Mutex = osMutexCreate(osMutex(Num_I2C_Errors_Mutex));
-
-    // Battery
-    osMutexDef(Battery_Capacity_Mutex);
-    Battery_Capacity_Mutex = osMutexCreate(osMutex(Battery_Capacity_Mutex));
-
-    // ADCS
-    osMutexDef(ADCS_Active_Mutex);
-    ADCS_Active_Mutex = osMutexCreate(osMutex(ADCS_Active_Mutex));
-
-    // Low Power
-    osMutexDef(Low_Power_Mode_Mutex);
-    Low_Power_Mode_Mutex = osMutexCreate(osMutex(Low_Power_Mode_Mutex));
-
-    // UHF
-    osMutexDef(UHF_UART_Mutex);
-    UHF_UART_Mutex = osMutexCreate(osMutex(UHF_UART_Mutex));
-     */
 
     /* Initialize task threads */
-    osThreadDef(myMainTask, Main_Task, osPriorityAboveNormal, 0, 512);
+    osThreadDef(myMainTask, Main_Task, osPriorityRealtime, 0, 512);
     osThreadCreate(osThread(myMainTask), NULL);
 
-    //osThreadDef(myUHFRxTask, UHF_Rx_Task, osPriorityNormal, 0, 512);
-    //osThreadCreate(osThread(myUHFRxTask), NULL);
+    osThreadDef(myUHFRxTask, UHF_Rx_Task, osPriorityNormal, 0, 512);
+    osThreadCreate(osThread(myUHFRxTask), NULL);
 
     osThreadDef(myUHFTxTask, UHF_Tx_Task, osPriorityNormal, 0, 512);
     osThreadCreate(osThread(myUHFTxTask), NULL);
 
-    //osThreadDef(myADCSTask, ADCS_Task, osPriorityHigh, 0, 1024);
-    //osThreadCreate(osThread(myADCSTask), NULL);
+    osThreadDef(myADCSTask, ADCS_Task, osPriorityNormal, 0, 1024);
+    osThreadCreate(osThread(myADCSTask), NULL);
 
-    //osThreadDef(myBatteryCapacityTask, BatteryCapacity_Task, osPriorityRealtime, 0, 256);
-    //osThreadCreate(osThread(myBatteryCapacityTask), NULL);
+    osThreadDef(myBatteryCapacityTask, BatteryCapacity_Task, osPriorityNormal, 0, 256);
+    osThreadCreate(osThread(myBatteryCapacityTask), NULL);
 
     /* Start scheduler */
     osKernelStart();
 
-    /*
-    // Power on UHF code goes here
-    enable_UHF();
-    debug_led_amber(1,3000);
-    debug_printf("Commanding EPS to enable UHF");
-
-    // Turns on SDR/Payload
-    enable_Payload();
-    debug_printf("Commanding EPS to enable payload");
-
-    debug_led_amber(1,3000);
-
-    // Turns on Boost Board
-    enable_Boost_Board();
-    debug_printf("Commanding EPS to enable Boost Board");
-
-    debug_led_amber(1,3000);
-
-    // Magnetometer Deployment
-    //TODO: Magnetometer Deployment Function Goes Here
-    // ALSO DO NOT RUN WITH ACTUAL MAGNETOMETER UNTIL FLIGHT, IT IS SINGLE USE
-    //TODO: Verify that this works by staring intensely at it
-    debug_printf("Commanding ??? to deploy the magnetometer");
-
-    // Antenna Deployment
-    // TODO: Antenna Deployment Function Goes Here (DO NOT RUN WITH ACTUAL ANTENNA UNTIL FLIGHT, IT IS SINGLE USE)
-    //DEPLOY_ANTENNA(30);
-    debug_printf("Sending 0x1F to I2C slave address 0x33");
-
-    // Beacon Configuration
-    uint8_t initial_beacon_text[] = "Hello, Earth! This is ISU's CySat-1!";
-    SET_BEACON_PERIOD(5);
-    SET_BEACON_TEXT(initial_beacon_text,35);
-    START_BEACON();
-
-
-
-
-    debug_led_green(1,5000);
-
-    */
 
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
@@ -261,8 +188,6 @@ int main(void)
     * TODO: Create health checks:
     * EPS, ADCS, SDR, OBC, UHF transceiver
     */
-
-    debug_led_amber(1,3000);
 
    // HAL_Delay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
 

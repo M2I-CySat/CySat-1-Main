@@ -26,26 +26,17 @@ bool LOW_POWER_MODE = 0;
  */
 void Main_Task(void const * argument){
 
-
-
-
-
-
     debug_printf("Starting Main function.\r\n");
 
 
     //Initialize Mutexs with CMSIS RTOS
     // EPS I2C
     osMutexDef(EPS_I2C_Mutex);
-    debug_led_green(10,100);
     EPS_I2C_Mutex = osMutexCreate(osMutex(EPS_I2C_Mutex));
-    debug_led_amber(10,100);
 
     // UART
     osMutexDef(UART_Mutex);
-    debug_led_green(10,100);
     UART_Mutex = osMutexCreate(osMutex(UART_Mutex));
-    debug_led_amber(10,100);
 
     // I2C Errors
     osMutexDef(Num_I2C_Errors_Mutex);
@@ -73,20 +64,15 @@ void Main_Task(void const * argument){
 
     // Power on UHF code goes here
     enable_UHF();
-    debug_led_amber(1,3000);
     debug_printf("Commanding EPS to enable UHF");
 
     // Turns on SDR/Payload
     enable_Payload();
     debug_printf("Commanding EPS to enable payload");
 
-    debug_led_amber(1,3000);
-
     // Turns on Boost Board
     enable_Boost_Board();
     debug_printf("Commanding EPS to enable Boost Board");
-
-    debug_led_amber(1,3000);
 
     // Magnetometer Deployment
     //TODO: Magnetometer Deployment Function Goes Here
@@ -105,15 +91,31 @@ void Main_Task(void const * argument){
     SET_BEACON_TEXT(initial_beacon_text,35);
     START_BEACON();
 
-    debug_led_green(1,5000);
+    // Enable Transparent Mode
+    // TODO: Send command to UHF transceiver to enable transparent mode
 
-    //osMutexDef(EPS_I2C_Mutex);
-    //EPS_I2C_Mutex = osMutexCreate(osMutex(EPS_I2C_Mutex));
+    // Detumbling Sequence
+    // TODO: Detumbling functions (ADCS) go here
+    debug_printf("Beginning detumbling sequence");
+
+    // Ground station will receive beacon, send "Beacon Shut Off" request
+    // TODO: OBC will shut off beacon when it receives ground station command
+    // TODO: OBC will confirm shutoff
+
+    /** Ground station will send "Initial Health Check Request" command
+    * TODO: Create health checks:
+    * EPS, ADCS, SDR, OBC, UHF transceiver
+    */
+
+    // Flashes the lights to let you know that the startup sequence completed, then starts other threads
+    debug_led_green(10,50);
+    debug_led_amber(10,50);
+
     while(1){
-        GREEN_LED_ON();
-        osDelay(150);
-        GREEN_LED_OFF();
-        osDelay(150);
+    //    GREEN_LED_ON();
+    //    osDelay(150);
+    //    GREEN_LED_OFF();
+        osDelay(10000);
     }
 }
 
@@ -182,7 +184,10 @@ void ADCS_Task(void const * argument){
     ADCS_ACTIVE = 1;
     osMutexRelease(ADCS_Active_Mutex);
     while(1){
-        osDelay(10000);
+        GREEN_LED_ON();
+        osDelay(1000);
+        GREEN_LED_OFF();
+        osDelay(1000);
     }
 }
 
@@ -202,6 +207,7 @@ void BatteryCapacity_Task(void const * argument){
     uint32_t PreviousWakeTime = osKernelSysTick();
 
     while(1){
+
         READ_EPS_INPUT_CONDITION(&input_conditions);
         if((input_conditions & 0x20)==0x20){ // Charge Complete
             osMutexWait(Battery_Capacity_Mutex, 500);
