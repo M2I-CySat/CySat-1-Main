@@ -53,8 +53,6 @@ uint8_t data[1];
 uint8_t GroundStationRxBuffer[7];
 uint32_t GroundStationRxDataLength;
 
-#define DEBUG_ENABLE 1
-
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * INTERNAL TYPES DEFINITION
@@ -81,7 +79,6 @@ osMutexId ADCS_Active_Mutex;
 osMutexId Low_Power_Mode_Mutex;
 osMutexId UHF_UART_Mutex;
 
-
 osThreadId myUHFTxTask;
 osThreadId myADCSTask;
 osThreadId myMainTask;
@@ -104,28 +101,6 @@ osThreadId myUHFRxTask;
 * EXTERNAL (NONE STATIC) ROUTINES DEFINITION
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-void flashGreen(int count, int period){
-    int i;
-    for (i=1; i<count; ++i)
-    {
-        GREEN_LED_ON();
-        HAL_Delay(period);
-        GREEN_LED_OFF();
-        HAL_Delay(period);
-    }
-}
-
-void flashAmber(int count, int period){
-    int i;
-    for (i=1; i<count; ++i)
-    {
-        AMBER_LED_ON();
-        HAL_Delay(period);
-        AMBER_LED_OFF();
-        HAL_Delay(period);
-    }
-}
-
 void I2C2_Reset (void) {
    hi2c2.Instance->CR1 |= I2C_CR1_SWRST;
       osDelay(100);
@@ -152,6 +127,9 @@ void init_Satelite(void){
     disable_EPS_Batt_Heater_3();
 }
 
+/**
+ * CySat 1 Mission Execution
+ */
 int main(void)
 {
     //SCB->VTOR = APPL_ADDRESS;
@@ -162,7 +140,7 @@ int main(void)
     /* Configure the system clock */
     SystemClock_Config();
 
-    HAL_Delay(INITIAL_WAIT); // Might have to move this forwards or backwards
+    //HAL_Delay(INITIAL_WAIT); // Might have to move this forwards or backwards
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
@@ -173,17 +151,76 @@ int main(void)
     MX_SDIO_SD_Init();
     MX_FATFS_Init();
 
+    /* Initialize Mutexs with CMSIS RTOS - TODO NEEDS TO BE DONE IN A THREAD
+    // EPS I2C
+    osMutexDef(EPS_I2C_Mutex);
+    debug_led_green(10,100);
+    EPS_I2C_Mutex = osMutexCreate(osMutex(EPS_I2C_Mutex));
+    debug_led_amber(10,100);
+
+    // UART
+    osMutexDef(UART_Mutex);
+    debug_led_green(10,100);
+    UART_Mutex = osMutexCreate(osMutex(UART_Mutex));
+    debug_led_amber(10,100);
+
+    // I2C Errors
+    osMutexDef(Num_I2C_Errors_Mutex);
+    Num_I2C_Errors_Mutex = osMutexCreate(osMutex(Num_I2C_Errors_Mutex));
+
+    // Battery
+    osMutexDef(Battery_Capacity_Mutex);
+    Battery_Capacity_Mutex = osMutexCreate(osMutex(Battery_Capacity_Mutex));
+
+    // ADCS
+    osMutexDef(ADCS_Active_Mutex);
+    ADCS_Active_Mutex = osMutexCreate(osMutex(ADCS_Active_Mutex));
+
+    // Low Power
+    osMutexDef(Low_Power_Mode_Mutex);
+    Low_Power_Mode_Mutex = osMutexCreate(osMutex(Low_Power_Mode_Mutex));
+
+    // UHF
+    osMutexDef(UHF_UART_Mutex);
+    UHF_UART_Mutex = osMutexCreate(osMutex(UHF_UART_Mutex));
+     */
+
+    /* Initialize task threads */
+    osThreadDef(myMainTask, Main_Task, osPriorityAboveNormal, 0, 512);
+    osThreadCreate(osThread(myMainTask), NULL);
+
+    //osThreadDef(myUHFRxTask, UHF_Rx_Task, osPriorityNormal, 0, 512);
+    //osThreadCreate(osThread(myUHFRxTask), NULL);
+
+    osThreadDef(myUHFTxTask, UHF_Tx_Task, osPriorityNormal, 0, 512);
+    osThreadCreate(osThread(myUHFTxTask), NULL);
+
+    //osThreadDef(myADCSTask, ADCS_Task, osPriorityHigh, 0, 1024);
+    //osThreadCreate(osThread(myADCSTask), NULL);
+
+    //osThreadDef(myBatteryCapacityTask, BatteryCapacity_Task, osPriorityRealtime, 0, 256);
+    //osThreadCreate(osThread(myBatteryCapacityTask), NULL);
+
+    /* Start scheduler */
+    osKernelStart();
+
+    /*
     // Power on UHF code goes here
     enable_UHF();
+    debug_led_amber(1,3000);
     debug_printf("Commanding EPS to enable UHF");
 
     // Turns on SDR/Payload
     enable_Payload();
     debug_printf("Commanding EPS to enable payload");
 
+    debug_led_amber(1,3000);
+
     // Turns on Boost Board
     enable_Boost_Board();
     debug_printf("Commanding EPS to enable Boost Board");
+
+    debug_led_amber(1,3000);
 
     // Magnetometer Deployment
     //TODO: Magnetometer Deployment Function Goes Here
@@ -202,6 +239,13 @@ int main(void)
     SET_BEACON_TEXT(initial_beacon_text,35);
     START_BEACON();
 
+
+
+
+    debug_led_green(1,5000);
+
+    */
+
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
 
@@ -218,41 +262,9 @@ int main(void)
     * EPS, ADCS, SDR, OBC, UHF transceiver
     */
 
-    osMutexDef(EPS_I2C_Mutex);
-    EPS_I2C_Mutex = osMutexCreate(osMutex(EPS_I2C_Mutex));
-    osMutexDef(UART_Mutex);
-    UART_Mutex = osMutexCreate(osMutex(UART_Mutex));
-    osMutexDef(Num_I2C_Errors_Mutex);
-    Num_I2C_Errors_Mutex = osMutexCreate(osMutex(Num_I2C_Errors_Mutex));
-    osMutexDef(Battery_Capacity_Mutex);
-    Battery_Capacity_Mutex = osMutexCreate(osMutex(Battery_Capacity_Mutex));
-    osMutexDef(ADCS_Active_Mutex);
-    ADCS_Active_Mutex = osMutexCreate(osMutex(ADCS_Active_Mutex));
-    osMutexDef(Low_Power_Mode_Mutex);
-    Low_Power_Mode_Mutex = osMutexCreate(osMutex(Low_Power_Mode_Mutex));
-
-    osMutexDef(UHF_UART_Mutex);
-    UHF_UART_Mutex = osMutexCreate(osMutex(UHF_UART_Mutex));
+    debug_led_amber(1,3000);
 
    // HAL_Delay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
-
-    osThreadDef(myMainTask, Main_Task, osPriorityAboveNormal, 0, 512);
-    osThreadCreate(osThread(myMainTask), NULL);
-
-    osThreadDef(myUHFRxTask, UHF_Rx_Task, osPriorityNormal, 0, 512);
-    osThreadCreate(osThread(myUHFRxTask), NULL);
-
-    osThreadDef(myUHFTxTask, UHF_Tx_Task, osPriorityNormal, 0, 512);
-    osThreadCreate(osThread(myUHFTxTask), NULL);
-
-    osThreadDef(myADCSTask, ADCS_Task, osPriorityHigh, 0, 1024);
-    osThreadCreate(osThread(myADCSTask), NULL);
-
-    osThreadDef(myBatteryCapacityTask, BatteryCapacity_Task, osPriorityRealtime, 0, 256);
-    osThreadCreate(osThread(myBatteryCapacityTask), NULL);
-
-    /* Start scheduler */
-    osKernelStart();
 
     /* Receive via STM UART */
     GroundStationRxDataLength = 4;
@@ -318,8 +330,8 @@ void Error_Handler(void)
 #ifdef DEBUG_ENABLE
   while(1)
   {
-      flashGreen(5, 2000);
-      flashAmber(5, 2000);
+      debug_led_green(5, 2000);
+      debug_led_amber(5, 2000);
   }
 #endif
   /* USER CODE END Error_Handler */

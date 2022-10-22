@@ -39,6 +39,38 @@ HAL_StatusTypeDef debug_printf(char* format, ...){
 }
 
 /**
+ * Flash the Green LED located on the OBC
+ * @param count - The number of cycles to flash
+ * @param period - The amount of time in milliseconds between LED states
+ */
+void debug_led_green(int count, int period){
+    int i;
+    for (i = 0; i < count; ++i)
+    {
+        GREEN_LED_ON();
+        HAL_Delay(period);
+        GREEN_LED_OFF();
+        HAL_Delay(period);
+    }
+}
+
+/**
+ * Flash the Amber LED located on the OBC
+ * @param count - The number of cycles to flash
+ * @param period - The amount of time in milliseconds between LED states
+ */
+void debug_led_amber(int count, int period){
+    int i;
+    for (i = 0; i < count; ++i)
+    {
+        AMBER_LED_ON();
+        HAL_Delay(period);
+        AMBER_LED_OFF();
+        HAL_Delay(period);
+    }
+}
+
+/**
   * @brief Receives data from the debug UART line in polling mode and then returns the number of read bytes.
   * It searches for a CySat Packet Protocol start field, and then reads until the end of the packet
   * @param data: a pointer to an allocated array to hold the received data

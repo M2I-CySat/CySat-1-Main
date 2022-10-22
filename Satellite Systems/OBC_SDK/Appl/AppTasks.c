@@ -25,9 +25,95 @@ bool LOW_POWER_MODE = 0;
  * @brief Main Task/Thread
  */
 void Main_Task(void const * argument){
+
+
+
+
+
+
     debug_printf("Starting Main function.\r\n");
+
+
+    //Initialize Mutexs with CMSIS RTOS
+    // EPS I2C
+    osMutexDef(EPS_I2C_Mutex);
+    debug_led_green(10,100);
+    EPS_I2C_Mutex = osMutexCreate(osMutex(EPS_I2C_Mutex));
+    debug_led_amber(10,100);
+
+    // UART
+    osMutexDef(UART_Mutex);
+    debug_led_green(10,100);
+    UART_Mutex = osMutexCreate(osMutex(UART_Mutex));
+    debug_led_amber(10,100);
+
+    // I2C Errors
+    osMutexDef(Num_I2C_Errors_Mutex);
+    Num_I2C_Errors_Mutex = osMutexCreate(osMutex(Num_I2C_Errors_Mutex));
+
+    // Battery
+    osMutexDef(Battery_Capacity_Mutex);
+    Battery_Capacity_Mutex = osMutexCreate(osMutex(Battery_Capacity_Mutex));
+
+    // ADCS
+    osMutexDef(ADCS_Active_Mutex);
+    ADCS_Active_Mutex = osMutexCreate(osMutex(ADCS_Active_Mutex));
+
+    // Low Power
+    osMutexDef(Low_Power_Mode_Mutex);
+    Low_Power_Mode_Mutex = osMutexCreate(osMutex(Low_Power_Mode_Mutex));
+
+    // UHF
+    osMutexDef(UHF_UART_Mutex);
+    UHF_UART_Mutex = osMutexCreate(osMutex(UHF_UART_Mutex));
+
+
+
+
+
+    // Power on UHF code goes here
+    enable_UHF();
+    debug_led_amber(1,3000);
+    debug_printf("Commanding EPS to enable UHF");
+
+    // Turns on SDR/Payload
+    enable_Payload();
+    debug_printf("Commanding EPS to enable payload");
+
+    debug_led_amber(1,3000);
+
+    // Turns on Boost Board
+    enable_Boost_Board();
+    debug_printf("Commanding EPS to enable Boost Board");
+
+    debug_led_amber(1,3000);
+
+    // Magnetometer Deployment
+    //TODO: Magnetometer Deployment Function Goes Here
+    // ALSO DO NOT RUN WITH ACTUAL MAGNETOMETER UNTIL FLIGHT, IT IS SINGLE USE
+    //TODO: Verify that this works by staring intensely at it
+    debug_printf("Commanding ??? to deploy the magnetometer");
+
+    // Antenna Deployment
+    // TODO: Antenna Deployment Function Goes Here (DO NOT RUN WITH ACTUAL ANTENNA UNTIL FLIGHT, IT IS SINGLE USE)
+    //DEPLOY_ANTENNA(30);
+    debug_printf("Sending 0x1F to I2C slave address 0x33");
+
+    // Beacon Configuration
+    uint8_t initial_beacon_text[] = "Hello, Earth! This is ISU's CySat-1!";
+    SET_BEACON_PERIOD(5);
+    SET_BEACON_TEXT(initial_beacon_text,35);
+    START_BEACON();
+
+    debug_led_green(1,5000);
+
+    //osMutexDef(EPS_I2C_Mutex);
+    //EPS_I2C_Mutex = osMutexCreate(osMutex(EPS_I2C_Mutex));
     while(1){
-        osDelay(10000);
+        GREEN_LED_ON();
+        osDelay(150);
+        GREEN_LED_OFF();
+        osDelay(150);
     }
 }
 
@@ -41,9 +127,6 @@ void UHF_Rx_Task(void const * argument){
     // One that checks the transmission buffer every so often and assembles packets from that data, transmitting them
     // Also need a transmission buffer
     // TODO Transmission and reception
-
-
-
 
     while(1){
         osDelay(10000);
@@ -61,11 +144,11 @@ void UHF_Tx_Task(void const * argument){
     // Also need a transmission buffer
     // TODO Transmission and reception
 
-
-
-
     while(1){
-        osDelay(10000);
+        AMBER_LED_ON();
+        osDelay(140);
+        AMBER_LED_OFF();
+        osDelay(140);
     }
 }
 

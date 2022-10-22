@@ -1,0 +1,3 @@
+C:/Users/Ultim/OneDrive/Documents/GitHub/CySat-1-Main/Satellite Systems/OBC_SDK/cmake-build-debug/CMakeFiles/OBC_SDK.dir
+C:/Users/Ultim/OneDrive/Documents/GitHub/CySat-1-Main/Satellite Systems/OBC_SDK/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Ultim/OneDrive/Documents/GitHub/CySat-1-Main/Satellite Systems/OBC_SDK/cmake-build-debug/CMakeFiles/rebuild_cache.dir
