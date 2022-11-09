@@ -50,7 +50,6 @@ HAL_StatusTypeDef sendCySatPacket(CySat_Packet_t packet){
     HAL_StatusTypeDef status = HAL_ERROR;
     if(packet.Subsystem_Type == OBC_SUBSYSTEM_TYPE){
         status = HAL_UART_Transmit(&huart1, message, packet.Data_Length + 5, 1000); //send the message over uart, but timeout after 1s
-        // Might need to change to USART transmit for this to work?
     }
     else if(packet.Subsystem_Type == PAYLOAD_SUBSYSTEM_TYPE){
         status = HAL_UART_Transmit(&huart6, message, packet.Data_Length + 5, 1000); //send the message over uart, but timeout after 1s

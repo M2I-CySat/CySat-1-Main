@@ -486,26 +486,26 @@ HAL_StatusTypeDef SET_UHF_LOW_POWER_MODE(){
  * @brief Releases the antenna a certain amount of minutes after the device powers up
  * @param time: time in minutes after device power up
  */
-//HAL_StatusTypeDef DEPLOY_ANTENNA(uint8_t time){
-//    uint8_t command[22];
-//    command[0] = 'E';
-//    command[1] = 'S';
-//    command[2] = '+';
-//    command[3] = 'W';
-//    command[4] = '2';
-//    command[5] = '2';
-//    command[6] = 'F';
-//    command[7] = '2';
-//    command[8] = 0 + 0x30; // disable Robust automatic release sequence
-//    command[9] = 1 + 0x30; // Enable automatic release sequence
-//    char temp[3];
-//    sprintf(temp, "%02X", time);
-//    memcpy(&command[10], temp, 2);
-//    command[12] = ' ';
-//    crc32(command, 12, &command[13]);
-//    command[21] = 0x0D;
-//    return UHF_WRITE(command, 22);
-//}
+HAL_StatusTypeDef DEPLOY_ANTENNA(uint8_t time){
+    uint8_t command[22];
+    command[0] = 'E';
+    command[1] = 'S';
+    command[2] = '+';
+    command[3] = 'W';
+    command[4] = '2';
+    command[5] = '2';
+    command[6] = 'F';
+    command[7] = '2';
+    command[8] = 0 + 0x30; // disable Robust automatic release sequence
+    command[9] = 1 + 0x30; // Enable automatic release sequence
+    char temp[3];
+    sprintf(temp, "%02X", time);
+    memcpy(&command[10], temp, 2);
+    command[12] = ' ';
+    crc32(command, 12, &command[13]);
+    command[21] = 0x0D;
+    return UHF_WRITE(command, 22);
+}
 
 /*
  * @brief Configure the antenna to use Algorithm 1 for all 4 antenna rods

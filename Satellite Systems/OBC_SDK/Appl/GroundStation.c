@@ -42,9 +42,44 @@ int handleCySatPacket(CySat_Packet_t packet){
     CySat_Packet_t outgoingPacket;
     switch(packet.Subsystem_Type){
         case OBC_SUBSYSTEM_TYPE: //OBC
+            switch(packet.Command){
+                case 0x00: { //Ping Response
+
+                }
+                case 0x01: { //Ping Request
+
+                }
+                case 0x02: { //Shutoff Beacon Response
+
+                }
+                case 0x03: { //Shutoff Beacon Request
+
+                }
+                case 0x04: { //Basic Health Check Response
+
+                }
+                case 0x05: { //Basic Health Check Request
+
+                }
+                case 0x06: { //Main Operations Response
+
+                }
+                case 0x07: { //Main Operations Request
+
+                }
+                case 0x08: { //Set beacon period
+
+                }
+                case 0x09: { //Set beacon text
+
+                }
+                break;
+
+            }
+
+
 
             break;
-
         case ADCS_SUBSYSTEM_TYPE: //ADCS
 
             break;

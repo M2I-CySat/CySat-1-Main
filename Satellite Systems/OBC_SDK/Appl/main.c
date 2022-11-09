@@ -48,7 +48,7 @@
 * INTERNAL DEFINES
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-#define INITIAL_WAIT 1*60*1000 //waits 1 minute
+#define INITIAL_WAIT 0.1*60*1000 //waits 1 minute //TODO: SET 0.1 TO 30 FOR FLIGHT DELAY!
 uint8_t data[1];
 uint8_t GroundStationRxBuffer[7];
 uint32_t GroundStationRxDataLength;
@@ -140,7 +140,7 @@ int main(void)
     /* Configure the system clock */
     SystemClock_Config();
 
-    //HAL_Delay(INITIAL_WAIT); // Might have to move this forwards or backwards
+    HAL_Delay(INITIAL_WAIT); // Delay for the specified 30 minutes
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
@@ -150,6 +150,10 @@ int main(void)
     MX_USART6_UART_Init();
     MX_SDIO_SD_Init();
     MX_FATFS_Init();
+
+    // Commands the start of data reception because I can't define it in AppTasks.c without having to mess around with #including stuff
+    HAL_UART_Receive_IT(&huart6,GroundStationRxBuffer, 4);
+    HAL_UART_Receive_IT(&huart1,GroundStationRxBuffer, 4);
 
 
 
@@ -280,6 +284,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
             sendErrorPacket();
         }
         HAL_UART_Receive_IT(&huart6,GroundStationRxBuffer, 4);
+    }
+    if(huart == &huart1){ //I think this is for the UHF transceiver but I'm not sure -Steven
+        if(handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1){ //error occurred
+            sendErrorPacket();
+        }
+        HAL_UART_Receive_IT(&huart1,GroundStationRxBuffer, 4);
     }
 }
 

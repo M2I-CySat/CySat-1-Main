@@ -29,7 +29,7 @@ void Main_Task(void const * argument){
     debug_printf("Starting Main function.\r\n");
 
 
-    //Initialize Mutexs with CMSIS RTOS
+    //Initialize Mutexes with CMSIS RTOS
     // EPS I2C
     osMutexDef(EPS_I2C_Mutex);
     EPS_I2C_Mutex = osMutexCreate(osMutex(EPS_I2C_Mutex));
@@ -74,11 +74,7 @@ void Main_Task(void const * argument){
     enable_Boost_Board();
     debug_printf("Commanding EPS to enable Boost Board");
 
-    // Magnetometer Deployment
-    //TODO: Magnetometer Deployment Function Goes Here
-    // ALSO DO NOT RUN WITH ACTUAL MAGNETOMETER UNTIL FLIGHT, IT IS SINGLE USE
-    //TODO: Verify that this works by staring intensely at it
-    debug_printf("Commanding ??? to deploy the magnetometer");
+    // Magnetometer Deployment is done by the ADCS function
 
     // Antenna Deployment
     // TODO: Antenna Deployment Function Goes Here (DO NOT RUN WITH ACTUAL ANTENNA UNTIL FLIGHT, IT IS SINGLE USE)
@@ -123,15 +119,13 @@ void Main_Task(void const * argument){
  * @brief main UHF Task/Thread
  */
 void UHF_Rx_Task(void const * argument){
-    debug_printf("Starting UHF function.\r\n");
-    // Two separate UHF tasks, one for transmission
-    // One that listens until a packet is received and then deals with it, executing commands (outputs command outputs possibly to reception buffer)
-    // One that checks the transmission buffer every so often and assembles packets from that data, transmitting them
-    // Also need a transmission buffer
-    // TODO Transmission and reception
+    debug_printf("Starting UHF reception function.\r\n");
+
+    //HAL_UART_Receive_IT(&huart6,GroundStationRxBuffer, 4); //These have been moved to main.c where they are declared and defined
+    //HAL_UART_Receive_IT(&huart1,GroundStationRxBuffer, 4);
 
     while(1){
-        osDelay(10000);
+        osDelay(10000); //The actual handleCySatPacket stuff should run in the callback so we shouldn't need this thread at all
     }
 }
 
@@ -147,10 +141,11 @@ void UHF_Tx_Task(void const * argument){
     // TODO Transmission and reception
 
     while(1){
-        AMBER_LED_ON();
-        osDelay(140);
-        AMBER_LED_OFF();
-        osDelay(140);
+
+
+
+
+
     }
 }
 
@@ -163,23 +158,25 @@ void UHF_Tx_Task(void const * argument){
  */
 void ADCS_Task(void const * argument){
     debug_printf("Starting ADCS function.\r\n");
-//    HAL_StatusTypeDef status;
-//    status = enable_EPS_Output_1();
-//    status = enable_EPS_5v_Bus();
-//    status = enable_EPS_LUP_3v();
-//    status = enable_EPS_LUP_5v();
-//    Magnetometer_Deployment();
-//    Detumbling_To_Y_Thomson();
-//    y_ramp_result_t result;
-//    result = Y_Wheel_Ramp_Up_Test();
-//    if(result == NO_ERROR)
-//        debug_printf("Y Wheel Ramp Test is Success!!!\r\n");
-//    else if(result == FAULT_COMMAND_SPEED)
-//        debug_printf("Did not command speed properly.\r\n");
-//    else if(result == FAULT_PITCH_ANGLE)
-//        debug_printf("Pitch did not stay constant!\r\n");
-//    else if(result == FAULT_Y_RATE)
-//        debug_printf("Did not go to 0 y-rate and then back up to Y-Thompson rate.\r\n");
+
+    HAL_StatusTypeDef status;
+    //status = enable_EPS_Output_1(); //Enabling the boost board is done in the main task
+    status = enable_EPS_5v_Bus();
+    status = enable_EPS_LUP_3v();
+    status = enable_EPS_LUP_5v();
+    //Magnetometer_Deployment(); //TODO: ENABLE FOR FLIGHT
+    Detumbling_To_Y_Thomson();
+    y_ramp_result_t result;
+    result = Y_Wheel_Ramp_Up_Test();
+    if(result == NO_ERROR)
+        debug_printf("Y Wheel Ramp Test is Success!!!\r\n");
+    else if(result == FAULT_COMMAND_SPEED)
+        debug_printf("Did not command speed properly.\r\n");
+    else if(result == FAULT_PITCH_ANGLE)
+        debug_printf("Pitch did not stay constant!\r\n");
+    else if(result == FAULT_Y_RATE)
+        debug_printf("Did not go to 0 y-rate and then back up to Y-Thompson rate.\r\n");
+
     osMutexWait(ADCS_Active_Mutex, 500);
     ADCS_ACTIVE = 1;
     osMutexRelease(ADCS_Active_Mutex);
