@@ -59,9 +59,6 @@ void Main_Task(void const * argument){
     UHF_UART_Mutex = osMutexCreate(osMutex(UHF_UART_Mutex));
 
 
-
-
-
     // Power on UHF code goes here
     enable_UHF();
     debug_printf("Commanding EPS to enable UHF");
@@ -83,9 +80,11 @@ void Main_Task(void const * argument){
 
     // Beacon Configuration
     uint8_t initial_beacon_text[] = "Hello, Earth! This is ISU's CySat-1!";
-    SET_BEACON_PERIOD(5);
+    SET_BEACON_PERIOD(2);
     SET_BEACON_TEXT(initial_beacon_text,35);
     START_BEACON();
+
+
 
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
@@ -107,11 +106,13 @@ void Main_Task(void const * argument){
     debug_led_green(10,50);
     debug_led_amber(10,50);
 
+
+
     while(1){
-    //    GREEN_LED_ON();
-    //    osDelay(150);
-    //    GREEN_LED_OFF();
-        osDelay(10000);
+        GREEN_LED_ON();
+        osDelay(150);
+        GREEN_LED_OFF();
+        osDelay(150);
     }
 }
 
@@ -139,11 +140,15 @@ void UHF_Tx_Task(void const * argument){
     // One that checks the transmission buffer every so often and assembles packets from that data, transmitting them
     // Also need a transmission buffer
     // TODO Transmission and reception
+    //HAL_StatusTypeDef status;
+    //CySat_Packet_t outgoingPacket;
+    START_PIPE();
 
     while(1){
-
-
-
+        //AMBER_LED_ON();
+        //HAL_UART_Transmit(&huart6, 1234567890123456789012345678901234567890, 40, 1000);
+        //AMBER_LED_OFF();
+        osDelay(5000);
 
 
     }
@@ -165,6 +170,9 @@ void ADCS_Task(void const * argument){
     status = enable_EPS_LUP_3v();
     status = enable_EPS_LUP_5v();
     //Magnetometer_Deployment(); //TODO: ENABLE FOR FLIGHT
+
+
+    /*
     Detumbling_To_Y_Thomson();
     y_ramp_result_t result;
     result = Y_Wheel_Ramp_Up_Test();
@@ -176,6 +184,7 @@ void ADCS_Task(void const * argument){
         debug_printf("Pitch did not stay constant!\r\n");
     else if(result == FAULT_Y_RATE)
         debug_printf("Did not go to 0 y-rate and then back up to Y-Thompson rate.\r\n");
+        */ //Ask Lexi about this stuff
 
     osMutexWait(ADCS_Active_Mutex, 500);
     ADCS_ACTIVE = 1;
