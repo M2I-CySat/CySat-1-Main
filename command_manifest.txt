@@ -19,5 +19,5 @@
 #40:SDR
 0:Power Status Response:0:0
 1:Power Status Request:0:1
-16:Time Set Response:0:0
-17:Time Set Request:1:1
+2:Time Set Response:0:0
+3:Time Set Request:1:1
