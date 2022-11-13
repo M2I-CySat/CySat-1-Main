@@ -726,7 +726,7 @@ HAL_StatusTypeDef EPS_READ(uint8_t command, uint8_t* data_ptr){
 HAL_StatusTypeDef EPS_WRITE(uint8_t command, uint8_t state){
     osMutexWait(EPS_I2C_Mutex, 1500);
 
-    HAL_StatusTypeDef status = HAL_ERROR;
+    HAL_StatusTypeDef status = HAL_OK;
     uint8_t data[2];
     data[0] = command;
     data[1] = state;

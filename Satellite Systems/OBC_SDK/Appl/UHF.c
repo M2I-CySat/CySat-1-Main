@@ -593,9 +593,14 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte){
     }
     uint8_t data[2];
     status = HAL_UART_Receive(&huart1, data, 2, UHF_UART_TIMEOUT);
-    osMutexRelease(UART_Mutex);
+    //debug_led_amber(10,100);
+    osMutexRelease(UART_Mutex); //Code hangs right  here for some reason
+    //debug_led_green(3,1000);
     if(data[0]!='O' || data[1]!='K'){
         return HAL_ERROR;
+        //debug_led_amber(3,1000);
     }
+    //debug_led_green(3,1600);
     return status;
+    //debug_led_amber(3,1600);
 }

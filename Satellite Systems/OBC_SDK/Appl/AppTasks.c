@@ -60,8 +60,18 @@ void Main_Task(void const * argument){
 
 
     // Power on UHF code goes here
-    enable_UHF();
+    HAL_StatusTypeDef status2 = HAL_OK;
+    status2=enable_UHF();
+    if(status2 != HAL_OK){
+            //debug_led_green(5,1000);
+    }
+
+    status2=enable_EPS_Output_6();
+    if(status2 != HAL_OK){
+            //debug_led_amber(5,1000);
+    }
     debug_printf("Commanding EPS to enable UHF");
+    //debug_led_green(20,50);
 
     // Turns on SDR/Payload
     enable_Payload();
@@ -80,9 +90,13 @@ void Main_Task(void const * argument){
 
     // Beacon Configuration
     uint8_t initial_beacon_text[] = "Hello, Earth! This is ISU's CySat-1!";
+    debug_led_amber(5,250);
     SET_BEACON_PERIOD(2);
+    debug_led_green(5,250);
     SET_BEACON_TEXT(initial_beacon_text,35);
+    debug_led_amber(5,250);
     START_BEACON();
+    debug_led_green(5,250);
 
 
 
