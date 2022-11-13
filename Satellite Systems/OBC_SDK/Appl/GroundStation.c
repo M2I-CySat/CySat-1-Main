@@ -10,6 +10,7 @@
 #include <CySatPacketProtocol.h>
 #include "MCU_init.h"
 #include "EPS.h"
+#include "UHF.h"
 #include "helper_functions.h"
 #include <stdlib.h>
 #include <string.h>
@@ -42,9 +43,71 @@ int handleCySatPacket(CySat_Packet_t packet){
     CySat_Packet_t outgoingPacket;
     switch(packet.Subsystem_Type){
         case OBC_SUBSYSTEM_TYPE: //OBC
+            switch(packet.Command){
+                case 0x01: { //Ping Request
+                    char message[58] = "Alive and well, Ames! Congratulations to the CySat-1 Team!";
+                    outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x00; //Ping response
+                    outgoingPacket.Data_Length = 0x3A;
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 58);
+                    memcpy(outgoingPacket.Data,message,58); //This too IDK seriously this might not work
+                    //outgoingPacket.Data[57]=message[57]; //I don't know what I'm doing please check this
+                    outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
+                    return sendCySatPacket(outgoingPacket); //send the response
+                }
+                case 0x03: { //Shutoff Beacon Request
+                    status=END_BEACON();
+                    if(status != HAL_OK){
+                        return -1;
+                    }
+
+                    uint16_t data1 = FloatToUnsigned16bits(status);
+
+                    outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x02; //Shutoff Beacon response
+                    outgoingPacket.Data_Length = 0x02;
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 2);
+                    outgoingPacket.Data[0] = (data1 & 0xFF00) >> 8;
+                    outgoingPacket.Data[1] = data1 & 0xFF;
+                    outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
+                    return sendCySatPacket(outgoingPacket); //send the response
+                }
+                case 0x05: { //Basic Health Check Request
+
+                }
+                case 0x07: { //Main Operations Request
+
+                }
+                case 0x09: { //Set beacon period
+
+                }
+                case 0x0A: { //Set beacon text
+                    //This will have to wait for transmission of text this is gonna be hard
+                }
+                case 0x0C: { //Enable Beacon
+                    status=START_BEACON();
+                    if(status != HAL_OK){
+                        return -1;
+                    }
+
+                    uint16_t data1 = FloatToUnsigned16bits(status);
+
+                    outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x0B; //Enable Beacon response
+                    outgoingPacket.Data_Length = 0x02;
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 2);
+                    outgoingPacket.Data[0] = (data1 & 0xFF00) >> 8;
+                    outgoingPacket.Data[1] = data1 & 0xFF;
+                    outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
+                    return sendCySatPacket(outgoingPacket); //send the response
+                }
+                break;
+
+            }
+
+
 
             break;
-
         case ADCS_SUBSYSTEM_TYPE: //ADCS
 
             break;
@@ -477,6 +540,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                                     outgoingPacket.Data[0] = enable_EPS_Batt_Heater_3();
                                 }
                                 else{
+
                                     outgoingPacket.Data[0] = 0x00;
                                 }
                                 break;
