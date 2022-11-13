@@ -88,7 +88,7 @@ class TabUi:
         sdr_tab = ttk.Frame(tab_parent)
         eps_tab = ttk.Frame(tab_parent)
         attitude_tab = ttk.Frame(tab_parent)
-        eol_tab = ttk.Frame(tab_parent)
+        uhf_tab = ttk.Frame(tab_parent)
 
         # General Tab
         tab_parent.add(gen_tab, padding=3, text="General")
@@ -125,14 +125,20 @@ class TabUi:
 
         # SDR Tab
         tab_parent.add(sdr_tab, padding=3, text="SDR")
-        self.button = ttk.Button(sdr_tab, text="SDR Command 1", width=25, command=self.sdr_button1).place(x=20, y=20)
-        self.button = ttk.Button(sdr_tab, text="SDR Command 2", width=25, command=self.sdr_button2).place(x=20, y=70)
-        self.button = ttk.Button(sdr_tab, text="SDR Command 3", width=25, command=self.sdr_button3).place(x=20, y=120)
-        self.button = ttk.Button(sdr_tab, text="SDR Command 4", width=25, command=self.sdr_button4).place(x=20, y=170)
-        self.button = ttk.Button(sdr_tab, text="SDR Command 5", width=25, command=self.sdr_button5).place(x=210, y=20)
-        self.button = ttk.Button(sdr_tab, text="SDR Command 6", width=25, command=self.sdr_button6).place(x=210, y=70)
-        self.button = ttk.Button(sdr_tab, text="SDR Command 7", width=25, command=self.sdr_button7).place(x=210, y=120)
-        self.button = ttk.Button(sdr_tab, text="SDR Command 8", width=25, command=self.sdr_button8).place(x=210, y=170)
+        self.button = ttk.Button(sdr_tab, text="Power Status Req.", width=25, command=self.sdr_button1).place(x=20, y=20)
+        self.button = ttk.Button(sdr_tab, text="Set RF Bandwidth Req.", width=25, command=self.sdr_button2).place(x=20, y=70)
+        self.button = ttk.Button(sdr_tab, text="Set Calibration 1 Req.", width=25, command=self.sdr_button3).place(x=20, y=120)
+        self.button = ttk.Button(sdr_tab, text="Set Calibration 2 Req.", width=25, command=self.sdr_button4).place(x=20, y=170)
+        self.button = ttk.Button(sdr_tab, text="Set DC Gain Req.", width=25, command=self.sdr_button5).place(x=210, y=20)
+        self.button = ttk.Button(sdr_tab, text="Set fftsize Req.", width=25, command=self.sdr_button6).place(x=210, y=70)
+        self.button = ttk.Button(sdr_tab, text="Set Frequency Req.", width=25, command=self.sdr_button7).place(x=210, y=120)
+        self.button = ttk.Button(sdr_tab, text="Set Integral Req.", width=25, command=self.sdr_button8).place(x=210, y=170)
+        self.button = ttk.Button(sdr_tab, text="Set Sample Rate Req.", width=25, command=self.sdr_button9).place(x=400, y=20)
+        self.button = ttk.Button(sdr_tab, text="Set spavg Req.", width=25, command=self.sdr_button10).place(x=400, y=70)
+        self.button = ttk.Button(sdr_tab, text="Reset SDR Values Req.", width=25, command=self.sdr_button11).place(x=400, y=120)
+        self.button = ttk.Button(sdr_tab, text="SDR Values Req.", width=25, command=self.sdr_button12).place(x=400, y=170)
+        self.button = ttk.Button(sdr_tab, text="Take Measurement Req.", width=25, command=self.sdr_button13).place(x=590, y=20)
+        self.button = ttk.Button(sdr_tab, text="Start Transfer Req.", width=25, command=self.sdr_button14).place(x=590, y=70)
 
         # EPS Tab
         tab_parent.add(eps_tab, padding=3, text="EPS")
@@ -146,7 +152,24 @@ class TabUi:
         self.button = ttk.Button(eps_tab, text="EPS Command 8", width=25, command=self.eps_button8).place(x=210, y=170)
 
         tab_parent.add(attitude_tab, padding=3, text="Attitude")
-        tab_parent.add(eol_tab, padding=3, text="EOL")
+
+        #UHF Tab
+        tab_parent.add(uhf_tab, padding=3, text="UHF")
+        self.button = ttk.Button(uhf_tab, text="Status Control (enabling features)", width=30, command=self.uhf_button1).place(x=20,y=20)
+        self.button = ttk.Button(uhf_tab, text="Transpar. Mode Timeout Per.", width=30, command=self.uhf_button2).place(x=20,y=70)
+        self.button = ttk.Button(uhf_tab, text="Beacon Message Transm. Per.", width=30, command=self.uhf_button3).place(x=20,y=120)
+        self.button = ttk.Button(uhf_tab, text="Restore Default Values", width=30, command=self.uhf_button4).place(x=20,y=170)
+        self.button = ttk.Button(uhf_tab, text="Generic Write to I2C Device", width=30, command=self.uhf_button5).place(x=240,y=20)
+        self.button = ttk.Button(uhf_tab, text="Antenna Release Configuration", width=30, command=self.uhf_button6).place(x=240,y=70)
+        self.button = ttk.Button(uhf_tab, text="Antenna Read/Write", width=30, command=self.uhf_button7).place(x=240,y=120)
+        self.button = ttk.Button(uhf_tab, text="Get Destination Call Sign", width=30, command=self.uhf_button8).place(x=240,y=170)
+        self.button = ttk.Button(uhf_tab, text="Get Source Call Sign", width=30, command=self.uhf_button9).place(x=460,y=20)
+        self.button = ttk.Button(uhf_tab, text="Beacon Message Content Config.", width=30, command=self.uhf_button10).place(x=460,y=70)
+        self.button = ttk.Button(uhf_tab, text="Read Uptime", width=30, command=self.uhf_button11).place(x=460,y=120)
+        self.button = ttk.Button(uhf_tab, text="Read No. of Transmitted Packets", width=30, command=self.uhf_button12).place(x=460,y=170)
+        self.button = ttk.Button(uhf_tab, text="Read No. of Recd. Packets", width=30, command=self.uhf_button13).place(x=680,y=20)
+        self.button = ttk.Button(uhf_tab, text="Read No. of Recd. Packets w/ Error", width=30, command=self.uhf_button14).place(x=680,y=70)
+
         tab_parent.pack(expand=1, fill='both')
 
     # Placeholder functions for future functionality additions
@@ -175,7 +198,7 @@ class TabUi:
     def general_button8(self):
         print("Hello")
 
-    # OBC Button Placeholder functions
+    # OBC Button functions
     def obc_button1(self):
         print("Hello")
 
@@ -225,18 +248,22 @@ class TabUi:
     def adcs_button8(self):
         print("Hello")
 
-    # EPS Button Placeholder functions
+    # SDR Button functions
     def sdr_button1(self):
         print("Hello")
+    #Power status response
 
     def sdr_button2(self):
         print("Hello")
+    #Power status request
 
     def sdr_button3(self):
         print("Hello")
+    #Time set response
 
     def sdr_button4(self):
         print("Hello")
+    #Time set request
 
     def sdr_button5(self):
         print("Hello")
@@ -250,7 +277,25 @@ class TabUi:
     def sdr_button8(self):
         print("Hello")
 
-    # SDR Button Placeholder functions
+    def sdr_button9(self):
+        print("Hello")
+
+    def sdr_button10(self):
+        print("Hello")
+
+    def sdr_button11(self):
+        print("Hello")
+
+    def sdr_button12(self):
+        print("Hello")
+
+    def sdr_button13(self):
+        print("Hello")
+
+    def sdr_button14(self):
+        print("Hello")
+
+    # EPS Button functions
     def eps_button1(self):
         print("Hello")
 
@@ -273,6 +318,49 @@ class TabUi:
         print("Hello")
 
     def eps_button8(self):
+        print("Hello")
+
+    #UHF commands
+    def uhf_button1(self):
+        print("Hello")
+
+    def uhf_button2(self):
+        print("Hello")
+
+    def uhf_button3(self):
+        print("Hello")
+
+    def uhf_button4(self):
+        print("Hello")
+
+    def uhf_button5(self):
+        print("Hello")
+
+    def uhf_button6(self):
+        print("Hello")
+
+    def uhf_button7(self):
+        print("Hello")
+
+    def uhf_button8(self):
+        print("Hello")
+
+    def uhf_button9(self):
+        print("Hello")
+
+    def uhf_button10(self):
+        print("Hello")
+
+    def uhf_button11(self):
+        print("Hello")
+
+    def uhf_button12(self):
+        print("Hello")
+
+    def uhf_button13(self):
+        print("Hello")
+
+    def uhf_button14(self):
         print("Hello")
 
 class FormUi:
