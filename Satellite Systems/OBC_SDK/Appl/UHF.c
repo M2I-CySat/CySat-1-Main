@@ -129,6 +129,7 @@ HAL_StatusTypeDef SET_BEACON_PERIOD(uint16_t period){
  */
 HAL_StatusTypeDef SET_BEACON_TEXT(uint8_t* text, uint8_t size){
     if(size >= 0x62){        //To avoid the size limit of 0x62
+        debug_printf("Beacon Text is too long");
         return HAL_ERROR;
     }
     uint8_t command[size+20];
@@ -588,19 +589,19 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte){
     osMutexWait(UART_Mutex, 2500);
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, command, in_byte, UHF_UART_TIMEOUT);
     if(status != HAL_OK){
+        debug_printf("UHF_WRITE: UART Tx Fail");
         osMutexRelease(UART_Mutex);
         return status;
     }
+
     uint8_t data[2];
     status = HAL_UART_Receive(&huart1, data, 2, UHF_UART_TIMEOUT);
-    //debug_led_amber(10,100);
-    osMutexRelease(UART_Mutex); //Code hangs right  here for some reason
-    //debug_led_green(3,1000);
-    if(data[0]!='O' || data[1]!='K'){
+    osMutexRelease(UART_Mutex);
+    if(data[0]!= 'O' || data[1]!= 'K'){
+        debug_printf("UHF_WRITE: UART Rx FAIL");
         return HAL_ERROR;
-        //debug_led_amber(3,1000);
     }
-    //debug_led_green(3,1600);
+
+    debug_printf("UHF_WRITE: Success");
     return status;
-    //debug_led_amber(3,1600);
 }

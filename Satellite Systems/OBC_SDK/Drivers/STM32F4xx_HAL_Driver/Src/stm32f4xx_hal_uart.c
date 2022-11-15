@@ -157,6 +157,7 @@
 #include "stm32f4xx_hal.h"
 #include "MCU_Init.h"
 #include "stm32f4xx_it.h"
+#include "helper_functions.h"
 
 /** @addtogroup STM32F4xx_HAL_Driver
   * @{
@@ -706,7 +707,7 @@ HAL_StatusTypeDef HAL_UART_Receive(UART_HandleTypeDef *huart, uint8_t *pData, ui
   
   /* Check that a Rx process is not already ongoing */
   if(huart->RxState == HAL_UART_STATE_READY) 
-  { 
+  {
     if((pData == NULL ) || (Size == 0)) 
     {
       return  HAL_ERROR;
@@ -731,7 +732,7 @@ HAL_StatusTypeDef HAL_UART_Receive(UART_HandleTypeDef *huart, uint8_t *pData, ui
       if(huart->Init.WordLength == UART_WORDLENGTH_9B)
       {
         if(UART_WaitOnFlagUntilTimeout(huart, UART_FLAG_RXNE, RESET, tickstart, Timeout) != HAL_OK)
-        { 
+        {
           return HAL_TIMEOUT;
         }
         tmp = (uint16_t*) pData;
@@ -750,7 +751,7 @@ HAL_StatusTypeDef HAL_UART_Receive(UART_HandleTypeDef *huart, uint8_t *pData, ui
       else
       {
         if(UART_WaitOnFlagUntilTimeout(huart, UART_FLAG_RXNE, RESET, tickstart, Timeout) != HAL_OK)
-        { 
+        {
           return HAL_TIMEOUT;
         }
         if(huart->Init.Parity == UART_PARITY_NONE)
@@ -770,7 +771,7 @@ HAL_StatusTypeDef HAL_UART_Receive(UART_HandleTypeDef *huart, uint8_t *pData, ui
     
     /* Process Unlocked */
     __HAL_UNLOCK(huart);
-    
+
     return HAL_OK;
   }
   else

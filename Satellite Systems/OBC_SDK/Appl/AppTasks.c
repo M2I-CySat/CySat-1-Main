@@ -25,10 +25,9 @@ bool LOW_POWER_MODE = 0;
  * @brief Main Task/Thread
  */
 void Main_Task(void const * argument){
-
     debug_printf("Starting Main function.\r\n");
 
-
+    debug_led_green(5,500);
     //Initialize Mutexes with CMSIS RTOS
     // EPS I2C
     osMutexDef(EPS_I2C_Mutex);
@@ -58,20 +57,11 @@ void Main_Task(void const * argument){
     osMutexDef(UHF_UART_Mutex);
     UHF_UART_Mutex = osMutexCreate(osMutex(UHF_UART_Mutex));
 
-
     // Power on UHF code goes here
     HAL_StatusTypeDef status2 = HAL_OK;
-    status2=enable_UHF();
-    if(status2 != HAL_OK){
-            //debug_led_green(5,1000);
-    }
-
-    status2=enable_EPS_Output_6();
-    if(status2 != HAL_OK){
-            //debug_led_amber(5,1000);
-    }
+    status2 = enable_UHF();
     debug_printf("Commanding EPS to enable UHF");
-    //debug_led_green(20,50);
+    osDelay(10000); //Delay to allow the UHF to turn on properly (not the problem but probably good practice)
 
     // Turns on SDR/Payload
     enable_Payload();
@@ -89,16 +79,34 @@ void Main_Task(void const * argument){
     debug_printf("Sending 0x1F to I2C slave address 0x33");
 
     // Beacon Configuration
-    uint8_t initial_beacon_text[] = "Hello, Earth! This is ISU's CySat-1!";
-    debug_led_amber(5,250);
-    SET_BEACON_PERIOD(2);
-    debug_led_green(5,250);
-    SET_BEACON_TEXT(initial_beacon_text,35);
-    debug_led_amber(5,250);
-    START_BEACON();
-    debug_led_green(5,250);
+    uint8_t initial_beacon_text[14] = "Hello, Earth!";
+    status2 = SET_BEACON_PERIOD(10);
 
+    if (status2 != HAL_OK){
+       debug_led_amber(20,50);
+    } else{
+        debug_led_green(20,50);
+    }
 
+    osDelay(1000);
+
+    status2 = SET_BEACON_TEXT(initial_beacon_text, 14);
+
+    if (status2 != HAL_OK) {
+       debug_led_amber(20,50);
+    } else{
+        debug_led_green(20,50);
+    }
+    osDelay(1000);
+
+    status2 = START_BEACON();
+    if (status2 != HAL_OK) {
+       debug_led_amber(20,50);
+    } else {
+        debug_led_green(20,50);
+    }
+
+    osDelay(1000);
 
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
@@ -119,8 +127,6 @@ void Main_Task(void const * argument){
     // Flashes the lights to let you know that the startup sequence completed, then starts other threads
     debug_led_green(10,50);
     debug_led_amber(10,50);
-
-
 
     while(1){
         GREEN_LED_ON();
@@ -156,7 +162,7 @@ void UHF_Tx_Task(void const * argument){
     // TODO Transmission and reception
     //HAL_StatusTypeDef status;
     //CySat_Packet_t outgoingPacket;
-    START_PIPE();
+    //START_PIPE();
 
     while(1){
         //AMBER_LED_ON();
@@ -176,6 +182,7 @@ void UHF_Tx_Task(void const * argument){
  * @brief main ADCS Task/Thread
  */
 void ADCS_Task(void const * argument){
+    osDelay(999999999999); //TODO: Remove, this is for testing
     debug_printf("Starting ADCS function.\r\n");
 
     HAL_StatusTypeDef status;
@@ -215,6 +222,7 @@ void ADCS_Task(void const * argument){
  * @brief Task/Thread responsible for calculating battery capacity
  */
 void BatteryCapacity_Task(void const * argument){
+    osDelay(999999999999); //TODO: Remove, this is for testing
     debug_printf("Starting battery capacity function.\r\n");
     float Five_Bus_Current, Three_Bus_Current;
     uint16_t input_conditions;
@@ -268,10 +276,10 @@ void BatteryCapacity_Task(void const * argument){
         osMutexWait(Battery_Capacity_Mutex, 500);
         osMutexWait(Low_Power_Mode_Mutex, 500);
         if(BATTERY_CAPACITY < 3){
-            LOW_POWER_MODE = 1;
+            //LOW_POWER_MODE = 1; //TODO: Uncomment this, I commented it for testing
         }
         else if((LOW_POWER_MODE==1)&(BATTERY_CAPACITY>8)){
-            LOW_POWER_MODE = 0;
+            //LOW_POWER_MODE = 0;
         }
         osMutexRelease(Low_Power_Mode_Mutex);
         osMutexRelease(Battery_Capacity_Mutex);

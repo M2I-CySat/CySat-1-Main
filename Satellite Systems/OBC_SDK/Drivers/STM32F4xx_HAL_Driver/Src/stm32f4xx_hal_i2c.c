@@ -619,7 +619,7 @@ HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *hi2c, uint16_t DevA
       {
         /* Process Unlocked */
         __HAL_UNLOCK(hi2c);
-        return HAL_ERROR;
+        return HAL_ERROR; //Error is happening here -Steven
       }
       else
       {

@@ -730,12 +730,28 @@ HAL_StatusTypeDef EPS_WRITE(uint8_t command, uint8_t state){
     uint8_t data[2];
     data[0] = command;
     data[1] = state;
-    status = HAL_I2C_Master_Transmit(&hi2c1, (uint16_t) (EPS_I2C_ADDRESS << 0x1), data, 2, EPS_I2C_TIMEOUT);
+    status = HAL_I2C_Master_Transmit(&hi2c1, (EPS_I2C_ADDRESS << 0x1), data, 2, EPS_I2C_TIMEOUT); //Possibly size needs to be 3, and data should maybe be replaced with data buffer
 
     if(status != HAL_OK){
         osMutexWait(Num_I2C_Errors_Mutex, 500);
         NUM_I2C_ERRORS++;
         osMutexRelease(Num_I2C_Errors_Mutex);
+        if(status == HAL_ERROR){
+            debug_led_green(50,50);
+        }
+        if(status == HAL_BUSY){
+            debug_led_amber(50,50);
+        }
+        if(status == HAL_TIMEOUT){
+            debug_led_green(10,50);
+            debug_led_amber(10,50);
+            debug_led_green(10,50);
+            debug_led_amber(10,50);
+            debug_led_green(10,50);
+            debug_led_amber(10,50);
+        }
+
+
     }
 
     osMutexRelease(EPS_I2C_Mutex);

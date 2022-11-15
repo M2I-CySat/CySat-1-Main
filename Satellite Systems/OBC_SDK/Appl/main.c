@@ -152,10 +152,8 @@ int main(void)
     MX_FATFS_Init();
 
     // Commands the start of data reception because I can't define it in AppTasks.c without having to mess around with #including stuff
-    HAL_UART_Receive_IT(&huart6,GroundStationRxBuffer, 4);
-    HAL_UART_Receive_IT(&huart1,GroundStationRxBuffer, 4);
-
-
+    //HAL_UART_Receive_IT(&huart6,GroundStationRxBuffer, 4);
+    //HAL_UART_Receive_IT(&huart1,GroundStationRxBuffer, 4);
 
     /* Initialize task threads */
     osThreadDef(myMainTask, Main_Task, osPriorityRealtime, 0, 512);
@@ -175,7 +173,6 @@ int main(void)
 
     /* Start scheduler */
     osKernelStart();
-
 
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
