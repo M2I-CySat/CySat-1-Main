@@ -92,7 +92,7 @@ void Main_Task(void const * argument){
     }
 
     osDelay(1000);
-    status2 = SET_BEACON_TEXT(initial_beacon_text, 14);
+    status2 = SET_BEACON_TEXT(initial_beacon_text, 13);
 
     if (status2 != HAL_OK) {
        debug_led_amber(10,50);

@@ -1,10 +1,2 @@
-"C:\Program Files\JetBrains\CLion 2022.2.4\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=C:/Program Files/JetBrains/CLion 2022.2.4/bin/ninja/win/ninja.exe" -G Ninja -S "C:\Users\Ultim\OneDrive\Documents\GitHub\CySat-1-Main\Satellite Systems\OBC_SDK" -B "C:\Users\Ultim\OneDrive\Documents\GitHub\CySat-1-Main\Satellite Systems\OBC_SDK\cmake-build-debug"
--- The C compiler identification is GNU 11.2.0
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Check for working C compiler: C:/Program Files/JetBrains/CLion 2022.2.4/bin/mingw/bin/gcc.exe - skipped
--- Detecting C compile features
--- Detecting C compile features - done
--- Configuring done
--- Generating done
--- Build files have been written to: C:/Users/Ultim/OneDrive/Documents/GitHub/CySat-1-Main/Satellite Systems/OBC_SDK/cmake-build-debug
+C:\Windows\system32\wsl.exe --distribution Ubuntu --exec /bin/bash -c "export CMAKE_COLOR_DIAGNOSTICS=ON && export CLION_IDE=TRUE && export JETBRAINS_IDE=TRUE && cd '/mnt/f/Projects/Iowa State/CySat-1-Main/Satellite Systems/OBC_SDK/cmake-build-debug' && /usr/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G 'CodeBlocks - Unix Makefiles' '/mnt/f/Projects/Iowa State/CySat-1-Main/Satellite Systems/OBC_SDK'"
+/bin/bash: line 1: /usr/bin/cmake: No such file or directory
