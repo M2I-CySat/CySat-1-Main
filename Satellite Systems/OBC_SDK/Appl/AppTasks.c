@@ -61,7 +61,10 @@ void Main_Task(void const * argument){
     HAL_StatusTypeDef status2 = HAL_OK;
     status2 = enable_UHF();
     debug_printf("Commanding EPS to enable UHF");
-    osDelay(10000); //Delay to allow the UHF to turn on properly (not the problem but probably good practice)
+    if(status2 != HAL_OK){
+        debug_printf("EPS UHF Enable Error");
+    }
+    osDelay(5000); //Delay to allow the UHF to turn on properly (not the problem but probably good practice)
 
     // Turns on SDR/Payload
     enable_Payload();
@@ -83,27 +86,27 @@ void Main_Task(void const * argument){
     status2 = SET_BEACON_PERIOD(10);
 
     if (status2 != HAL_OK){
-       debug_led_amber(20,50);
+       debug_led_amber(10,50);
     } else{
-        debug_led_green(20,50);
+        debug_led_green(10,50);
     }
 
     osDelay(1000);
-
     status2 = SET_BEACON_TEXT(initial_beacon_text, 14);
 
     if (status2 != HAL_OK) {
-       debug_led_amber(20,50);
+       debug_led_amber(10,50);
     } else{
-        debug_led_green(20,50);
+        debug_led_green(10,50);
     }
+
     osDelay(1000);
 
     status2 = START_BEACON();
     if (status2 != HAL_OK) {
-       debug_led_amber(20,50);
+       debug_led_amber(10,50);
     } else {
-        debug_led_green(20,50);
+        debug_led_green(10,50);
     }
 
     osDelay(1000);

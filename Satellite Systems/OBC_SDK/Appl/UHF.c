@@ -128,11 +128,13 @@ HAL_StatusTypeDef SET_BEACON_PERIOD(uint16_t period){
  * @param size : The size needs to be under 0x62 to fit in the size of endurosat beacon format.
  */
 HAL_StatusTypeDef SET_BEACON_TEXT(uint8_t* text, uint8_t size){
-    if(size >= 0x62){        //To avoid the size limit of 0x62
+    if(size >= 0x62){        // To avoid the size limit of 0x62
         debug_printf("Beacon Text is too long");
         return HAL_ERROR;
     }
-    uint8_t command[size+20];
+
+    /* Write command ES+W22FB */
+    uint8_t command[37];
     command[0] = 'E';
     command[1] = 'S';
     command[2] = '+';
@@ -141,18 +143,51 @@ HAL_StatusTypeDef SET_BEACON_TEXT(uint8_t* text, uint8_t size){
     command[5] = '2';
     command[6] = 'F';
     command[7] = 'B';
-    char temp[3];
-    sprintf(temp, "%02X", size);
-    memcpy(&command[8], temp, 2);
-    int i=0;
-    while(text[i]!='\0'){
-        command[i+10] = text[i];
-        i++;
-    }
-    command[i+10] = ' ';
-    crc32(command, i+10, &command[i+11]);
-    command[size+19] = 0x0D;
-    return UHF_WRITE(command, size+20);
+    command[8] = '0';
+    command[9] = 'D';
+    command[10] = 'H';
+    command[11] = 'e';
+    command[12] = 'l';
+    command[13] = 'l';
+    command[14] = 'o';
+    command[15] = ',';
+    command[16] = ' ';
+    command[17] = 'E';
+    command[18] = 'a';
+    command[19] = 'r';
+    command[20] = 't';
+    command[21] = 'h';
+    command[22] = '!';
+
+//    /* Append size to command XX */
+//    char temp[3]; // 8, 9
+//    sprintf(temp, "%02X", size); // Make size a string
+//    memcpy(&command[8], temp, 2); // Append size to command
+//
+//
+//    /* Append text */
+//    int i=0;
+//    while(text[i] != '\0'){
+//        command[i+10] = text[i]; // Start at pos 10
+//        i++;
+//    }
+
+    command[23] = ' ';
+    crc32(command, 24, &command[24]); // Add checksum to command
+
+    command[32] = '<';
+    command[33] = 'C';
+    command[34] = 'R';
+    command[35] = '>';
+    command[36] = '\0';
+
+//    /* Append <CR> */
+//    char delim[5] = "<CR>";
+//    memcpy(&command[i + 19], delim, 4); // Add <CR> (36)
+
+    /* Send to UHF */
+    debug_printf("%s", command);
+    return UHF_WRITE(command, 37);
 }
 
 /**
