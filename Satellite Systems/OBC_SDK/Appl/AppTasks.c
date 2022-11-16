@@ -82,24 +82,23 @@ void Main_Task(void const * argument){
     debug_printf("Sending 0x1F to I2C slave address 0x33");
 
     // Beacon Configuration
-    uint8_t initial_beacon_text[14] = "Hello, Earth!";
-    status2 = SET_BEACON_PERIOD(10);
+    uint8_t initial_beacon_text[] = "Hello";
 
+    status2 = SET_BEACON_PERIOD(3);
     if (status2 != HAL_OK){
        debug_led_amber(10,50);
     } else{
         debug_led_green(10,50);
     }
-
     osDelay(1000);
-    status2 = SET_BEACON_TEXT(initial_beacon_text, 13);
+
+    status2 = SET_BEACON_TEXT(initial_beacon_text, 5);
 
     if (status2 != HAL_OK) {
        debug_led_amber(10,50);
     } else{
         debug_led_green(10,50);
     }
-
     osDelay(1000);
 
     status2 = START_BEACON();
@@ -108,7 +107,6 @@ void Main_Task(void const * argument){
     } else {
         debug_led_green(10,50);
     }
-
     osDelay(1000);
 
     // Enable Transparent Mode
