@@ -168,7 +168,7 @@ HAL_StatusTypeDef SET_BEACON_TEXT(uint8_t *text, uint8_t size) {
     crc32(command, i + 10, &command[i + 11]);
 
     /* Append <CR> */
-    command[i + 19] = '\r'; // 32
+    command[i + 19] = 0x0D; // 32
 
     /* Send to UHF */
     debug_printf("%s", command);
@@ -639,8 +639,8 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
         return status;
     }
 
-    uint8_t data[2];
-    status = HAL_UART_Receive(&huart1, data, 2, UHF_UART_TIMEOUT);
+    uint8_t data[10];
+    status = HAL_UART_Receive(&huart1, data, 10, UHF_UART_TIMEOUT);
     osMutexRelease(UART_Mutex);
     if (data[0] != 'O' || data[1] != 'K') {
         debug_printf("UHF_WRITE: UART Rx FAIL");
