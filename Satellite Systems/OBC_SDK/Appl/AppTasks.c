@@ -82,8 +82,8 @@ void Main_Task(void const * argument){
     debug_printf("Sending 0x1F to I2C slave address 0x33");
 
     // Beacon Configuration
-    uint8_t initial_beacon_text[] = "Hello";
-
+    uint8_t initial_beacon_text[] = "LETS GOOOOOO";
+    debug_printf("Commanding UHF to set beacon period.");
     status2 = SET_BEACON_PERIOD(3);
     if (status2 != HAL_OK){
        debug_led_amber(10,50);
@@ -92,7 +92,10 @@ void Main_Task(void const * argument){
     }
     osDelay(1000);
 
-    status2 = SET_BEACON_TEXT(initial_beacon_text, 5);
+
+
+    debug_printf("Commanding UHF to set beacon text.");
+    status2 = SET_BEACON_TEXT(initial_beacon_text, 12);
 
     if (status2 != HAL_OK) {
        debug_led_amber(10,50);
@@ -101,6 +104,8 @@ void Main_Task(void const * argument){
     }
     osDelay(1000);
 
+
+    debug_printf("Commanding UHF to start beacon.");
     status2 = START_BEACON();
     if (status2 != HAL_OK) {
        debug_led_amber(10,50);
@@ -108,6 +113,20 @@ void Main_Task(void const * argument){
         debug_led_green(10,50);
     }
     osDelay(1000);
+
+
+
+    //debug_printf("Commanding UHF to turn off beacon.");
+    //status2 = END_BEACON();
+    //debug_printf("Beacon should be off");
+    //osDelay(1000);
+
+    float temperaturevalue;
+    debug_printf("Getting UHF temperature");
+    GET_UHF_TEMP(&temperaturevalue);
+    debug_printf("%lf",temperaturevalue);
+
+
 
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
