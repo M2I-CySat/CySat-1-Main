@@ -48,7 +48,7 @@
 * INTERNAL DEFINES
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-#define INITIAL_WAIT 0.1*60*1000 //waits 1 minute //TODO: SET 0.1 TO 30 FOR FLIGHT DELAY!
+#define INITIAL_WAIT (30 * 60 * 1000) // waits 30 minutes
 uint8_t data[1];
 uint8_t GroundStationRxBuffer[7];
 uint32_t GroundStationRxDataLength;
