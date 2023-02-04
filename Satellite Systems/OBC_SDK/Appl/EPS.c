@@ -737,18 +737,18 @@ HAL_StatusTypeDef EPS_WRITE(uint8_t command, uint8_t state){
         NUM_I2C_ERRORS++;
         osMutexRelease(Num_I2C_Errors_Mutex);
         if(status == HAL_ERROR){
-            debug_led_green(50,50);
+            //debug_led_green(50,50);
         }
         if(status == HAL_BUSY){
-            debug_led_amber(50,50);
+            //debug_led_amber(50,50);
         }
         if(status == HAL_TIMEOUT){
-            debug_led_green(10,50);
-            debug_led_amber(10,50);
-            debug_led_green(10,50);
-            debug_led_amber(10,50);
-            debug_led_green(10,50);
-            debug_led_amber(10,50);
+            //debug_led_green(10,50);
+            //debug_led_amber(10,50);
+            //debug_led_green(10,50);
+            //debug_led_amber(10,50);
+            //debug_led_green(10,50);
+            //debug_led_amber(10,50);
         }
 
 

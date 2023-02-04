@@ -63,16 +63,28 @@ void Main_Task(void const * argument){
     debug_printf("Commanding EPS to enable UHF");
     if(status2 != HAL_OK){
         debug_printf("EPS UHF Enable Error");
+    }else{
+        debug_printf("Power to UHF Enabled");
     }
-    osDelay(5000); //Delay to allow the UHF to turn on properly (not the problem but probably good practice)
+    osDelay(2000); //Delay to allow the UHF to turn on properly (not the problem but probably good practice)
 
     // Turns on SDR/Payload
-    enable_Payload();
     debug_printf("Commanding EPS to enable payload");
+    status2=enable_Payload();
+    if(status2 != HAL_OK){
+        debug_printf("EPS Payload Enable Error");
+    }else{
+        debug_printf("Power to Payload Enabled");
+    }
 
     // Turns on Boost Board
-    enable_Boost_Board();
     debug_printf("Commanding EPS to enable Boost Board");
+    enable_Boost_Board();
+    if(status2 != HAL_OK){
+        debug_printf("EPS Boost Board Enable Error");
+    }else{
+        debug_printf("Power to Boost Board Enabled");
+    }
 
     // Magnetometer Deployment is done by the ADCS function
 
@@ -82,25 +94,28 @@ void Main_Task(void const * argument){
     debug_printf("Sending 0x1F to I2C slave address 0x33");
 
     // Beacon Configuration
-    uint8_t initial_beacon_text[] = "LETS GOOOOOO";
+    debug_printf("Starting UHF Beacon Configuration");
+    uint8_t initial_beacon_text[] = "Hello I Am Space Core"; // Beacon Message
+
+    // Beacon Period
     debug_printf("Commanding UHF to set beacon period.");
     status2 = SET_BEACON_PERIOD(3);
     if (status2 != HAL_OK){
-       debug_led_amber(10,50);
+        debug_printf("Beacon period set error");
     } else{
-        debug_led_green(10,50);
+        debug_printf("Beacon period set successfully");
     }
-    osDelay(1000);
+    osDelay(500);
 
-
-
+    // Beacon Text
     debug_printf("Commanding UHF to set beacon text.");
-    status2 = SET_BEACON_TEXT(initial_beacon_text, 12);
+    status2 = SET_BEACON_TEXT(initial_beacon_text, 21);
 
     if (status2 != HAL_OK) {
-       debug_led_amber(10,50);
+        debug_printf("Beacon text set error");
     } else{
-        debug_led_green(10,50);
+        debug_printf("Beacon text successfully set to: ");
+        debug_printf("%s", initial_beacon_text);
     }
     osDelay(1000);
 
@@ -108,9 +123,9 @@ void Main_Task(void const * argument){
     debug_printf("Commanding UHF to start beacon.");
     status2 = START_BEACON();
     if (status2 != HAL_OK) {
-       debug_led_amber(10,50);
+        debug_printf("Beacon start error");
     } else {
-        debug_led_green(10,50);
+        debug_printf("Beacon successfully started");
     }
     osDelay(1000);
 

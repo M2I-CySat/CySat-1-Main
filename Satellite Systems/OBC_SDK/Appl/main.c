@@ -174,12 +174,17 @@ int main(void)
     /* Start scheduler */
     osKernelStart();
 
+
+
+
+    // Nothing in Main after this point will actually run, move it to AppTasks.c
+
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
 
     // Detumbling Sequence
     // TODO: Detumbling functions (ADCS) go here
-    debug_printf("Beginning detumbling sequence");
+    debug_printf("Beginning detumbling sequence (unfinished)");
 
     // Ground station will receive beacon, send "Beacon Shut Off" request
     // TODO: OBC will shut off beacon when it receives ground station command
