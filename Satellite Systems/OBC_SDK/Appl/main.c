@@ -132,8 +132,9 @@ void init_Satelite(void){
  */
 int main(void)
 {
+    debug_printf("ITS RUNNING!");
     //SCB->VTOR = APPL_ADDRESS;
-    debug_led_amber(5,500);
+    //debug_led_amber(5,500);
 
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
@@ -141,7 +142,7 @@ int main(void)
     /* Configure the system clock */
     SystemClock_Config();
 
-    HAL_Delay(INITIAL_WAIT); // Delay for the specified 30 minutes
+    //HAL_Delay(INITIAL_WAIT); // Delay for the specified 30 minutes
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
