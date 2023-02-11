@@ -30,18 +30,17 @@ The EnduroSat Onboard Computer Type II (Indicated as Type I on the OBC in the la
 
 ### The following items are required to debug, run, and deploy a program on the OBC (see CySat inventory)
 
+1. Use the following:
 - Pumpkin Board (or equivalent test bed equipped with a PC-104 stack connector + interface)
 - Power Supply + barrell power cable for PSU (the OBC does NOT recieve power via its onboard USB interface, this is used for other purposes)
 - ST-LINK v2 In-circuit Debugger + SWD cable (OBC <-> ST-LINK) + Mini-USB cable (ST-LINK <-> Dev computer)
-- Jumper wire (enable pin on OBC)
-    - To enable, connect pins OBC-En and 3.3V as noted in the EnduroSat OBC User Manual (pages 20-21)
-    - This sets the enable bit once so the wire can be removed once the LEDs illuminate
-    - **NOTE:** If the OBC is unplugged from/replugged in the ST-LINK or PC, the OBC will need to be disabled/re-enabled. Otherwise the STM IDE will not detect it for some reason
+2. Ensure the power supply is set to **7.8 V** and connected as shown in the image. Simply launch STM32Cube and debug away!
+
 ![OBC-Pumpkin-Setup](https://user-images.githubusercontent.com/25646224/196340691-be1189e8-4458-4514-be5e-e68f9b84f2b4.jpg)
 
 ### Then, in the STM IDE
-1. Ensure you have the OBC_SDK project selected and click the "Run" (play) button, that's it!
-2. For troubleshooting purposes, in debug/run configurations -> Debugger tab, make sure the ST-LINK S/N is filled in, the interface is set to SWD, and the reset behavior type is "Connect under reset"
+3. Ensure you have the OBC_SDK project selected and click the "Run" (play) button, that's it!
+4. For troubleshooting purposes, in debug/run configurations -> Debugger tab, make sure the ST-LINK S/N is filled in, the interface is set to SWD, and the reset behavior type is "Connect under reset"
 
 ## Documentation
 
