@@ -92,7 +92,7 @@ class TabUi:
 
         # General Tab
         tab_parent.add(gen_tab, padding=3, text="General")
-        self.button = ttk.Button(gen_tab, text="General Command 1", width=25, command=self.general_button1).place(x=20, y=20)
+        self.button = ttk.Button(gen_tab, text="Test Command", width=25, command=self.test_command).place(x=20, y=20)
         self.button = ttk.Button(gen_tab, text="General Command 2", width=25, command=self.general_button2).place(x=20, y=70)
         self.button = ttk.Button(gen_tab, text="General Command 3", width=25, command=self.general_button3).place(x=20, y=120)
         self.button = ttk.Button(gen_tab, text="General Command 4", width=25, command=self.general_button4).place(x=20, y=170)
@@ -100,6 +100,7 @@ class TabUi:
         self.button = ttk.Button(gen_tab, text="General Command 6", width=25, command=self.general_button6).place(x=210, y=70)
         self.button = ttk.Button(gen_tab, text="General Command 7", width=25, command=self.general_button7).place(x=210, y=120)
         self.button = ttk.Button(gen_tab, text="General Command 8", width=25, command=self.general_button8).place(x=210, y=170)
+        self.button = ttk.Button(gen_tab, text="General Command 9", width=25, command=self.general_button9).place(x=400, y=20)
 
         # OBC Tab
         tab_parent.add(obc_tab, padding=3, text="OBC")
@@ -125,20 +126,20 @@ class TabUi:
 
         # SDR Tab
         tab_parent.add(sdr_tab, padding=3, text="SDR")
-        self.button = ttk.Button(sdr_tab, text="Power Status Req.", width=25, command=self.sdr_button1).place(x=20, y=20)
-        self.button = ttk.Button(sdr_tab, text="Set RF Bandwidth Req.", width=25, command=self.sdr_button2).place(x=20, y=70)
-        self.button = ttk.Button(sdr_tab, text="Set Calibration 1 Req.", width=25, command=self.sdr_button3).place(x=20, y=120)
-        self.button = ttk.Button(sdr_tab, text="Set Calibration 2 Req.", width=25, command=self.sdr_button4).place(x=20, y=170)
-        self.button = ttk.Button(sdr_tab, text="Set DC Gain Req.", width=25, command=self.sdr_button5).place(x=210, y=20)
-        self.button = ttk.Button(sdr_tab, text="Set fftsize Req.", width=25, command=self.sdr_button6).place(x=210, y=70)
-        self.button = ttk.Button(sdr_tab, text="Set Frequency Req.", width=25, command=self.sdr_button7).place(x=210, y=120)
-        self.button = ttk.Button(sdr_tab, text="Set Integral Req.", width=25, command=self.sdr_button8).place(x=210, y=170)
-        self.button = ttk.Button(sdr_tab, text="Set Sample Rate Req.", width=25, command=self.sdr_button9).place(x=400, y=20)
-        self.button = ttk.Button(sdr_tab, text="Set spavg Req.", width=25, command=self.sdr_button10).place(x=400, y=70)
-        self.button = ttk.Button(sdr_tab, text="Reset SDR Values Req.", width=25, command=self.sdr_button11).place(x=400, y=120)
-        self.button = ttk.Button(sdr_tab, text="SDR Values Req.", width=25, command=self.sdr_button12).place(x=400, y=170)
-        self.button = ttk.Button(sdr_tab, text="Take Measurement Req.", width=25, command=self.sdr_button13).place(x=590, y=20)
-        self.button = ttk.Button(sdr_tab, text="Start Transfer Req.", width=25, command=self.sdr_button14).place(x=590, y=70)
+        self.button = ttk.Button(sdr_tab, text="Power Status Req.", width=25, command=self.power_status_request).place(x=20, y=20)
+        self.button = ttk.Button(sdr_tab, text="Set RF Bandwidth Req.", width=25, command=self.set_rf_bandwidth_request).place(x=20, y=70)
+        self.button = ttk.Button(sdr_tab, text="Set Calibration 1 Req.", width=25, command=self.set_calibration_1_request).place(x=20, y=120)
+        self.button = ttk.Button(sdr_tab, text="Set Calibration 2 Req.", width=25, command=self.set_calibraton_2_request).place(x=20, y=170)
+        self.button = ttk.Button(sdr_tab, text="Set DC Gain Req.", width=25, command=self.set_dc_gain_request).place(x=210, y=20)
+        self.button = ttk.Button(sdr_tab, text="Set fftsize Req.", width=25, command=self.set_fftsize_request).place(x=210, y=70)
+        self.button = ttk.Button(sdr_tab, text="Set Frequency Req.", width=25, command=self.set_frequency_request).place(x=210, y=120)
+        self.button = ttk.Button(sdr_tab, text="Set Integral Req.", width=25, command=self.set_integral_request).place(x=210, y=170)
+        self.button = ttk.Button(sdr_tab, text="Set Sample Rate Req.", width=25, command=self.set_sample_rate_request).place(x=400, y=20)
+        self.button = ttk.Button(sdr_tab, text="Set spavg Req.", width=25, command=self.set_spavg_request).place(x=400, y=70)
+        self.button = ttk.Button(sdr_tab, text="Reset SDR Values Req.", width=25, command=self.reset_sdr_values_request).place(x=400, y=120)
+        self.button = ttk.Button(sdr_tab, text="SDR Values Req.", width=25, command=self.sdr_values_request).place(x=400, y=170)
+        self.button = ttk.Button(sdr_tab, text="Take Measurement Req.", width=25, command=self.take_measurement_request).place(x=590, y=20)
+        self.button = ttk.Button(sdr_tab, text="Start Transfer Req.", width=25, command=self.start_transfer_request).place(x=590, y=70)
 
         # EPS Tab
         tab_parent.add(eps_tab, padding=3, text="EPS")
@@ -174,7 +175,7 @@ class TabUi:
 
     # Placeholder functions for future functionality additions
     # General Button Placeholder functions
-    def general_button1(self):
+    def test_command(self):
         print("Hello")
 
     def general_button2(self):
@@ -196,6 +197,9 @@ class TabUi:
         print("Hello")
 
     def general_button8(self):
+        print("Hello")
+
+    def general_button9(self):
         print("Hello")
 
     # OBC Button functions
@@ -249,50 +253,49 @@ class TabUi:
         print("Hello")
 
     # SDR Button functions
-    def sdr_button1(self):
+    def power_status_request(self):
         print("Hello")
-    #Power status response
 
-    def sdr_button2(self):
+    def set_rf_bandwidth_request(self):
         print("Hello")
     #Power status request
 
-    def sdr_button3(self):
+    def set_calibration_1_request(self):
         print("Hello")
     #Time set response
 
-    def sdr_button4(self):
+    def set_calibraton_2_request(self):
         print("Hello")
     #Time set request
 
-    def sdr_button5(self):
+    def set_dc_gain_request(self):
         print("Hello")
 
-    def sdr_button6(self):
+    def set_fftsize_request(self):
         print("Hello")
 
-    def sdr_button7(self):
+    def set_frequency_request(self):
         print("Hello")
 
-    def sdr_button8(self):
+    def set_integral_request(self):
         print("Hello")
 
-    def sdr_button9(self):
+    def set_sample_rate_request(self):
         print("Hello")
 
-    def sdr_button10(self):
+    def set_spavg_request(self):
         print("Hello")
 
-    def sdr_button11(self):
+    def reset_sdr_values_request(self):
         print("Hello")
 
-    def sdr_button12(self):
+    def sdr_values_request(self):
         print("Hello")
 
-    def sdr_button13(self):
+    def take_measurement_request(self):
         print("Hello")
 
-    def sdr_button14(self):
+    def start_transfer_request(self):
         print("Hello")
 
     # EPS Button functions

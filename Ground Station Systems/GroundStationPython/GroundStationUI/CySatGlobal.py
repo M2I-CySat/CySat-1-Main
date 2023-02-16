@@ -22,7 +22,6 @@ def populate_global_variables():
     for key, value in sys_dictionary.items():
         sys_list.append(value)
 
-
 def grab_command_manifest():
     current_id = 0
     # Opens text document where commands are stored
