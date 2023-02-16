@@ -38,7 +38,7 @@ int sendErrorPacket(){
  * @retval A zero indicates success, -1 means the command or subtype is unrecognized, else means failure
  */
 int handleCySatPacket(CySat_Packet_t packet){
-
+    debug_printf("WE GOT A PACKET!");
     HAL_StatusTypeDef status;
     CySat_Packet_t outgoingPacket;
     switch(packet.Subsystem_Type){
