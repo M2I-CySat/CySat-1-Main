@@ -27,7 +27,7 @@ bool LOW_POWER_MODE = 0;
 void Main_Task(void const * argument){
     debug_printf("Starting Main function.\r\n");
 
-    debug_led_green(5,500);
+    debug_led_green(5, 500);
     //Initialize Mutexes with CMSIS RTOS
     // EPS I2C
     osMutexDef(EPS_I2C_Mutex);
@@ -70,7 +70,7 @@ void Main_Task(void const * argument){
 
     // Turns on SDR/Payload
     debug_printf("Commanding EPS to enable payload");
-    status2=enable_Payload();
+    status2 = enable_Payload();
     if(status2 != HAL_OK){
         debug_printf("EPS Payload Enable Error: %s",status2);
     }else{

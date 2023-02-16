@@ -30,18 +30,50 @@ The EnduroSat Onboard Computer Type II (Indicated as Type I on the OBC in the la
 
 ### The following items are required to debug, run, and deploy a program on the OBC (see CySat inventory)
 
+1. Use the following:
 - Pumpkin Board (or equivalent test bed equipped with a PC-104 stack connector + interface)
 - Power Supply + barrell power cable for PSU (the OBC does NOT recieve power via its onboard USB interface, this is used for other purposes)
 - ST-LINK v2 In-circuit Debugger + SWD cable (OBC <-> ST-LINK) + Mini-USB cable (ST-LINK <-> Dev computer)
-- Jumper wire (enable pin on OBC)
-    - To enable, connect pins OBC-En and 3.3V as noted in the EnduroSat OBC User Manual (pages 20-21)
-    - This sets the enable bit once so the wire can be removed once the LEDs illuminate
-    - **NOTE:** If the OBC is unplugged from/replugged in the ST-LINK or PC, the OBC will need to be disabled/re-enabled. Otherwise the STM IDE will not detect it for some reason
+2. Ensure the power supply is set to **7.8 V** and connected as shown in the image. Simply launch STM32Cube and debug away!
+
 ![OBC-Pumpkin-Setup](https://user-images.githubusercontent.com/25646224/196340691-be1189e8-4458-4514-be5e-e68f9b84f2b4.jpg)
 
 ### Then, in the STM IDE
-1. Ensure you have the OBC_SDK project selected and click the "Run" (play) button, that's it!
-2. For troubleshooting purposes, in debug/run configurations -> Debugger tab, make sure the ST-LINK S/N is filled in, the interface is set to SWD, and the reset behavior type is "Connect under reset"
+3. Ensure you have the OBC_SDK project selected and click the "Run" (play) button, that's it!
+4. For troubleshooting purposes, in debug/run configurations -> Debugger tab, make sure the ST-LINK S/N is filled in, the interface is set to SWD, and the reset behavior type is "Connect under reset"
+
+### Use PuTTY to debug OBC
+The UART module on the OBC allows debug messages to be received using Serial protocol from a PuTTY terminal via use of the following function
+```C 
+debug_printf("Your message goes here", [variables]); // This function can be used exactly like printf(); from the C <stdio> library
+```
+Then, to receive messages, perform the following:
+1. Open and install [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
+2. Configure settings under `Session` according to the below image. *IMPORTANT*: Look in device manager to determine which COM port is in use by the OBC
+
+![image](https://user-images.githubusercontent.com/25646224/218338672-08a22f85-b6f5-4719-998c-793bbe90c26d.png)
+
+3. Configure settings under `Terminal` according to the below image:
+
+![image](https://user-images.githubusercontent.com/25646224/218338725-f243c868-910f-46ee-bcc1-2b58e4576401.png)
+
+4. Configure settings under `Serial` according to the below image:
+
+![image](https://user-images.githubusercontent.com/25646224/218338766-c0954e33-46f1-40d8-9cdc-1b5d0b57f214.png)
+
+5. Save and load a custom CySat configuration for later use and click `Open`
+6. Start the program and observe debug messages!
+
+### Use Onboard LEDs to debug OBC
+Set the green and amber LEDs to different states depending on the state of the program
+
+```C 
+debug_led_green(count, period); // Green light: Set the number of times the LED should flash (count) 
+                                // and the speed of the flash (period)
+```
+```C
+debug_led_amber(count, period); // Amber light
+```
 
 ## Documentation
 
