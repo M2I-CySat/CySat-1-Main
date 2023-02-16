@@ -139,7 +139,6 @@ uint16_t FloatToUnsigned16bits(float float_value){
  */
 uint32_t crc32(uint8_t* message, int length, uint8_t* crc_ascii) {
    int i, j;
-  // debug_printf("%s",message);
    uint32_t byte, crc, mask;
 
    i = 0;
@@ -153,6 +152,7 @@ uint32_t crc32(uint8_t* message, int length, uint8_t* crc_ascii) {
       }
       i++;
    }
+
    crc = ~crc;
    sprintf(crc_ascii, "%lX", crc);
    return crc;

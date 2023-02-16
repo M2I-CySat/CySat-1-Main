@@ -25,10 +25,9 @@ bool LOW_POWER_MODE = 0;
  * @brief Main Task/Thread
  */
 void Main_Task(void const * argument){
-
     debug_printf("Starting Main function.\r\n");
 
-
+    debug_led_green(5, 500);
     //Initialize Mutexes with CMSIS RTOS
     // EPS I2C
     osMutexDef(EPS_I2C_Mutex);
@@ -58,18 +57,34 @@ void Main_Task(void const * argument){
     osMutexDef(UHF_UART_Mutex);
     UHF_UART_Mutex = osMutexCreate(osMutex(UHF_UART_Mutex));
 
-
     // Power on UHF code goes here
-    enable_UHF();
+    HAL_StatusTypeDef status2 = HAL_OK;
+    status2 = enable_UHF();
     debug_printf("Commanding EPS to enable UHF");
+    if(status2 != HAL_OK){
+        debug_printf("EPS UHF Enable Error");
+    }else{
+        debug_printf("Power to UHF Enabled");
+    }
+    osDelay(2000); //Delay to allow the UHF to turn on properly (not the problem but probably good practice)
 
     // Turns on SDR/Payload
-    enable_Payload();
     debug_printf("Commanding EPS to enable payload");
+    status2 = enable_Payload();
+    if(status2 != HAL_OK){
+        debug_printf("EPS Payload Enable Error");
+    }else{
+        debug_printf("Power to Payload Enabled");
+    }
 
     // Turns on Boost Board
-    enable_Boost_Board();
     debug_printf("Commanding EPS to enable Boost Board");
+    enable_Boost_Board();
+    if(status2 != HAL_OK){
+        debug_printf("EPS Boost Board Enable Error");
+    }else{
+        debug_printf("Power to Boost Board Enabled");
+    }
 
     // Magnetometer Deployment is done by the ADCS function
 
@@ -79,10 +94,52 @@ void Main_Task(void const * argument){
     debug_printf("Sending 0x1F to I2C slave address 0x33");
 
     // Beacon Configuration
-    uint8_t initial_beacon_text[] = "Hello, Earth! This is ISU's CySat-1!";
-    SET_BEACON_PERIOD(2);
-    SET_BEACON_TEXT(initial_beacon_text,35);
-    START_BEACON();
+    debug_printf("Starting UHF Beacon Configuration");
+    uint8_t initial_beacon_text[] = "Hello I Am Space Core"; // Beacon Message
+
+    // Beacon Period
+    debug_printf("Commanding UHF to set beacon period.");
+    status2 = SET_BEACON_PERIOD(3);
+    if (status2 != HAL_OK){
+        debug_printf("Beacon period set error");
+    } else{
+        debug_printf("Beacon period set successfully");
+    }
+    osDelay(500);
+
+    // Beacon Text
+    debug_printf("Commanding UHF to set beacon text.");
+    status2 = SET_BEACON_TEXT(initial_beacon_text, 21);
+
+    if (status2 != HAL_OK) {
+        debug_printf("Beacon text set error");
+    } else{
+        debug_printf("Beacon text successfully set to: ");
+        debug_printf("%s", initial_beacon_text);
+    }
+    osDelay(1000);
+
+
+    debug_printf("Commanding UHF to start beacon.");
+    status2 = START_BEACON();
+    if (status2 != HAL_OK) {
+        debug_printf("Beacon start error");
+    } else {
+        debug_printf("Beacon successfully started");
+    }
+    osDelay(1000);
+
+
+
+    //debug_printf("Commanding UHF to turn off beacon.");
+    //status2 = END_BEACON();
+    //debug_printf("Beacon should be off");
+    //osDelay(1000);
+
+    float temperaturevalue;
+    debug_printf("Getting UHF temperature");
+    GET_UHF_TEMP(&temperaturevalue);
+    debug_printf("%lf",temperaturevalue);
 
 
 
@@ -105,8 +162,6 @@ void Main_Task(void const * argument){
     // Flashes the lights to let you know that the startup sequence completed, then starts other threads
     debug_led_green(10,50);
     debug_led_amber(10,50);
-
-
 
     while(1){
         GREEN_LED_ON();
@@ -142,7 +197,7 @@ void UHF_Tx_Task(void const * argument){
     // TODO Transmission and reception
     //HAL_StatusTypeDef status;
     //CySat_Packet_t outgoingPacket;
-    START_PIPE();
+    //START_PIPE();
 
     while(1){
         //AMBER_LED_ON();
@@ -162,6 +217,7 @@ void UHF_Tx_Task(void const * argument){
  * @brief main ADCS Task/Thread
  */
 void ADCS_Task(void const * argument){
+    osDelay(999999999999); //TODO: Remove, this is for testing
     debug_printf("Starting ADCS function.\r\n");
 
     HAL_StatusTypeDef status;
@@ -201,6 +257,7 @@ void ADCS_Task(void const * argument){
  * @brief Task/Thread responsible for calculating battery capacity
  */
 void BatteryCapacity_Task(void const * argument){
+    osDelay(999999999999); //TODO: Remove, this is for testing
     debug_printf("Starting battery capacity function.\r\n");
     float Five_Bus_Current, Three_Bus_Current;
     uint16_t input_conditions;
@@ -254,10 +311,10 @@ void BatteryCapacity_Task(void const * argument){
         osMutexWait(Battery_Capacity_Mutex, 500);
         osMutexWait(Low_Power_Mode_Mutex, 500);
         if(BATTERY_CAPACITY < 3){
-            LOW_POWER_MODE = 1;
+            //LOW_POWER_MODE = 1; //TODO: Uncomment this, I commented it for testing
         }
         else if((LOW_POWER_MODE==1)&(BATTERY_CAPACITY>8)){
-            LOW_POWER_MODE = 0;
+            //LOW_POWER_MODE = 0;
         }
         osMutexRelease(Low_Power_Mode_Mutex);
         osMutexRelease(Battery_Capacity_Mutex);

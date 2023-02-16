@@ -48,7 +48,7 @@
 * INTERNAL DEFINES
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-#define INITIAL_WAIT 0.1*60*1000 //waits 1 minute //TODO: SET 0.1 TO 30 FOR FLIGHT DELAY!
+#define INITIAL_WAIT (30 * 60 * 1000) // waits 30 minutes
 uint8_t data[1];
 uint8_t GroundStationRxBuffer[7];
 uint32_t GroundStationRxDataLength;
@@ -132,7 +132,9 @@ void init_Satelite(void){
  */
 int main(void)
 {
+    debug_printf("ITS RUNNING!");
     //SCB->VTOR = APPL_ADDRESS;
+    //debug_led_amber(5,500);
 
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
@@ -140,7 +142,7 @@ int main(void)
     /* Configure the system clock */
     SystemClock_Config();
 
-    HAL_Delay(INITIAL_WAIT); // Delay for the specified 30 minutes
+    //HAL_Delay(INITIAL_WAIT); // Delay for the specified 30 minutes
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
@@ -152,10 +154,8 @@ int main(void)
     MX_FATFS_Init();
 
     // Commands the start of data reception because I can't define it in AppTasks.c without having to mess around with #including stuff
-    HAL_UART_Receive_IT(&huart6,GroundStationRxBuffer, 4);
-    HAL_UART_Receive_IT(&huart1,GroundStationRxBuffer, 4);
-
-
+    //HAL_UART_Receive_IT(&huart6,GroundStationRxBuffer, 4);
+    //HAL_UART_Receive_IT(&huart1,GroundStationRxBuffer, 4);
 
     /* Initialize task threads */
     osThreadDef(myMainTask, Main_Task, osPriorityRealtime, 0, 512);
@@ -177,12 +177,16 @@ int main(void)
     osKernelStart();
 
 
+
+
+    // Nothing in Main after this point will actually run, move it to AppTasks.c
+
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
 
     // Detumbling Sequence
     // TODO: Detumbling functions (ADCS) go here
-    debug_printf("Beginning detumbling sequence");
+    debug_printf("Beginning detumbling sequence (unfinished)");
 
     // Ground station will receive beacon, send "Beacon Shut Off" request
     // TODO: OBC will shut off beacon when it receives ground station command
