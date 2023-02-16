@@ -877,7 +877,7 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
                 status = HAL_UART_Receive(&huart4, data+2, 1, ADCS_UART_TIMEOUT);
             }
             else
-                status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
+                status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT); //Going wrong, looping here forever
         }
         status = HAL_UART_Receive(&huart4, data+3, 3, ADCS_UART_TIMEOUT);
         osMutexRelease(UART_Mutex);
