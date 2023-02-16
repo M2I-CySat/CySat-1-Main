@@ -141,7 +141,7 @@ void Main_Task(void const * argument){
     GET_UHF_TEMP(&temperaturevalue);
     debug_printf("%lf",temperaturevalue);
 
-
+debug_printf("Something");
 
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
