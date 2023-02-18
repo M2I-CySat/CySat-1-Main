@@ -95,11 +95,11 @@ void Main_Task(void const * argument){
 
     // Beacon Configuration
     debug_printf("Starting UHF Beacon Configuration");
-    uint8_t initial_beacon_text[] = "Hello I Am Space Core"; // Beacon Message
+    uint8_t initial_beacon_text[] = "Hello I Am Space Co32"; // Beacon Message
 
     // Beacon Period
     debug_printf("Commanding UHF to set beacon period.");
-    status2 = SET_BEACON_PERIOD(3);
+    status2 = SET_BEACON_PERIOD(20);
     if (status2 != HAL_OK){
         debug_printf("Beacon period set error");
     } else{
@@ -127,14 +127,31 @@ void Main_Task(void const * argument){
     } else {
         debug_printf("Beacon successfully started");
     }
+    osDelay(10000);
+
+
+
+    debug_printf("Commanding UHF to turn off beacon.");
+    status2 = END_BEACON();
+    debug_printf("Beacon should be off");
     osDelay(1000);
 
+    debug_printf("Setting pipe timeout");
+    status2 = SET_PIPE_TIMEOUT(3);
+    debug_printf("Pipe timeout set");
+    osDelay(1000);
 
+    uint8_t dest_callsign[] = "W0ISU"; // default - KENISU
+    debug_printf("Setting destination callsign");
+    status2 = SET_DESTINATION_CALLSIGN(dest_callsign);
+    debug_printf("destination callsign set");
+    osDelay(1000);
 
-    //debug_printf("Commanding UHF to turn off beacon.");
-    //status2 = END_BEACON();
-    //debug_printf("Beacon should be off");
-    //osDelay(1000);
+    uint8_t src_callsign[] = "KENISU"; // default - W0ISU
+    debug_printf("Setting Source callsign");
+    status2 = SET_SOURCE_CALLSIGN(src_callsign);
+    debug_printf("source callsign set");
+    osDelay(1000);
 
     float temperaturevalue;
     debug_printf("Getting UHF temperature");
