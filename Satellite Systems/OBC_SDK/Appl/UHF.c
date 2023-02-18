@@ -171,8 +171,6 @@ HAL_StatusTypeDef SET_BEACON_TEXT(uint8_t *text, uint8_t size) {
     command[i + 19] = '\r'; // 32
 
     /* Send to UHF */
-    debug_printf("UHF_Write-ing command:");
-    debug_printf("%s", command);
     return UHF_WRITE(command, cmdSize);
 }
 
@@ -633,6 +631,7 @@ HAL_StatusTypeDef UHF_READ(uint8_t command[], uint8_t *data_ptr, uint8_t in_byte
  */
 HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
     osMutexWait(UART_Mutex, 2500);
+    debug_printf("UHF_Write-ing command: %s\n\r",command);
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, command, in_byte, UHF_UART_TIMEOUT);
     if (status != HAL_OK) {
         debug_printf("UHF_WRITE: UART Tx Fail");
@@ -649,7 +648,7 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
         return HAL_ERROR;
     }
 
-    debug_printf("%s", data); // Should be "OK"
-    debug_printf("UHF_WRITE: Success");
+    debug_printf("UHF Write: UHF Response: %s", data); // Should be "OK"
+    debug_printf("UHF_WRITE: Success\n\r");
     return status;
 }

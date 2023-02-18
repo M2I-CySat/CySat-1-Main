@@ -62,9 +62,9 @@ void Main_Task(void const * argument){
     status2 = enable_UHF();
     debug_printf("Commanding EPS to enable UHF");
     if(status2 != HAL_OK){
-        debug_printf("EPS UHF Enable Error");
+        debug_printf("EPS UHF Enable Error: %s\n",status2);
     }else{
-        debug_printf("Power to UHF Enabled");
+        debug_printf("Power to UHF Enabled\n");
     }
     osDelay(2000); //Delay to allow the UHF to turn on properly (not the problem but probably good practice)
 
@@ -72,18 +72,18 @@ void Main_Task(void const * argument){
     debug_printf("Commanding EPS to enable payload");
     status2 = enable_Payload();
     if(status2 != HAL_OK){
-        debug_printf("EPS Payload Enable Error");
+        debug_printf("EPS Payload Enable Error: %s",status2);
     }else{
-        debug_printf("Power to Payload Enabled");
+        debug_printf("Power to Payload Enabled\n");
     }
 
     // Turns on Boost Board
     debug_printf("Commanding EPS to enable Boost Board");
     enable_Boost_Board();
     if(status2 != HAL_OK){
-        debug_printf("EPS Boost Board Enable Error");
+        debug_printf("EPS Boost Board Enable Error: %s\n",status2);
     }else{
-        debug_printf("Power to Boost Board Enabled");
+        debug_printf("Power to Boost Board Enabled\n");
     }
 
     // Magnetometer Deployment is done by the ADCS function
@@ -158,7 +158,7 @@ void Main_Task(void const * argument){
     GET_UHF_TEMP(&temperaturevalue);
     debug_printf("%lf",temperaturevalue);
 
-
+debug_printf("Something");
 
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
