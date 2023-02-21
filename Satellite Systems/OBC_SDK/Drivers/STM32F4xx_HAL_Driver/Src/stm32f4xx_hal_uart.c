@@ -741,7 +741,6 @@ HAL_StatusTypeDef HAL_UART_Receive(UART_HandleTypeDef *huart, uint8_t *pData, ui
         /* Process Unlocked */
         __HAL_UNLOCK(huart);
 
-        debug_printf("UART SUCCESS?!: %x", pData);
         return HAL_OK;
     } else {
         return HAL_BUSY;
