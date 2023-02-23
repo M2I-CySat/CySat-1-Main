@@ -143,7 +143,7 @@ void Main_Task(void const *argument) {
     osDelay(1000);
 
     /* Set Radio call signs */
-    uint8_t dest_callsign[] = "W0ISU"; // default - KENISU
+    uint8_t dest_callsign[] = "KENISU"; // default - KENISU
     mainStatus = SET_DESTINATION_CALLSIGN(dest_callsign);
     if (mainStatus != HAL_OK) {
         debug_printf("[Main Thread/ERROR]: Destination Call-sign FAIL");
@@ -152,7 +152,7 @@ void Main_Task(void const *argument) {
     }
     osDelay(1000);
 
-    uint8_t src_callsign[] = "KENISU"; // default - W0ISU
+    uint8_t src_callsign[] = "W0ISU"; // default - W0ISU
     mainStatus = SET_SOURCE_CALLSIGN(src_callsign);
     if (mainStatus != HAL_OK) {
         debug_printf("[Main Thread/ERROR]: Source Call-sign FAIL");
