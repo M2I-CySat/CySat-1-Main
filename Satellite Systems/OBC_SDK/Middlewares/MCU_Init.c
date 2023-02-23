@@ -64,8 +64,8 @@ SPI_HandleTypeDef hspi5;
 SPI_HandleTypeDef hspi6;
 TIM_HandleTypeDef htim5;
 UART_HandleTypeDef huart4;
-UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart6;
+UART_HandleTypeDef huart1; // OBC
+UART_HandleTypeDef huart6; // PAYLOAD
 
 WWDG_HandleTypeDef hwwdg;
 

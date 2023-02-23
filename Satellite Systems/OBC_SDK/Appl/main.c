@@ -50,8 +50,8 @@
 */
 #define INITIAL_WAIT (30 * 60 * 1000) // waits 30 minutes
 uint8_t data[1];
-uint8_t GroundStationRxBuffer[7];
 uint32_t GroundStationRxDataLength;
+uint8_t GroundStationRxBuffer[7];
 
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -71,6 +71,7 @@ FILE *COMM = COM1;
 FILE *PAYLOAD = COM4;
 FILE *SYSCON = COM6;
 
+/* Mutexes */
 osMutexId EPS_I2C_Mutex;
 osMutexId UART_Mutex;
 osMutexId Num_I2C_Errors_Mutex;
@@ -79,6 +80,7 @@ osMutexId ADCS_Active_Mutex;
 osMutexId Low_Power_Mode_Mutex;
 osMutexId UHF_UART_Mutex;
 
+/* Threads */
 osThreadId myUHFTxTask;
 osThreadId myADCSTask;
 osThreadId myMainTask;
@@ -101,17 +103,26 @@ osThreadId myUHFRxTask;
 * EXTERNAL (NONE STATIC) ROUTINES DEFINITION
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-void I2C2_Reset (void) {
-   hi2c2.Instance->CR1 |= I2C_CR1_SWRST;
-      osDelay(100);
-      hi2c2.Instance->CR1 &= ~I2C_CR1_SWRST;
-      HAL_I2C_DeInit(&hi2c2);
-      hi2c2.State = HAL_I2C_STATE_RESET;
-      MX_I2C2_Init();
+
+/**
+ * Reset I2C State
+ */
+void I2C2_Reset(void) {
+    hi2c2.Instance->CR1 |= I2C_CR1_SWRST;
+    osDelay(100);
+    hi2c2.Instance->CR1 &= ~I2C_CR1_SWRST;
+    HAL_I2C_DeInit(&hi2c2);
+    hi2c2.State = HAL_I2C_STATE_RESET;
+    MX_I2C2_Init();
 }
 
-// This function must be called once before launch to setup the EPS ready for launch
-void init_Satelite(void){
+//
+
+/**
+ * Initialize the satellite before launch
+ * This function must be called once before launch to setup the EPS ready for launch
+ */
+void init_satellite(void) {
     disable_EPS_Vbatt_Bus();
     disable_EPS_BCR_Bus();
     disable_EPS_5v_Bus();
@@ -130,11 +141,10 @@ void init_Satelite(void){
 /**
  * CySat 1 Mission Execution
  */
-int main(void)
-{
-    debug_printf("ITS RUNNING!");
+int main(void) {
+    /* Awake message */
+    debug_printf("This is Cy-Sat 1 from Iowa State University\nBEEP BEEP BOOP BOOP Systems Starting!\n");
     //SCB->VTOR = APPL_ADDRESS;
-    //debug_led_amber(5,500);
 
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
@@ -142,7 +152,8 @@ int main(void)
     /* Configure the system clock */
     SystemClock_Config();
 
-    //HAL_Delay(INITIAL_WAIT); // Delay for the specified 30 minutes
+    /* TODO: Uncomment before launch: Delay for the specified 30 minutes required by NASA */
+    // HAL_Delay(INITIAL_WAIT);
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
@@ -153,56 +164,42 @@ int main(void)
     MX_SDIO_SD_Init();
     MX_FATFS_Init();
 
-    // Commands the start of data reception because I can't define it in AppTasks.c without having to mess around with #including stuff
-    //HAL_UART_Receive_IT(&huart6,GroundStationRxBuffer, 4);
-    //HAL_UART_Receive_IT(&huart1,GroundStationRxBuffer, 4);
-
-    /* Initialize task threads */
-    osThreadDef(myMainTask, Main_Task, osPriorityRealtime, 0, 512);
+    /*
+    *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    * TRHEADS INITIALIZATION - Tasks specified in AppTasks.c
+    *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+    osThreadDef(myMainTask, Main_Task, osPriorityRealtime, 0, 512); // Main mission
     osThreadCreate(osThread(myMainTask), NULL);
 
-    osThreadDef(myUHFRxTask, UHF_Rx_Task, osPriorityNormal, 0, 512);
+    osThreadDef(myUHFRxTask, UHF_Rx_Task, osPriorityNormal, 0, 512); // UHF Receive
     osThreadCreate(osThread(myUHFRxTask), NULL);
 
-    osThreadDef(myUHFTxTask, UHF_Tx_Task, osPriorityNormal, 0, 512);
+    osThreadDef(myUHFTxTask, UHF_Tx_Task, osPriorityNormal, 0, 512); // UHF Transmit
     osThreadCreate(osThread(myUHFTxTask), NULL);
 
-    osThreadDef(myADCSTask, ADCS_Task, osPriorityNormal, 0, 1024);
+    osThreadDef(myADCSTask, ADCS_Task, osPriorityNormal, 0, 1024); // ADCS
     osThreadCreate(osThread(myADCSTask), NULL);
 
-    osThreadDef(myBatteryCapacityTask, BatteryCapacity_Task, osPriorityNormal, 0, 256);
+    osThreadDef(myBatteryCapacityTask, BatteryCapacity_Task, osPriorityNormal, 0, 256); // Batteries
     osThreadCreate(osThread(myBatteryCapacityTask), NULL);
 
     /* Start scheduler */
     osKernelStart();
 
+    HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 4);
 
-
-
-    // Nothing in Main after this point will actually run, move it to AppTasks.c
-
-    // Enable Transparent Mode
-    // TODO: Send command to UHF transceiver to enable transparent mode
-
-    // Detumbling Sequence
-    // TODO: Detumbling functions (ADCS) go here
-    debug_printf("Beginning detumbling sequence (unfinished)");
-
-    // Ground station will receive beacon, send "Beacon Shut Off" request
-    // TODO: OBC will shut off beacon when it receives ground station command
-    // TODO: OBC will confirm shutoff
-
-    /** Ground station will send "Initial Health Check Request" command
-    * TODO: Create health checks:
-    * EPS, ADCS, SDR, OBC, UHF transceiver
-    */
-
-   // HAL_Delay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
-
-    /* Receive via STM UART */
-    GroundStationRxDataLength = 4;
-    HAL_UART_Receive_IT(&huart6, (uint8_t*) &GroundStationRxBuffer, 4);
+    //HAL_UART_RxCpltCallback(&huart1);  // UART used for OBC
+    // HAL_UART_RxCpltCallback(&huart6); // UART used for Payload
+    // TODO: Uncomment to test payload UART receive data
+    // End of Main, main thread running
 }
+
+/*
+*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* INTERNAL (STATIC) ROUTINES DEFINITION
+*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
 
 /**
   * @brief  Period elapsed callback in non blocking mode
@@ -212,14 +209,13 @@ int main(void)
   * @param  htim : TIM handle
   * @retval None
   */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 /* USER CODE BEGIN Callback 0 */
 
 /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM1) {
-    HAL_IncTick();
-  }
+    if (htim->Instance == TIM1) {
+        HAL_IncTick();
+    }
 /* USER CODE BEGIN Callback 1 */
 
 /* USER CODE END Callback 1 */
@@ -245,62 +241,67 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 #endif
 
-/*
-*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* INTERNAL (STATIC) ROUTINES DEFINITION
-*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
+/**
+ *
+ * @param huart
+ */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+    // UART for Payload
+    if (huart == &huart6) {
+        if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
+            sendErrorPacket();
+        }
+        HAL_UART_Receive_IT(&huart6, GroundStationRxBuffer, 4);
+    }
+
+    // UART for OBC
+    if (huart == &huart1) {
+        if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
+            sendErrorPacket();
+        }
+        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 4);
+    }
+}
+
+/**
+ *
+ * @param hi2c
+ */
+void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c) {
+    if (hi2c == &hi2c1) { //OBC connected to EPS, UHF, and ADCS
+        debug_printf("I2C connection established!");
+        HAL_I2C_Master_Receive_IT(&hi2c1, 0x18 << 1, data, 1);
+    }
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
   * @param  None
   * @retval None
   */
-void Error_Handler(void)
-{
-  /* USER CODE BEGIN Error_Handler */
-  /* User can add his own implementation to report the HAL error return state */
+void Error_Handler(void) {
+    /* USER CODE BEGIN Error_Handler */
+    /* User can add his own implementation to report the HAL error return state */
 #ifdef DEBUG_ENABLE
-  while(1)
-  {
-      debug_led_green(5, 2000);
-      debug_led_amber(5, 2000);
-  }
+    while(1)
+    {
+        debug_led_green(5, 2000);
+        debug_led_amber(5, 2000);
+    }
 #endif
-  /* USER CODE END Error_Handler */
+    /* USER CODE END Error_Handler */
 }
 
-void vApplicationMallocFailedHook( void )
-{
+/**
+ * Error: x
+ */
+void vApplicationMallocFailedHook(void) {
     Error_Handler();
 }
 
-
-void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
-{
+/**
+ * Error: x
+ */
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
     Error_Handler();
 }
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-    if(huart == &huart6){ //OBC connected to Payload/USB
-        if(handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1){ //error occurred
-            sendErrorPacket();
-        }
-        HAL_UART_Receive_IT(&huart6,GroundStationRxBuffer, 4);
-    }
-    if(huart == &huart1){ //I think this is for the UHF transceiver but I'm not sure -Steven
-        if(handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1){ //error occurred
-            sendErrorPacket();
-        }
-        HAL_UART_Receive_IT(&huart1,GroundStationRxBuffer, 4);
-    }
-}
-
-void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c){
-    if(hi2c == &hi2c1){ //OBC connected to EPS, UHF, and ADCS
-        debug_printf("Got I2C Connection!");
-        HAL_I2C_Master_Receive_IT(&hi2c1, 0x18 << 1, data, 1);
-    }
-}
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

@@ -1,2 +1,0 @@
-C:\Windows\system32\wsl.exe --distribution Ubuntu --exec /bin/bash -c "export CMAKE_COLOR_DIAGNOSTICS=ON && export CLION_IDE=TRUE && export JETBRAINS_IDE=TRUE && cd '/mnt/f/Projects/Iowa State/CySat-1-Main/Satellite Systems/OBC_SDK/cmake-build-debug' && /usr/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G 'CodeBlocks - Unix Makefiles' '/mnt/f/Projects/Iowa State/CySat-1-Main/Satellite Systems/OBC_SDK'"
-/bin/bash: line 1: /usr/bin/cmake: No such file or directory

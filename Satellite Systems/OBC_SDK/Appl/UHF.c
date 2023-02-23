@@ -25,8 +25,10 @@ HAL_StatusTypeDef START_BEACON() {
     uint8_t bits[4];
     HAL_StatusTypeDef status = GET_UHF_STATUS(data);
     if (status != HAL_OK) {
-        debug_printf("Beacon Start Fail. Init Status is not ok");
+        debug_printf("[START_BEACON/ERROR]: Beacon start error");
         return status;
+    } else {
+        debug_printf("[START_BEACON/SUCCESS]: Beacon successfully started");
     }
 
     // Perserve other settings and only enable beacon
@@ -63,7 +65,10 @@ HAL_StatusTypeDef END_BEACON() {
     uint8_t bits[4];
     HAL_StatusTypeDef status = GET_UHF_STATUS(data);
     if (status != HAL_OK) {
+        debug_printf("[END_BEACON/ERROR]: Beacon stop error");
         return status;
+    } else {
+        debug_printf("[END_BEACON/SUCCESS]: Beacon stopped");
     }
 
     // Perserve other settings and only enable beacon
@@ -129,11 +134,11 @@ HAL_StatusTypeDef SET_BEACON_PERIOD(uint16_t period) {
  * @brief This will set the beacon message to any text. Assuming it is within the range of allowed size.
  *
  * @param text : The message to be placed in the beacon.
- * @param size : The size needs to be under 0x62 to fit in the size of endurosat beacon format.
+ * @param size : The size needs to be under 0x62 (98 characters) to fit in the size of EnduroSat beacon format.
  */
 HAL_StatusTypeDef SET_BEACON_TEXT(uint8_t *text, uint8_t size) {
     if (size >= 0x62) { // To avoid the size limit of 0x62
-        debug_printf("Beacon Text is too long");
+        debug_printf("[ERROR]: Beacon Text is too long");
         return HAL_ERROR;
     }
 
@@ -171,8 +176,6 @@ HAL_StatusTypeDef SET_BEACON_TEXT(uint8_t *text, uint8_t size) {
     command[i + 19] = '\r'; // 32
 
     /* Send to UHF */
-    debug_printf("UHF_Write-ing command:");
-    debug_printf("%s", command);
     return UHF_WRITE(command, cmdSize);
 }
 
@@ -634,8 +637,9 @@ HAL_StatusTypeDef UHF_READ(uint8_t command[], uint8_t *data_ptr, uint8_t in_byte
 HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
     osMutexWait(UART_Mutex, 2500);
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, command, in_byte, UHF_UART_TIMEOUT);
+
     if (status != HAL_OK) {
-        debug_printf("UHF_WRITE: UART Tx Fail");
+        debug_printf("[UHF_WRITE/ERROR]: UART Tx FAIL. Command: %s", command);
         osMutexRelease(UART_Mutex);
         return status;
     }
@@ -644,12 +648,10 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
     status = HAL_UART_Receive(&huart1, data, 25, UHF_UART_TIMEOUT);
     osMutexRelease(UART_Mutex);
     if (data[0] != 'O' || data[1] != 'K') {
-        debug_printf("UHF_WRITE: UART Rx FAIL");
-        debug_printf("%s", data); // Error code
+        debug_printf("[UHF_WRITE/ERROR]: UART Rx FAIL. Data: %s", data);
         return HAL_ERROR;
     }
 
-    debug_printf("%s", data); // Should be "OK"
-    debug_printf("UHF_WRITE: Success");
+    debug_printf("[UHF_WRITE/SUCCESS]: Command succeeded.");
     return status;
 }
