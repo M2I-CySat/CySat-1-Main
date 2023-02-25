@@ -1,5 +1,0 @@
-(fp_lib_table
-  (lib (name breakoutBoard)(type KiCad)(uri "C:/Users/Leo/Documents/CySat/Carrier Board Test/schematics/breakoutBoard")(options "")(descr ""))
-  (lib (name w_conn_rf)(type Legacy)(uri "C:/Users/Leo/Documents/CySat/Carrier Board Test/footprints/mod_conn_rf/w_conn_rf.mod")(options "")(descr ""))
-  (lib (name w_conn_pretty)(type KiCad)(uri "C:/Users/Leo/Documents/CySat/Carrier Board Test/footprints/mod_conn_rf/w_conn_rf.pretty")(options "")(descr ""))
-)
