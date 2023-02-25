@@ -876,7 +876,7 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
         }
         uint8_t data[6];
         status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
-        debug_printf("[ADCS_TELECOMMAND]: Receiving Data: %s", data); //shows received initial 3 bits of data
+        debug_printf("[ADCS_TELECOMMAND]: Receiving Data: %x", data); //shows received initial 3 bits of data
         while(counter<=20 && (data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F)){ //Waits for appropriate 3 response characters,
             if(data[2] == 0x1F){ //If the last character is what the first character is supposed to be, shift it over to be correct and then receive the next 2 characters
                 data[0] = 0x1F;
