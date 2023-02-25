@@ -112,7 +112,7 @@ void Main_Task(void const *argument) {
     }
 
     // Beacon Text
-    uint8_t initial_beacon_text[] = "Hello I Am Space Co32";
+    uint8_t initial_beacon_text[] = "Hello I Am Space Core";
     // uint8_t initial_beacon_text[] = "Hello Earth! This is CySat-1 from Iowa State University.";
     // uint8_t funny_beacon_text[] = "Wow...Ames is really small from up here...";
     mainStatus = SET_BEACON_TEXT(initial_beacon_text, 21);
@@ -124,17 +124,18 @@ void Main_Task(void const *argument) {
         debug_printf("> %s", initial_beacon_text);
     }
     osDelay(1000);
-
     // Start Test
     mainStatus = START_BEACON();
-    osDelay(10000);
+    osDelay(1000);
+
+    // Commented out a bunch of UHF stuff that may get deleted later
 
     // Stop Test - Tested and works
     //mainStatus = END_BEACON();
     // osDelay(1000);
-
+    /*
     // Set Pipe Timeout
-    mainStatus = SET_PIPE_TIMEOUT(3);
+    mainStatus = SET_PIPE_TIMEOUT(18);
     if (mainStatus != HAL_OK) {
         debug_printf("[SET_PIPE_TIMEOUT/ERROR]: Pipe timeout FAIL");
     } else {
@@ -142,17 +143,17 @@ void Main_Task(void const *argument) {
     }
     osDelay(1000);
 
-    /* Set Radio call signs */
-    uint8_t dest_callsign[] = "KENISU"; // default - KENISU
+    //Set Radio call signs
+    uint8_t dest_callsign[6] = "KENISU"; // default - KENISU
     mainStatus = SET_DESTINATION_CALLSIGN(dest_callsign);
     if (mainStatus != HAL_OK) {
         debug_printf("[Main Thread/ERROR]: Destination Call-sign FAIL");
     } else {
         debug_printf("[Main Thread/SUCCESS]: Destination Call-sign set");
     }
-    osDelay(1000);
+    osDelay(3000);
 
-    uint8_t src_callsign[] = "W0ISU"; // default - W0ISU
+    uint8_t src_callsign[6] = "W0ISU "; // default - W0ISU, make sure to add a space and ask Matt
     mainStatus = SET_SOURCE_CALLSIGN(src_callsign);
     if (mainStatus != HAL_OK) {
         debug_printf("[Main Thread/ERROR]: Source Call-sign FAIL");
@@ -160,7 +161,7 @@ void Main_Task(void const *argument) {
         debug_printf("[Main Thread/SUCCESS]: Source Call-sign set");
     }
     osDelay(1000);
-
+	/*
     /* Temperature sensor test */
     float uhfTemperature;
     mainStatus = GET_UHF_TEMP(&uhfTemperature);
@@ -186,7 +187,14 @@ void Main_Task(void const *argument) {
     * EPS, ADCS, SDR, OBC, UHF transceiver
     */
 
-    // HAL_Delay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
+    osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
+    mainStatus = TC_10(1);
+    if (mainStatus != HAL_OK) {
+        debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
+    } else {
+        debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
+    }
+
 
     // Main startup complete, begin loop checks
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");

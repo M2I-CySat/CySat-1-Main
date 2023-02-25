@@ -49,7 +49,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
                     outgoingPacket.Command = 0x00; //Ping response
                     outgoingPacket.Data_Length = 0x3A;
-                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 58);
+                    outgoingPacket.Data = (char*) malloc(sizeof(char) * 58);
                     memcpy(outgoingPacket.Data,message,58); //This too IDK seriously this might not work
                     //outgoingPacket.Data[57]=message[57]; //I don't know what I'm doing please check this
                     outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);

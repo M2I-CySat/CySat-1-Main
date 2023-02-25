@@ -25,10 +25,10 @@ HAL_StatusTypeDef START_BEACON() {
     uint8_t bits[4];
     HAL_StatusTypeDef status = GET_UHF_STATUS(data);
     if (status != HAL_OK) {
-        debug_printf("[START_BEACON/ERROR]: Beacon start error");
+        debug_printf("[START_BEACON/ERROR]: Beacon start error (UHF Status Not OK)");
         return status;
     } else {
-        debug_printf("[START_BEACON/SUCCESS]: Beacon successfully started");
+        debug_printf("[START_BEACON/SUCCESS]: UHF Status OK");
     }
 
     // Perserve other settings and only enable beacon
@@ -647,11 +647,15 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
     uint8_t data[25];
     status = HAL_UART_Receive(&huart1, data, 25, UHF_UART_TIMEOUT);
     osMutexRelease(UART_Mutex);
+    //Gets rid of the new line character messing up all of my print statements
+    data[sizeof(data)/sizeof(uint8_t)-1] = '\0';
+    command[in_byte-1] = '\0';
     if (data[0] != 'O' || data[1] != 'K') {
-        debug_printf("[UHF_WRITE/ERROR]: UART Rx FAIL. Data: %s", data);
+
+        debug_printf("[UHF_WRITE/ERROR]: UART Rx FAIL. Command: %s Data: %s",command,data);
         return HAL_ERROR;
     }
 
-    debug_printf("[UHF_WRITE/SUCCESS]: Command succeeded.");
+    debug_printf("[UHF_WRITE/SUCCESS]: Command succeeded. Command: %s Data: %s",command,data);
     return status;
 }

@@ -869,7 +869,7 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
         debug_printf("\r\n");
         osMutexWait(UART_Mutex, 2500);
         status = HAL_UART_Transmit(&huart4, telecommand, in_byte+4, ADCS_UART_TIMEOUT);
-        debug_printf("[ADCS_TELECOMMAND]: Transmitting Data: %s", telecommand); //shows transmitted commands
+        debug_printf("[ADCS_TELECOMMAND]: Transmitting Data: %x", telecommand); //shows transmitted commands
         if(status != HAL_OK){
             osMutexRelease(UART_Mutex);
             return status;
@@ -877,7 +877,7 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
         uint8_t data[6];
         status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
         debug_printf("[ADCS_TELECOMMAND]: Receiving Data: %s", data); //shows received initial 3 bits of data
-        while((data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F) && counter<=20){ //Waits for appropriate 3 response characters,
+        while(counter<=20 && (data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F)){ //Waits for appropriate 3 response characters,
             if(data[2] == 0x1F){ //If the last character is what the first character is supposed to be, shift it over to be correct and then receive the next 2 characters
                 data[0] = 0x1F;
                 status = HAL_UART_Receive(&huart4, data+1, 2, ADCS_UART_TIMEOUT);
