@@ -184,15 +184,11 @@ int main(void) {
     osThreadDef(myBatteryCapacityTask, BatteryCapacity_Task, osPriorityNormal, 0, 256); // Batteries
     osThreadCreate(osThread(myBatteryCapacityTask), NULL);
 
-    /* Start scheduler */
-    osKernelStart();
-
-    HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 4);
-
-    //HAL_UART_RxCpltCallback(&huart1);  // UART used for OBC
-    // HAL_UART_RxCpltCallback(&huart6); // UART used for Payload
     // TODO: Uncomment to test payload UART receive data
     // End of Main, main thread running
+
+    /* FINAL TASK: Start scheduler */
+    osKernelStart();
 }
 
 /*
@@ -246,12 +242,14 @@ void assert_failed(uint8_t* file, uint32_t line)
  * @param huart
  */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+    debug_printf("I worked bitch");
     // UART for Payload
     if (huart == &huart6) {
         if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
             sendErrorPacket();
         }
         HAL_UART_Receive_IT(&huart6, GroundStationRxBuffer, 4);
+
     }
 
     // UART for OBC

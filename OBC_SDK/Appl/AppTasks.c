@@ -21,6 +21,8 @@ int NUM_I2C_ERRORS = 0;
 bool ADCS_ACTIVE = 0;
 bool LOW_POWER_MODE = 0;
 
+uint8_t RxBuffer[7];
+
 /**
  * Run main thread tasks on satellite. This includes basic
  * configuration tasks and communication loops
@@ -67,7 +69,7 @@ void Main_Task(void const *argument) {
 
     /*
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    * UHF INITIALIZATION - BEACON FREQ 436.375 MHz @ 115200 UART BAUD
+    * UHF INITIALIZATION - BEACON FREQ 436.375 MHz @ 9600 UART BAUD
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
 
@@ -142,26 +144,8 @@ void Main_Task(void const *argument) {
         debug_printf("[SET_PIPE_TIMEOUT/SUCCESS]: Pipe timeout set");
     }
     osDelay(1000);
+    */
 
-    //Set Radio call signs
-    uint8_t dest_callsign[6] = "KENISU"; // default - KENISU
-    mainStatus = SET_DESTINATION_CALLSIGN(dest_callsign);
-    if (mainStatus != HAL_OK) {
-        debug_printf("[Main Thread/ERROR]: Destination Call-sign FAIL");
-    } else {
-        debug_printf("[Main Thread/SUCCESS]: Destination Call-sign set");
-    }
-    osDelay(3000);
-
-    uint8_t src_callsign[6] = "W0ISU "; // default - W0ISU, make sure to add a space and ask Matt
-    mainStatus = SET_SOURCE_CALLSIGN(src_callsign);
-    if (mainStatus != HAL_OK) {
-        debug_printf("[Main Thread/ERROR]: Source Call-sign FAIL");
-    } else {
-        debug_printf("[Main Thread/SUCCESS]: Source Call-sign set");
-    }
-    osDelay(1000);
-	/*
     /* Temperature sensor test */
     float uhfTemperature;
     mainStatus = GET_UHF_TEMP(&uhfTemperature);
@@ -187,14 +171,15 @@ void Main_Task(void const *argument) {
     * EPS, ADCS, SDR, OBC, UHF transceiver
     */
 
-    osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
-    mainStatus = TC_10(1);
-    if (mainStatus != HAL_OK) {
-        debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
-    } else {
-        debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
-    }
+//    osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
+//    mainStatus = TC_10(1);
+//    if (mainStatus != HAL_OK) {
+//        debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
+//    } else {
+//        debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
+//    }
 
+    HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
 
     // Main startup complete, begin loop checks
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
@@ -212,11 +197,8 @@ void Main_Task(void const *argument) {
  */
 void UHF_Rx_Task(void const *argument) {
     HAL_StatusTypeDef rxStatus = HAL_OK;
+    osDelay(10000);
     debug_printf("######## UHF RX TASK ########\r\n");
-
-    while (1) {
-        osDelay(10000); //The actual handleCySatPacket stuff should run in the callback so we shouldn't need this thread at all
-    }
 }
 
 /*
@@ -232,11 +214,15 @@ void UHF_Tx_Task(void const *argument) {
     // Also need a transmission buffer
     // TODO Transmission and reception
     //CySat_Packet_t outgoingPacket;
-    //START_PIPE();
+    osDelay(10000);
+    debug_printf("Starting pipe");
+    START_PIPE();
+
+    uint8_t packet[] = "12345678";
 
     while (1) {
         //AMBER_LED_ON();
-        //HAL_UART_Transmit(&huart6, 1234567890123456789012345678901234567890, 40, 1000);
+    	debug_printf("About to send packet");
         //AMBER_LED_OFF();
         osDelay(5000);
     }
