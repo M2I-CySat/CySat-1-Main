@@ -179,7 +179,7 @@ void Main_Task(void const *argument) {
 //        debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
 //    }
 
-    HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
+    //HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
 
     // Main startup complete, begin loop checks
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
@@ -198,7 +198,13 @@ void Main_Task(void const *argument) {
 void UHF_Rx_Task(void const *argument) {
     HAL_StatusTypeDef rxStatus = HAL_OK;
     osDelay(10000);
-    debug_printf("######## UHF RX TASK ########\r\n");
+    //debug_printf("######## UHF RX TASK ########\r\n");
+    //debug_printf("Starting pipe");
+    //START_PIPE();
+    //HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
+    while (1) {
+    	osDelay(10000);
+    }
 }
 
 /*
@@ -223,6 +229,8 @@ void UHF_Tx_Task(void const *argument) {
     while (1) {
         //AMBER_LED_ON();
     	debug_printf("About to send packet");
+    	HAL_UART_Transmit(&huart1, packet, 8, 1000);
+
         //AMBER_LED_OFF();
         osDelay(5000);
     }

@@ -184,6 +184,9 @@ int main(void) {
     osThreadDef(myBatteryCapacityTask, BatteryCapacity_Task, osPriorityNormal, 0, 256); // Batteries
     osThreadCreate(osThread(myBatteryCapacityTask), NULL);
 
+    //HAL_UART_RxCpltCallback(&huart1);
+
+
     // TODO: Uncomment to test payload UART receive data
     // End of Main, main thread running
 
@@ -242,7 +245,7 @@ void assert_failed(uint8_t* file, uint32_t line)
  * @param huart
  */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-    debug_printf("I worked bitch");
+    debug_printf("Reception Callback Called");
     // UART for Payload
     if (huart == &huart6) {
         if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
