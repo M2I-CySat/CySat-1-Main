@@ -64,7 +64,7 @@ SPI_HandleTypeDef hspi5;
 SPI_HandleTypeDef hspi6;
 TIM_HandleTypeDef htim5;
 UART_HandleTypeDef huart4;
-UART_HandleTypeDef huart1; // OBC
+UART_HandleTypeDef huart1; // OBC to UHF
 UART_HandleTypeDef huart6; // PAYLOAD
 
 WWDG_HandleTypeDef hwwdg;
@@ -639,12 +639,12 @@ void MX_UART4_Init(void)
 
 }
 
-/* USART1 init function */
+/* USART1 init function - UHF */
 void MX_USART1_UART_Init(void)
 {
 
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600; // Originally 115200, use with UHF -> Kenwood!
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
