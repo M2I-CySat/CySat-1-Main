@@ -852,7 +852,7 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
 
         HAL_StatusTypeDef status = HAL_ERROR;
         uint8_t telecommand[in_byte+4];
-
+        uint8_t data[6];
         uint8_t counter=0; //Counter to make sure the while loop doesn't go too long (-Steven)
 
         telecommand[0] = 0x1F;
@@ -868,13 +868,12 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
         }
         debug_printf("\r\n");
         osMutexWait(UART_Mutex, 2500);
+		debug_printf("[ADCS_TELECOMMAND]: Transmitting Data: %x", telecommand); //shows transmitted commands
         status = HAL_UART_Transmit(&huart4, telecommand, in_byte+4, ADCS_UART_TIMEOUT);
-        debug_printf("[ADCS_TELECOMMAND]: Transmitting Data: %x", telecommand); //shows transmitted commands
         if(status != HAL_OK){
             osMutexRelease(UART_Mutex);
             return status;
         }
-        uint8_t data[6];
 
 
         //I am not sure what this chunk does but it should all be doable by the following line:
@@ -896,9 +895,11 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
                 status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT); //If nothing is right, wait for 3 new characters to come
             }
             counter=counter+1; //If they never come and it takes over 15 loops, exit the loop
+            //debug_printf("[ADCS_TELECOMMAND]: Received Data: %d %d %d \nCounter: %d", data[0],data[1],data[2], counter); //shows received initial 3 bits of data
         }
         if(counter>=20){ //More shoddy but passable error handling from Steven
         	debug_printf("[ADCS_TELECOMMAND/ERROR]: ADCS Telecommand did not receive data within 15 loop iterations");
+            debug_printf("[ADCS_TELECOMMAND]: Received Data: %d %d %d %d %d %d", data[0],data[1],data[2],data[3],data[4],data[5]); //shows received data
         	return HAL_ERROR;
         }
         status = HAL_UART_Receive(&huart4, data+3, 3, ADCS_UART_TIMEOUT);
