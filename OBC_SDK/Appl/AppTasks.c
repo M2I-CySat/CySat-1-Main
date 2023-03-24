@@ -220,23 +220,26 @@ void UHF_Tx_Task(void const *argument) {
     // Also need a transmission buffer
     // TODO Transmission and reception
     //CySat_Packet_t outgoingPacket;
-    osDelay(10000);
-    osDelay(99999999999999); //Uncomment to test comms but plug UHF in because the transmission power spike is too much
-    SET_PIPE_TIMEOUT(5);
-    debug_printf("Starting pipe");
+    osDelay(12000);
+    END_BEACON();
+    osDelay(5000);
+    //osDelay(99999999999999); //Uncomment to test comms but plug UHF in because the transmission power spike is too much
+    //SET_PIPE_TIMEOUT(5);
+    //debug_printf("Starting pipe");
     START_PIPE();
 
-    uint8_t packet[] = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
-
+    uint8_t packet[63] = {0x7E, 0x69, 0x51, 0x39, 0x49, 0x65, 0x55, 0x07, 0x75, 0x06, 0x49, 0x65, 0x55, 0x02, 0x86, 0xC0, 0x0F, 0x2A, 0x16, 0xA6, 0x04, 0x8E, 0xAE, 0x96, 0xC6, 0xD6, 0x04, 0x46, 0x4E, 0xF6, 0xEE, 0x76, 0x04, 0x66, 0xF6, 0x1E, 0x04, 0x56, 0xAE, 0xB6, 0x0E, 0xCE, 0x04, 0xF6, 0x6E, 0xA6, 0x4E, 0x04, 0x2E, 0x16, 0xA6, 0x04, 0x36, 0x86, 0x5E, 0x9E, 0x04, 0x26, 0xF6, 0xE6, 0x95, 0xC6, 0x7E};
+    START_PIPE();
     while (1) {
         //AMBER_LED_ON();
-    	debug_printf("Starting pipe");
-    	START_PIPE();
-    	debug_printf("About to send packet");
-    	HAL_UART_Transmit(&huart1, packet, 500, 1000);
-    	debug_printf("Packet Sent");
+    	//debug_printf("Starting pipe");
+    	//debug_printf("About to send packet");
+    	osDelay(1000);
+    	HAL_UART_Transmit(&huart1, packet, 63, 1000);
+    	osDelay(1000);
+    	//debug_printf("Packet Sent");
         //AMBER_LED_OFF();
-        osDelay(10000);
+        osDelay(1000);
     }
 }
 
