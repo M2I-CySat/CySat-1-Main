@@ -171,13 +171,13 @@ void Main_Task(void const *argument) {
     * EPS, ADCS, SDR, OBC, UHF transceiver
     */
 
-    osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
-    mainStatus = TC_10(1);
-    if (mainStatus != HAL_OK) {
-        debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
-    } else {
-        debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
-   }
+    //osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
+    //mainStatus = TC_10(1);
+    //if (mainStatus != HAL_OK) {
+    //    debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
+    //} else {
+    //    debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
+   //}
 
     //HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
 
@@ -224,7 +224,7 @@ void UHF_Tx_Task(void const *argument) {
     END_BEACON();
     osDelay(5000);
     //osDelay(99999999999999); //Uncomment to test comms but plug UHF in because the transmission power spike is too much
-    //SET_PIPE_TIMEOUT(5);
+    SET_PIPE_TIMEOUT(7);
     //debug_printf("Starting pipe");
     START_PIPE();
 
@@ -236,7 +236,7 @@ void UHF_Tx_Task(void const *argument) {
     	//debug_printf("About to send packet");
     	osDelay(1000);
     	HAL_UART_Transmit(&huart1, packet, 63, 1000);
-    	osDelay(1000);
+    	osDelay(3000);
     	//debug_printf("Packet Sent");
         //AMBER_LED_OFF();
         osDelay(1000);
