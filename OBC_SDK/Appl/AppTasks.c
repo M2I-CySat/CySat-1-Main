@@ -171,13 +171,13 @@ void Main_Task(void const *argument) {
     * EPS, ADCS, SDR, OBC, UHF transceiver
     */
 
-//    osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
-//    mainStatus = TC_10(1);
-//    if (mainStatus != HAL_OK) {
-//        debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
-//    } else {
-//        debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
-//    }
+    osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
+    mainStatus = TC_10(1);
+    if (mainStatus != HAL_OK) {
+        debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
+    } else {
+        debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
+   }
 
     //HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
 
