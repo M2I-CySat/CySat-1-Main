@@ -59,7 +59,7 @@ HAL_StatusTypeDef sendCySatPacket(CySat_Packet_t packet){
 
 /**
   * @brief Gives you the checksum byte value for a submitted packet
-  * @param packet: The packet for which you want to generate a packet
+  * @param packet: The packet for which you want to generate a packet checksum
   * @retval The 1 byte packet checksum that has been generated
   */
 uint8_t generateCySatChecksum(CySat_Packet_t packet){
