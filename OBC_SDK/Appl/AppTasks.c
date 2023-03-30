@@ -171,13 +171,31 @@ void Main_Task(void const *argument) {
     * EPS, ADCS, SDR, OBC, UHF transceiver
     */
 
-    //osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
-    //mainStatus = TC_10(1);
-    //if (mainStatus != HAL_OK) {
-    //    debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
-    //} else {
-    //    debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
-   //}
+    osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
+    mainStatus = TC_10(1);
+    osDelay(1500);
+    mainStatus = TC_2(50, 40);
+
+    debug_printf("testing Tc_2");
+
+    if (mainStatus != HAL_OK) {
+        debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
+    } else {
+        debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
+    }
+
+    osDelay(1500);
+
+    mainStatus = TC_14(0);
+
+        debug_printf("testing Tc_14");
+
+        if (mainStatus != HAL_OK) {
+            debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
+        } else {
+            debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
+        }
+
 
     //HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
 
@@ -231,7 +249,7 @@ void UHF_Tx_Task(void const *argument) {
     osDelay(12000);
     END_BEACON();
     osDelay(5000);
-    //osDelay(99999999999999); //Uncomment to test comms but plug UHF in because the transmission power spike is too much
+    osDelay(99999999999999); //Uncomment to test comms but plug UHF in because the transmission power spike is too much
     SET_PIPE_TIMEOUT(7);
     //debug_printf("Starting pipe");
     START_PIPE();
