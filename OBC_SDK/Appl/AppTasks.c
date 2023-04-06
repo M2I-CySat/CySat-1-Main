@@ -172,8 +172,20 @@ void Main_Task(void const *argument) {
     */
 
     osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
+
+
+    int16_t testx;
+    int16_t testy;
+    int16_t testz;
+    mainStatus=TLM_170(&testx,&testy,&testz);
+
+
     mainStatus = TC_10(1);
     osDelay(1500);
+
+
+
+
     mainStatus = TC_2(50, 40);
 
     debug_printf("testing Tc_2");

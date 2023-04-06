@@ -804,18 +804,21 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
         telemetry[4] = 0xFF;
         debug_printf("Telemetry Request: ");
         for(int j = 0; j< 5; j++){
-            debug_printf("%d ", telecommand[j]);
+            debug_printf("%d ", telemetry[j]);
         }
         debug_printf("\r\n");
         osMutexWait(UART_Mutex, 2500);
         status = HAL_UART_Transmit(&huart4, telemetry, 5, ADCS_UART_TIMEOUT);
         if(status != HAL_OK){
             osMutexRelease(UART_Mutex);
+            debug_printf("ADCS Telemetry Transimt Error");
             return status;
         }
         uint8_t data[out_byte+5];
         status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
         if(status != HAL_OK)
+        	debug_printf("ADCS Telemetry Receive Error");
+        	osMutexRelease(UART_Mutex);
             return status;
         while(data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F){
             if(data[2] == 0x1F){
