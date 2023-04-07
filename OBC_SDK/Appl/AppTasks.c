@@ -171,6 +171,7 @@ void Main_Task(void const *argument) {
     * EPS, ADCS, SDR, OBC, UHF transceiver
     */
 
+
     osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
 
 
@@ -207,6 +208,8 @@ void Main_Task(void const *argument) {
         } else {
             debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
         }
+
+        mainStatus = TC_10(0);
 
 
     //HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
@@ -249,19 +252,20 @@ void UHF_Tx_Task(void const *argument) {
     // One that checks the transmission buffer every so often and assembles packets from that data, transmitting them
     // Also need a transmission buffer
     // TODO Transmission and reception
-    uint8_t data[2] = { 0xFF, 0xFF };
-    CySat_Packet_t outgoingPacket;
+    //uint8_t data[2] = { 0xFF, 0xFF };
+    //CySat_Packet_t outgoingPacket;
 
-    outgoingPacket.Subsystem_Type = 0x0A;
-    outgoingPacket.Command = 0xFF;
-    outgoingPacket.Data = data;
-    outgoingPacket.Data_Length = 0x02;
-    outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
+    //outgoingPacket.Subsystem_Type = 0x0A;
+    //outgoingPacket.Command = 0xFF;
+    //outgoingPacket.Data = data;
+    //outgoingPacket.Data_Length = 0x02;
+    //outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
+    uint8_t packet[20]="Beep Boop I Am Alive";
 
-    osDelay(12000);
+    osDelay(30000);
     END_BEACON();
     osDelay(5000);
-    osDelay(99999999999999); //Uncomment to test comms but plug UHF in because the transmission power spike is too much
+    //osDelay(99999999999999); //Uncomment to test comms but plug UHF in because the transmission power spike is too much
     SET_PIPE_TIMEOUT(7);
     //debug_printf("Starting pipe");
     START_PIPE();
@@ -270,10 +274,10 @@ void UHF_Tx_Task(void const *argument) {
     	//debug_printf("Starting pipe");
     	//debug_printf("About to send packet");
     	osDelay(1000);
-    	txStatus = sendCySatPacket(outgoingPacket);
-    	//HAL_UART_Transmit(&huart1, packet, size, 1000);
+    	//txStatus = sendCySatPacket(outgoingPacket);
+    	HAL_UART_Transmit(&huart1, packet, 20, 1000);
+    	debug_printf("Packet Sent");
     	osDelay(3000);
-    	debug_printf("Packet Sent %s", txStatus);
         //AMBER_LED_OFF();
         osDelay(1000);
     }

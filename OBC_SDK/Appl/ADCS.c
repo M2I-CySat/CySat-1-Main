@@ -802,23 +802,15 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
         telemetry[2] = command;
         telemetry[3] = 0x1F;
         telemetry[4] = 0xFF;
-        debug_printf("Telemetry Request: ");
-        for(int j = 0; j< 5; j++){
-            debug_printf("%d ", telemetry[j]);
-        }
-        debug_printf("\r\n");
         osMutexWait(UART_Mutex, 2500);
         status = HAL_UART_Transmit(&huart4, telemetry, 5, ADCS_UART_TIMEOUT);
         if(status != HAL_OK){
             osMutexRelease(UART_Mutex);
-            debug_printf("ADCS Telemetry Transimt Error");
             return status;
         }
         uint8_t data[out_byte+5];
         status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
         if(status != HAL_OK)
-        	debug_printf("ADCS Telemetry Receive Error");
-        	osMutexRelease(UART_Mutex);
             return status;
         while(data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F){
             if(data[2] == 0x1F){
@@ -837,14 +829,6 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
 
         memcpy(data_ptr, &data[3], out_byte);
         osMutexRelease(UART_Mutex);
-
-
-        debug_printf("Telemetry Response: ");
-        for(int j = 0; j< out_byte; j++){
-            debug_printf("%d ", data[j]);
-        }
-        debug_printf("\r\n");
-
         if(status != HAL_OK)
             return status;
         else if((data[0]!=0x1F)||(data[1]!=0x7F)||(data[2]!=command)||(data[out_byte+3]!=0x1F)||(data[out_byte+4]!=0xFF))
@@ -860,17 +844,8 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
  * @retval Returns if the hal function call succeeded, or if it failed
 */
 HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
-
-	//Command is responsible for sending an ADCS telecommand over UART.
-	//Command contains the id and some other identifiers
-	//Waits for response from the ADCS with the acknowledge data, comprised of the start identifier, command id, error flag, and end of message identifier
-
-
         HAL_StatusTypeDef status = HAL_ERROR;
         uint8_t telecommand[in_byte+4];
-        uint8_t data[6];
-        uint8_t counter=0; //Counter to make sure the while loop doesn't go too long (-Steven)
-
         telecommand[0] = 0x1F;
         telecommand[1] = 0x7F;
         for(int i = 0; i < in_byte; i++){
@@ -884,48 +859,29 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
         }
         debug_printf("\r\n");
         osMutexWait(UART_Mutex, 2500);
-		debug_printf("[ADCS_TELECOMMAND]: Transmitting Data: %x", telecommand); //shows transmitted commands
         status = HAL_UART_Transmit(&huart4, telecommand, in_byte+4, ADCS_UART_TIMEOUT);
         if(status != HAL_OK){
             osMutexRelease(UART_Mutex);
             return status;
         }
-
-
-        //I am not sure what this chunk does but it should all be doable by the following line:
-        //status = HAL_UART_Receive(&huart4, data, 6, ADCS_UART_TIMEOUT);
-
+        uint8_t data[6];
         status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
-        //debug_printf("[ADCS_TELECOMMAND]: Received Data: %d %d %d", data[0],data[1],data[2]); //shows received initial 3 bits of data
-        while(counter<=20 && (data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F)){ //Waits for appropriate 3 response characters,
-            if(data[2] == 0x1F){ //If the last character is what the first character is supposed to be, shift it over to be correct and then receive the next 2 characters
+        while(data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F){
+            if(data[2] == 0x1F){
                 data[0] = 0x1F;
                 status = HAL_UART_Receive(&huart4, data+1, 2, ADCS_UART_TIMEOUT);
             }
-            else if(data[1]== 0x1F && data[2] == 0x7F){ //If the second character is what the first one is supposed to be, and the third what the  second is supposed to be, shift it over to be correct and wait for the last character
+            else if(data[1]== 0x1F && data[2] == 0x7F){
                 data[0] = 0x1F;
                 data[1] = 0x7F;
                 status = HAL_UART_Receive(&huart4, data+2, 1, ADCS_UART_TIMEOUT);
             }
-            else{
-                status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT); //If nothing is right, wait for 3 new characters to come
-            }
-            counter=counter+1; //If they never come and it takes over 15 loops, exit the loop
-            //debug_printf("[ADCS_TELECOMMAND]: Received Data: %d %d %d \nCounter: %d", data[0],data[1],data[2], counter); //shows received initial 3 bits of data
-        }
-        if(counter>=20){ //More shoddy but passable error handling from Steven
-        	debug_printf("[ADCS_TELECOMMAND/ERROR]: ADCS Telecommand did not receive data within 15 loop iterations");
-            debug_printf("[ADCS_TELECOMMAND]: Received Data: %d %d %d %d %d %d", data[0],data[1],data[2],data[3],data[4],data[5]); //shows received data
-        	return HAL_ERROR;
+            else
+                status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
         }
         status = HAL_UART_Receive(&huart4, data+3, 3, ADCS_UART_TIMEOUT);
-
-
-
         osMutexRelease(UART_Mutex);
-
         debug_printf("[ADCS_TELECOMMAND]: Received Data: %d %d %d %d %d %d", data[0],data[1],data[2],data[3],data[4],data[5]); //shows received data
-
         if(status != HAL_OK)
             return status;
         else if(data[2]!= command[0] || data[3]==1 || data[3] == 2){
