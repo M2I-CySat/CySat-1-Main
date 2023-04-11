@@ -127,7 +127,7 @@ void Main_Task(void const *argument) {
     }
     osDelay(1000);
     // Start Test
-    mainStatus = START_BEACON();
+    //mainStatus = START_BEACON();
     osDelay(1000);
 
     // Commented out a bunch of UHF stuff that may get deleted later
@@ -186,30 +186,50 @@ void Main_Task(void const *argument) {
 
 
 
+    mainStatus = TC_13(0, 0, 10);
 
-    mainStatus = TC_2(50, 40);
+           debug_printf("testing Tc_13");
 
-    debug_printf("testing Tc_2");
+           if (mainStatus != HAL_OK) {
+               debug_printf("[Main Thread/ERROR]: Failed to set ADCS attitude control mode");
+           } else {
+               debug_printf("[Main Thread/SUCCESS]: ADCS  attitude control mode set");
+           }
 
-    if (mainStatus != HAL_OK) {
-        debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
-    } else {
-        debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
-    }
+//        mainStatus = TC_17(10);
+//
+//        debug_printf("testing Tc_17");
+//
+//        if (mainStatus != HAL_OK) {
+//            debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
+//        } else {
+//            debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
+//        }
 
-    osDelay(1500);
 
-    mainStatus = TC_14(0);
-
-        debug_printf("testing Tc_14");
-
-        if (mainStatus != HAL_OK) {
-            debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
-        } else {
-            debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
-        }
-
-        mainStatus = TC_10(0);
+//    mainStatus = TC_2(50, 40);
+//
+//    debug_printf("testing Tc_2");
+//
+//    if (mainStatus != HAL_OK) {
+//        debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
+//    } else {
+//        debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
+//    }
+//
+//    osDelay(1500);
+//
+//    mainStatus = TC_14(0);
+//
+//        debug_printf("testing Tc_14");
+//
+//        if (mainStatus != HAL_OK) {
+//            debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
+//        } else {
+//            debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
+//        }
+//
+//        mainStatus = TC_10(0);
 
 
     //HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
@@ -265,7 +285,7 @@ void UHF_Tx_Task(void const *argument) {
     osDelay(30000);
     END_BEACON();
     osDelay(5000);
-    //osDelay(99999999999999); //Uncomment to test comms but plug UHF in because the transmission power spike is too much
+    osDelay(99999999999999); //Uncomment to test comms but plug UHF in because the transmission power spike is too much
     SET_PIPE_TIMEOUT(7);
     //debug_printf("Starting pipe");
     START_PIPE();
