@@ -177,8 +177,18 @@ void Main_Task(void const *argument) {
 
     int16_t testx;
     int16_t testy;
-    int16_t testz;
-    mainStatus=TLM_170(&testx,&testy,&testz);
+    //int16_t testz;
+    mainStatus=TLM_140(&testx,&testy);
+    debug_printf("%d %d ",testx,testy);
+
+
+         debug_printf("testing TLM_140");
+
+          if (mainStatus != HAL_OK) {
+                  debug_printf("[Main Thread/ERROR]: Failed to test TLM_140");
+               } else {
+                  debug_printf("[Main Thread/SUCCESS]: TLM Worked correctly");
+               }
 
 
     mainStatus = TC_10(1);
@@ -196,6 +206,8 @@ void Main_Task(void const *argument) {
                debug_printf("[Main Thread/SUCCESS]: ADCS  attitude control mode set");
            }
 
+
+      //debug_printf(mainStatus);
 //        mainStatus = TC_17(10);
 //
 //        debug_printf("testing Tc_17");
