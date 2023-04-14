@@ -341,6 +341,28 @@ HAL_StatusTypeDef KELVIN_FILE_TRANSFER(){
     return FILE_TRANSFER(0x01);
 }
 
+/**
+ * @brief Selects which part of the data is transmitted and sends that part home 
+ * 
+*/
+HAL_StatusTypeDef CODE_SEPERATOR(int measurementID, int dataType, int startPacket, int endPacket){
+    // Read OBC's SD card (and possibly erases it from the payload)
+
+    
+    char * dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
+    char *fileName = asprintf("%d%s", measurementID, dataTypeStr); 
+    
+    FILE *fp = fopen(fileName, "r");
+
+    fseek(fp, 0, SEEK_END); // seek to end of file
+    long int endFileLength = ftell(fp); // get current file pointer
+    fseek(fp, 0, SEEK_SET); // seek back to beginning of file
+    // proceed with allocating memory and reading the file
+
+    
+    // increment 
+}
+
 /*************************** HELPER FUNCTIONS **********************************/
 /**
  * @brief Sends a write command to the payload over UART
