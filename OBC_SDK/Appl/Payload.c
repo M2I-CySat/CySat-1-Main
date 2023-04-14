@@ -287,8 +287,6 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type){
         byte_sum += data[i];
     }
 
-
-
     if(packet.Data[0] == (0xFF - (byte_sum & 0xFF))){
         //Transfer data to computer for debugging
         for(int i = 0; i < file_size; i++){
@@ -304,10 +302,28 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type){
         if(fres != FR_OK){
             return HAL_ERROR;
         }
+
+        //Using the data entry number stored in file "data_number.txt", specifies the data file to be created
+        entry_num_fil = f_open(&entryfil, "entry_number.txt", FA_WRITE | FA_READ | FA_OPEN_ALWAYS);
+        char filename_buff[25];
+        success = fscanf(data_n, "%d", entry_id);
+
+        //If no data entry value is present, provides a starting value
+        if(!success)
+        	entry_id = 0;
+
+        //Adds 1 to the data entry number, closes the file
+        fprintf(&entryfil, "%d", entry_id+1);
+        fclose(&entryfil);
+
+        //Create the specified data file
         if(file_type == 0)
-            fres = f_open(&fil, "test_dat.txt", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+        	data_file_name = sprintf(filename_buff, "dat%d.txt", entry_id);
         else
-            fres = f_open(&fil, "test_kelvin.txt", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+        	data_file_name = sprintf(filename_buff, "kel%d.txt", entry_id);
+
+        fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+
         if(fres != FR_OK){
             return HAL_ERROR;
         }
