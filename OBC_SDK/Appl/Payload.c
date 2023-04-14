@@ -466,3 +466,22 @@ void convert_to_bytes(uint8_t* data, int num, int length){
     }
 }
 
+
+/**
+ * @brief returns the size of the file
+ * @param name: name of the file
+ */
+long file_size(char *name)
+{
+    FILE *fp = fopen(name, "rb"); //must be binary read to get bytes
+
+    long size=-1;
+    if(fp)
+    {
+        fseek (fp, 0, SEEK_END);
+        size = ftell(fp)+1;
+        fclose(fp);
+    }
+    return size;
+}
+
