@@ -368,21 +368,26 @@ HAL_StatusTypeDef CODE_SEPERATOR(unsigned short int measurementID, byte dataType
         return HAL_ERROR;
     }
 
-    // Read OBC's SD card (and possibly erases it from the payload)
 
     char * dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
-    char *fileName = asprintf("%d%s", measurementID, dataTypeStr); 
-
-        // ----  Copied and Pasted Code --- 
+    char *fileName = asprintf("%d%s", measurementID, dataTypeStr); // Grabs the file from the SD card
     
 
-    int iterator = 0;
+    FILE *fp = fopen(fileName, "r"); 
+    if (fp == NULL)
+    {
+        fclose(fp);
+        return HAL_ERROR;
+    }
+
+    long int sizeFile = file_size(fp); // Determines the size of the file in bytes
+
+    if (fseek(fp, 118*startPacket, 0) != 0) // seek to start of data
+    {
+        fclose(fp);
+        return HAL_ERROR;
+    } 
     
-    FILE *fp = fopen(fileName, "r");
-
-    long int sizeFile = file_size(fp);
-
-    fseek(fp, 118*startPacket, 0); // seek to start of data
 
     // START_PIPE(); // For standalone testing do not use this!!!!!!!!!!!!!!!!!!!!!!
 
@@ -391,6 +396,7 @@ HAL_StatusTypeDef CODE_SEPERATOR(unsigned short int measurementID, byte dataType
     
     for (unsigned short int i = startPacket; i <= endPacket; i++)
     {
+        // Header data
         packet[0] = 0xFF;
         packet[1] = (measurementID >> 8) & 0xFF;
         packet[2] = measurementID & 0xFF;
@@ -406,9 +412,14 @@ HAL_StatusTypeDef CODE_SEPERATOR(unsigned short int measurementID, byte dataType
 
         if (sizeFile - 118 * i <118) // Check to see if packet requested is the last packet of a file (if so, FREAD until end instead of 120)
         {
-            fread(&data, 1, sizeFile - 118 * i, fp);
+            size_t read  = fread(&data, 1, sizeFile - 118 * i, fp);
+            if (read != sizeFile - 118 * i) // Check to see if the fread was successful
+            {
+                fclose(fp);
+                return HAL_ERROR;
+            }
 
-            for (int j = 0; j < sizeFile - 118 * i; j++)
+            for (int j = 0; j < sizeFile - 118 * i; j++) // Copy the data into the packet
             {
                 packet[6+j] = data[j];
             }
@@ -416,7 +427,12 @@ HAL_StatusTypeDef CODE_SEPERATOR(unsigned short int measurementID, byte dataType
         }
         else
         {
-        fread(&data, 1, 118, fp);
+        size_t read = fread(&data, 1, 118, fp); 
+        if (read != 118)
+        {
+            fclose(fp);
+            return HAL_ERROR;
+        }
 
         for (int j = 0; j < 118; j++)
         {
@@ -424,13 +440,12 @@ HAL_StatusTypeDef CODE_SEPERATOR(unsigned short int measurementID, byte dataType
         }
         }
 
-        crc32(packet, (sizeFile - 118 * i) + 6, &packet[6 + (sizeFile - 118 * i)]);
-    }
+        crc32(packet, (sizeFile - 118 * i) + 6, &packet[6 + (sizeFile - 118 * i)]);  
 
-    //Malloc all of the variables
-
+        // HAL_UART_Transmit(&huart1, packet, 6+ (sizeFile - 118 * i), 1000); // Do not use for standalone testing!!!!!!
+    }       
     
-    return 0;
+    return HAL_OK;
 }
 
 
