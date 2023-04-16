@@ -364,22 +364,105 @@ HAL_StatusTypeDef KELVIN_FILE_TRANSFER(){
 HAL_StatusTypeDef CODE_SEPERATOR(int measurementID, int dataType, int startPacket, int endPacket){
     // Read OBC's SD card (and possibly erases it from the payload)
 
-    
     char * dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
     char *fileName = asprintf("%d%s", measurementID, dataTypeStr); 
+
+        // ----  Copied and Pasted Code --- 
+    
+
+    int iterator = 0;
     
     FILE *fp = fopen(fileName, "r");
 
-    fseek(fp, 0, SEEK_END); // seek to end of file
-    long int endFileLength = ftell(fp); // get current file pointer
-    fseek(fp, 0, SEEK_SET); // seek back to beginning of file
-    // proceed with allocating memory and reading the file
+    long sizeFile = file_size(fp);
 
+    fseek(fp, 120*startPacket, 0); // seek to start of data
+
+    // START_PIPE(); // For standalone testing do not use this!!!!!!!!!!!!!!!!!!!!!!
+
+
+    char packet[128];
+    for (int i = startPacket; i <= endPacket; i++)
+    {
+        //PSEUDOCODE FOR: Check to see if packet requested is greater than the length of a file (if so break out of the loop)
+        // ASK STEVEN WHAT HE MEANS BY "A FILE"
+        
+        if (i == endPacket) // Check to see if packet requested is the last packet of a file (if so, FREAD until end instead of 120)
+        {
+            // fread(line, 1, sizeFile - (120*endPacket), fp); // read until the end
+            fread(fp, );
+        }
+
+        packet[0] += fgetc(fp); // read first byte of packet (Special character)
+        packet[1] += fgetc(fp); // read second byte of packet (measurement ID)
+        packet[2] += fgetc(fp); // read third byte of packet (data type)
+        packet[3] += fgetc(fp) + fgetc(fp); // read fourth & fifth byte of packet (packet ID)
+
+        for (int i = 0; i < packetLength; i++)
+        {
+            packet[5 + i] = fgetc(fp); // reads and adds the data depending on the packet length (often 120 bytes)
+        }
+
+
+
+
+
+    }
+
+    //Malloc all of the variables
+    free(fp1);
+    free(fp2);
+    free(fileName);
+    free(dataTypeStr);
+    free(fp2);
+    free(fp);
     
-    // increment 
+    return 0;
 }
 
+
+
+/*
+*/
 /*************************** HELPER FUNCTIONS **********************************/
+
+
+
+int packet_size(char *fileName, int packetNumber)
+{
+     #define SEGMENT 120 // approximate target size of small file long
+    
+    
+    int segments=0, i, len, offset;
+    FILE *fp1, *fp2;
+    
+    
+    long sizeFile = file_size(fileName);
+    
+    segments = sizeFile/SEGMENT + 1;  //ensure end of file
+    
+    char smallFileName[260]; // small File Name
+    char line[1080]; // not sure what this is doing
+    fp1 = fopen(fileName, "r");
+    
+    
+    if(fp1){
+    	for(i=0;i<segments;i++){
+    		offset = 0;
+    		sprintf(smallFileName, "%s%d.txt", fileName, i);
+    		fp2 = fopen(smallFileName, "w");
+    		if(fp2){
+    			while(fgets(line, 1080, fp1) && offset <= SEGMENT){
+    				offset += strlen(line);//track size of growing file
+    				fputs(line, fp2);
+    			}
+    			fclose(fp2);
+    		}
+    	}
+    	fclose(fp1);
+    }
+}
+
 /**
  * @brief Sends a write command to the payload over UART
  * @param command: The command to be used on the transceiver
