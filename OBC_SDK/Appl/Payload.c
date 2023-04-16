@@ -361,7 +361,13 @@ HAL_StatusTypeDef KELVIN_FILE_TRANSFER(){
  * @brief Selects which part of the data is transmitted and sends that part home 
  * 
 */
-HAL_StatusTypeDef CODE_SEPERATOR(int measurementID, int dataType, int startPacket, int endPacket){
+HAL_StatusTypeDef CODE_SEPERATOR(unsigned short int measurementID, byte dataType, unsigned short int startPacket, unsigned short int endPacket){
+
+    if (startPacket > endPacket)
+    {
+        return HAL_ERROR;
+    }
+
     // Read OBC's SD card (and possibly erases it from the payload)
 
     char * dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
@@ -374,48 +380,55 @@ HAL_StatusTypeDef CODE_SEPERATOR(int measurementID, int dataType, int startPacke
     
     FILE *fp = fopen(fileName, "r");
 
-    long sizeFile = file_size(fp);
+    long int sizeFile = file_size(fp);
 
-    fseek(fp, 120*startPacket, 0); // seek to start of data
+    fseek(fp, 118*startPacket, 0); // seek to start of data
 
     // START_PIPE(); // For standalone testing do not use this!!!!!!!!!!!!!!!!!!!!!!
 
 
-    char packet[128];
-    for (int i = startPacket; i <= endPacket; i++)
+    unsigned char packet[128];
+    
+    for (unsigned short int i = startPacket; i <= endPacket; i++)
     {
+        packet[0] = 0xFF;
+        packet[1] = (measurementID >> 8) & 0xFF;
+        packet[2] = measurementID & 0xFF;
+        packet[3] = dataType;
+        packet[4] = (i >> 8) & 0xFF;
+        packet[5] = i & 0xFF;
+
+
         //PSEUDOCODE FOR: Check to see if packet requested is greater than the length of a file (if so break out of the loop)
         // ASK STEVEN WHAT HE MEANS BY "A FILE"
         
-        if (i == endPacket) // Check to see if packet requested is the last packet of a file (if so, FREAD until end instead of 120)
+        unsigned char data[118] = {'\0'};
+
+        if (sizeFile - 118 * i <118) // Check to see if packet requested is the last packet of a file (if so, FREAD until end instead of 120)
         {
-            // fread(line, 1, sizeFile - (120*endPacket), fp); // read until the end
-            fread(fp, );
+            fread(&data, 1, sizeFile - 118 * i, fp);
+
+            for (int j = 0; j < sizeFile - 118 * i; j++)
+            {
+                packet[6+j] = data[j];
+            }
+            
+        }
+        else
+        {
+        fread(&data, 1, 118, fp);
+
+        for (int j = 0; j < 118; j++)
+        {
+            packet[6+j] = data[j];
+        }
         }
 
-        packet[0] += fgetc(fp); // read first byte of packet (Special character)
-        packet[1] += fgetc(fp); // read second byte of packet (measurement ID)
-        packet[2] += fgetc(fp); // read third byte of packet (data type)
-        packet[3] += fgetc(fp) + fgetc(fp); // read fourth & fifth byte of packet (packet ID)
-
-        for (int i = 0; i < packetLength; i++)
-        {
-            packet[5 + i] = fgetc(fp); // reads and adds the data depending on the packet length (often 120 bytes)
-        }
-
-
-
-
-
+        crc32(packet, (sizeFile - 118 * i) + 6, &packet[6 + (sizeFile - 118 * i)]);
     }
 
     //Malloc all of the variables
-    free(fp1);
-    free(fp2);
-    free(fileName);
-    free(dataTypeStr);
-    free(fp2);
-    free(fp);
+
     
     return 0;
 }
@@ -428,7 +441,7 @@ HAL_StatusTypeDef CODE_SEPERATOR(int measurementID, int dataType, int startPacke
 
 
 
-int packet_size(char *fileName, int packetNumber)
+int packet_Size_Helper(char *fileName, int packetNumber)
 {
      #define SEGMENT 120 // approximate target size of small file long
     
