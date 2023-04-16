@@ -295,6 +295,7 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type){
         //Write to SD Card
         FATFS FatFs; //Fatfs handle
         FIL fil; //File handle
+        FIL entryfil; //File containing data entry number
         FRESULT fres; //Result after operations
 
         //Open the file system
@@ -304,23 +305,38 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type){
         }
 
         //Using the data entry number stored in file "data_number.txt", specifies the data file to be created
-        entry_num_fil = f_open(&entryfil, "entry_number.txt", FA_WRITE | FA_READ | FA_OPEN_ALWAYS);
+        f_open(&entryfil, "entry_number.txt", FA_WRITE | FA_READ | FA_OPEN_ALWAYS);
         char filename_buff[25];
-        success = fscanf(data_n, "%d", entry_id);
+
+        unsigned short int entry_id;
+        int success = fscanf(&entryfil, "%d", entry_id);
 
         //If no data entry value is present, provides a starting value
-        if(!success)
+        if(!success){
         	entry_id = 0;
+        	debug_printf("File created");
+        }
+
+        debug_printf("%d", entry_id);
 
         //Adds 1 to the data entry number, closes the file
         fprintf(&entryfil, "%d", entry_id+1);
         fclose(&entryfil);
 
         //Create the specified data file
-        if(file_type == 0)
-        	data_file_name = sprintf(filename_buff, "dat%d.txt", entry_id);
-        else
-        	data_file_name = sprintf(filename_buff, "kel%d.txt", entry_id);
+
+        char data_file_name[12]={"\0"};
+
+        if(file_type == 0){
+        	data_file_name[0] = sprintf(filename_buff, "dat%d.txt", entry_id);
+        	debug_printf("dat file");
+        }
+        else {
+        	data_file_name[0] = sprintf(filename_buff, "kel%d.txt", entry_id);
+        	debug_printf("kel file");
+        }
+
+        debug_printf("%s", data_file_name);
 
         fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
 
@@ -361,64 +377,64 @@ HAL_StatusTypeDef KELVIN_FILE_TRANSFER(){
  * @brief Selects which part of the data is transmitted and sends that part home 
  * 
 */
-HAL_StatusTypeDef CODE_SEPERATOR(int measurementID, int dataType, int startPacket, int endPacket){
-    // Read OBC's SD card (and possibly erases it from the payload)
-
-    char * dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
-    char *fileName = asprintf("%d%s", measurementID, dataTypeStr); 
-
-        // ----  Copied and Pasted Code --- 
-    
-
-    int iterator = 0;
-    
-    FILE *fp = fopen(fileName, "r");
-
-    long sizeFile = file_size(fp);
-
-    fseek(fp, 120*startPacket, 0); // seek to start of data
-
-    // START_PIPE(); // For standalone testing do not use this!!!!!!!!!!!!!!!!!!!!!!
-
-
-    char packet[128];
-    for (int i = startPacket; i <= endPacket; i++)
-    {
-        //PSEUDOCODE FOR: Check to see if packet requested is greater than the length of a file (if so break out of the loop)
-        // ASK STEVEN WHAT HE MEANS BY "A FILE"
-        
-        if (i == endPacket) // Check to see if packet requested is the last packet of a file (if so, FREAD until end instead of 120)
-        {
-            // fread(line, 1, sizeFile - (120*endPacket), fp); // read until the end
-            fread(fp, );
-        }
-
-        packet[0] += fgetc(fp); // read first byte of packet (Special character)
-        packet[1] += fgetc(fp); // read second byte of packet (measurement ID)
-        packet[2] += fgetc(fp); // read third byte of packet (data type)
-        packet[3] += fgetc(fp) + fgetc(fp); // read fourth & fifth byte of packet (packet ID)
-
-        for (int i = 0; i < packetLength; i++)
-        {
-            packet[5 + i] = fgetc(fp); // reads and adds the data depending on the packet length (often 120 bytes)
-        }
-
-
-
-
-
-    }
-
-    //Malloc all of the variables
-    free(fp1);
-    free(fp2);
-    free(fileName);
-    free(dataTypeStr);
-    free(fp2);
-    free(fp);
-    
-    return 0;
-}
+//HAL_StatusTypeDef CODE_SEPERATOR(int measurementID, int dataType, int startPacket, int endPacket){
+//    // Read OBC's SD card (and possibly erases it from the payload)
+//
+//    char * dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
+//    char *fileName = asprintf("%d%s", measurementID, dataTypeStr);
+//
+//        // ----  Copied and Pasted Code ---
+//
+//
+//    int iterator = 0;
+//
+//    FILE *fp = fopen(fileName, "r");
+//
+//    long sizeFile = file_size(fp);
+//
+//    fseek(fp, 120*startPacket, 0); // seek to start of data
+//
+//    // START_PIPE(); // For standalone testing do not use this!!!!!!!!!!!!!!!!!!!!!!
+//
+//
+//    char packet[128];
+//    for (int i = startPacket; i <= endPacket; i++)
+//    {
+//        //PSEUDOCODE FOR: Check to see if packet requested is greater than the length of a file (if so break out of the loop)
+//        // ASK STEVEN WHAT HE MEANS BY "A FILE"
+//
+//        if (i == endPacket) // Check to see if packet requested is the last packet of a file (if so, FREAD until end instead of 120)
+//        {
+//            // fread(line, 1, sizeFile - (120*endPacket), fp); // read until the end
+//            fread(fp, );
+//        }
+//
+//        packet[0] += fgetc(fp); // read first byte of packet (Special character)
+//        packet[1] += fgetc(fp); // read second byte of packet (measurement ID)
+//        packet[2] += fgetc(fp); // read third byte of packet (data type)
+//        packet[3] += fgetc(fp) + fgetc(fp); // read fourth & fifth byte of packet (packet ID)
+//
+//        for (int i = 0; i < packetLength; i++)
+//        {
+//            packet[5 + i] = fgetc(fp); // reads and adds the data depending on the packet length (often 120 bytes)
+//        }
+//
+//
+//
+//
+//
+//    }
+//
+//    //Malloc all of the variables
+//    free(fp1);
+//    free(fp2);
+//    free(fileName);
+//    free(dataTypeStr);
+//    free(fp2);
+//    free(fp);
+//
+//    return 0;
+//}
 
 
 

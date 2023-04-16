@@ -22,6 +22,11 @@ bool ADCS_ACTIVE = 0;
 bool LOW_POWER_MODE = 0;
 
 uint8_t RxBuffer[7];
+FATFS FatFs; //Fatfs handle
+FIL fil; //File handle
+FIL entryfil; //File containing data entry number
+FRESULT fres; //Result after operations
+FRESULT efres; //Result after opening entryfil
 
 /**
  * Run main thread tasks on satellite. This includes basic
@@ -32,7 +37,7 @@ uint8_t RxBuffer[7];
  */
 void Main_Task(void const *argument) {
     HAL_StatusTypeDef mainStatus = HAL_OK;
-    debug_printf("######## MAIN TASK ########\r\n");
+    debug_printf("MAIN TASK ########\r\n");
 
     /*
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -127,7 +132,7 @@ void Main_Task(void const *argument) {
     }
     osDelay(1000);
     // Start Test
-    //mainStatus = START_BEACON();
+    mainStatus = START_BEACON();
     osDelay(1000);
 
     // Commented out a bunch of UHF stuff that may get deleted later
@@ -154,6 +159,66 @@ void Main_Task(void const *argument) {
     } else {
         debug_printf("[Main Thread/SUCCESS]: UHF temperature: %lf", uhfTemperature);
     }
+
+    //Write to SD Card
+
+
+            //Open the file system
+            fres = f_mount(&FatFs, "0", 1);
+            if(fres != FR_OK){
+            	debug_printf("Fres is not OK");
+                //return HAL_ERROR;
+            }
+
+
+            //Using the data entry number stored in file "data_number.txt", specifies the data file to be created
+            efres = f_open(&entryfil, "entry_number.txt", FA_WRITE | FA_READ | FA_OPEN_ALWAYS);
+
+            if(efres != FR_OK){
+            	debug_printf("Entry file is not ok");
+            }
+
+            unsigned short int entry_id = 0;
+            int success = fscanf(&entryfil, "%d", entry_id);
+
+
+            //If no data entry value is present, provides a starting value
+            if(!success){
+            	entry_id = 0;
+            	debug_printf("File created");
+            }
+
+            debug_printf("%d", entry_id);
+
+            //Adds 1 to the data entry number, closes the file
+            int new_entry_id = entry_id + 1;
+            fprintf(&entryfil, "%d", new_entry_id);
+            fclose(&entryfil);
+
+            //Create the specified data file
+
+            char data_file_name[12];
+
+            int file_type = 1;
+            if(file_type == 0){
+            	sprintf(data_file_name, "dat%d.txt", entry_id);
+            	debug_printf("dat file");
+            }
+            else {
+            	sprintf(data_file_name, "kel%d.txt", entry_id);
+            	debug_printf("kel file");
+            }
+
+
+            //for(int i=0; i<12; i++){
+            	debug_printf("File name: %s", data_file_name);
+            //}
+
+            fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+
+            if(fres != FR_OK){
+                //return HAL_ERROR;
+            }
 
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
@@ -297,7 +362,7 @@ void UHF_Tx_Task(void const *argument) {
     osDelay(30000);
     END_BEACON();
     osDelay(5000);
-    osDelay(99999999999999); //Uncomment to test comms but plug UHF in because the transmission power spike is too much
+    //osDelay(99999999999999); //Uncomment to test comms but plug UHF in because the transmission power spike is too much
     SET_PIPE_TIMEOUT(7);
     //debug_printf("Starting pipe");
     START_PIPE();
