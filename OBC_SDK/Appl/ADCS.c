@@ -812,7 +812,9 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
         status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
         if(status != HAL_OK)
             return status;
-        while(data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F){
+
+        int counter=0;
+        while((data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F)&&counter<=200){
             if(data[2] == 0x1F){
                 data[0] = 0x1F;
                 status = HAL_UART_Receive(&huart4, data+1, 2, ADCS_UART_TIMEOUT);
@@ -829,6 +831,13 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
 
         memcpy(data_ptr, &data[3], out_byte);
         osMutexRelease(UART_Mutex);
+
+        if(counter>199){
+        	debug_printf("ADCS Telemetry While Loop Overflow, exiting");
+        	return status;
+        }
+
+
         if(status != HAL_OK)
             return status;
         else if((data[0]!=0x1F)||(data[1]!=0x7F)||(data[2]!=command)||(data[out_byte+3]!=0x1F)||(data[out_byte+4]!=0xFF))
@@ -865,8 +874,10 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
             return status;
         }
         uint8_t data[6];
+        int couner=0;
         status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
-        while(data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F){
+        while((data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F)&&counter<=200){
+        	counter=counter+1;
             if(data[2] == 0x1F){
                 data[0] = 0x1F;
                 status = HAL_UART_Receive(&huart4, data+1, 2, ADCS_UART_TIMEOUT);
@@ -882,6 +893,14 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
         status = HAL_UART_Receive(&huart4, data+3, 3, ADCS_UART_TIMEOUT);
         osMutexRelease(UART_Mutex);
         debug_printf("[ADCS_TELECOMMAND]: Received Data: %d %d %d %d %d %d", data[0],data[1],data[2],data[3],data[4],data[5]); //shows received data
+
+        if(counter>199){
+        	debug_printf("ADCS Telecommand While Loop Overflow, exiting");
+        	return status;
+        }
+
+
+
         if(status != HAL_OK)
             return status;
         else if(data[2]!= command[0] || data[3]==1 || data[3] == 2){

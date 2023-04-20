@@ -245,10 +245,10 @@ void assert_failed(uint8_t* file, uint32_t line)
  * @param huart
  */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-    debug_printf("Reception Callback Called");
     // UART for Payload
     if (huart == &huart6) {
         if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
+        	debug_printf("Reception Callback Called (Error)");
             sendErrorPacket();
         }
         HAL_UART_Receive_IT(&huart6, GroundStationRxBuffer, 4);
@@ -258,10 +258,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     // UART for OBC
     if (huart == &huart1) {
         if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
+        	debug_printf("Reception Callback Called (Error)");
             sendErrorPacket();
         }
         HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 4);
     }
+    debug_printf("Reception Callback Called");
+    debug_printf("Data: %c %c %c %c",GroundStationRxBuffer[0],GroundStationRxBuffer[1],GroundStationRxBuffer[2],GroundStationRxBuffer[3]);
 }
 
 /**
