@@ -498,7 +498,7 @@ void UHF_Tx_Task(void const *argument) {
     osDelay(30000);
     END_BEACON();
     osDelay(5000);
-    //osDelay(99999999999999); //Uncomment to test comms but plug UHF in because the transmission power spike is too much
+    osDelay(99999999999999); //Uncomment to test comms but plug UHF in because the transmission power spike is too much
     SET_PIPE_TIMEOUT(7);
     //debug_printf("Starting pipe");
     START_PIPE();
