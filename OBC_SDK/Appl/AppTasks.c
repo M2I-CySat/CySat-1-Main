@@ -240,11 +240,11 @@ void Main_Task(void const *argument) {
     osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
 
 
-    int16_t testx;
-    int16_t testy;
+    int16_t test1;
+    int16_t test2;
     //int16_t testz;
-    mainStatus=TLM_140(&testx,&testy);
-    debug_printf("%d %d ",testx,testy);
+    mainStatus=TLM_140(&test1,&test2);
+    debug_printf("%d %d ",test1,test2);
 
 
          debug_printf("testing TLM_140");
@@ -252,24 +252,160 @@ void Main_Task(void const *argument) {
           if (mainStatus != HAL_OK) {
                   debug_printf("[Main Thread/ERROR]: Failed to test TLM_140");
                } else {
-                  debug_printf("[Main Thread/SUCCESS]: TLM Worked correctly");
+                  debug_printf("[Main Thread/SUCCESS]: TLM_140 Worked correctly");
                }
 
+          float testx;
+          float testy;
+          float testz;
 
-    mainStatus = TC_10(1);
-    osDelay(1500);
+          mainStatus=TLM_155(&testx,&testy, &testz);
+          debug_printf("%f %f %f",testx,testy, testz);
+
+          debug_printf("testing TLM_155");
+
+          if (mainStatus != HAL_OK) {
+        	  debug_printf("[Main Thread/ERROR]: Failed to test TLM_155");
+          } else {
+        	  debug_printf("[Main Thread/SUCCESS]: TLM_155 Worked correctly");
+          }
+
+          int16_t val1;
+
+          mainStatus=TLM_156(&val1);
+          debug_printf("%d", val1);
+
+          debug_printf("testing TLM_156");
+
+          if (mainStatus != HAL_OK) {
+        	  debug_printf("[Main Thread/ERROR]: Failed to test TLM_156");
+          } else {
+        	  debug_printf("[Main Thread/SUCCESS]: TLM_156 Worked correctly");
+          }
+
+//          float testx;
+//          float testy;
+//          float testz;
+//
+//          mainStatus=TLM_151(&testx,&testy, &testz);
+//          debug_printf("%f %f %f",testx,testy, testz);
+//
+//          debug_printf("testing TLM_151");
+//
+//          if (mainStatus != HAL_OK) {
+//        	  debug_printf("[Main Thread/ERROR]: Failed to test TLM_151");
+//          } else {
+//        	  debug_printf("[Main Thread/SUCCESS]: TLM_151 Worked correctly");
+//          }
+
+//          float testx;
+//          float testy;
+//          float testz;
+//
+//          mainStatus=TLM_150(&testx,&testy, &testz);
+//          debug_printf("%f %f %f",testx,testy, testz);
+//
+//          debug_printf("testing TLM_150");
+//
+//          if (mainStatus != HAL_OK) {
+//        	  debug_printf("[Main Thread/ERROR]: Failed to test TLM_150");
+//          } else {
+//        	  debug_printf("[Main Thread/SUCCESS]: TLM_150 Worked correctly");
+//          }
+
+//          mainStatus=TLM_146(&testx,&testy, &testz);
+//          debug_printf("%f %f %f",testx,testy, testz);
+//
+//
+//               debug_printf("testing TLM_146");
+//
+//                if (mainStatus != HAL_OK) {
+//                        debug_printf("[Main Thread/ERROR]: Failed to test TLM_146");
+//                     } else {
+//                        debug_printf("[Main Thread/SUCCESS]: TLM_146 Worked correctly");
+//                     }
+//
+//           float testxx;
+//           float testyy;
+//           float testzz;
+//           mainStatus=TLM_147(&testxx,&testyy, &testzz);
+//           debug_printf("%f %f %f",testxx,testyy, testzz);
+//
+//           debug_printf("testing TLM_147");
+//
+//           if (mainStatus != HAL_OK) {
+//        	   debug_printf("[Main Thread/ERROR]: Failed to test TLM_147");
+//           } else {
+//        	   debug_printf("[Main Thread/SUCCESS]: TLM_147 Worked correctly");
+//           }
 
 
-
-    mainStatus = TC_13(0, 0, 10);
-
-           debug_printf("testing Tc_13");
-
-           if (mainStatus != HAL_OK) {
-               debug_printf("[Main Thread/ERROR]: Failed to set ADCS attitude control mode");
-           } else {
-               debug_printf("[Main Thread/SUCCESS]: ADCS  attitude control mode set");
-           }
+//
+//    mainStatus = TC_10(1);
+//    osDelay(1500);
+//
+//
+//    mainStatus = TC_11(10, 20, 30, 40, 50, 60, 70, 80, 90);
+//    osDelay(1500);
+//
+//           debug_printf("testing Tc_11");
+//
+//           if (mainStatus != HAL_OK) {
+//               debug_printf("[Main Thread/ERROR]: Failed to set ADCS power control mode");
+//           } else {
+//               debug_printf("[Main Thread/SUCCESS]: ADCS power mode set");
+//           }
+//
+//
+//           debug_printf("Before testing Tc_15");
+//           mainStatus = TC_15(25.5, 11.1, 5);
+//           osDelay(1500);
+//
+//
+//                  debug_printf("testing Tc_15");
+//
+//                  if (mainStatus != HAL_OK) {
+//                      debug_printf("[Main Thread/ERROR]: Failed to set ADCS attitude angle control");
+//                  } else {
+//                      debug_printf("[Main Thread/SUCCESS]: ADCS  attitude control mode set");
+//                  }
+//
+//
+//
+//                  mainStatus = TC_36(50.5, 50.5, 60.5, 1);
+//                  osDelay(1500);
+//
+//                         debug_printf("testing Tc_36");
+//
+//                         if (mainStatus != HAL_OK) {
+//                             debug_printf("[Main Thread/ERROR]: Failed to set ADCS sensor rates.");
+//                         } else {
+//                             debug_printf("[Main Thread/SUCCESS]: ADCS sensor rate set");
+//                         }
+//
+//
+//                         mainStatus = TC_45(10.1, 20.2, 30.3, 40.4, 50.5, 60.6, 70.7, 80.8);
+//                         osDelay(1500);
+//
+//                                debug_printf("testing Tc_45");
+//
+//                                if (mainStatus != HAL_OK) {
+//                                    debug_printf("[Main Thread/ERROR]: Failed to set ADCS SGP4 Orbit Parameters");
+//                                } else {
+//                                    debug_printf("[Main Thread/SUCCESS]: ADCS SGP4 Orbit Parameters set");
+//                                }
+//
+//
+//
+//    mainStatus = TC_13(0, 0, 10);
+//
+//           debug_printf("testing Tc_13");
+//
+//           if (mainStatus != HAL_OK) {
+//               debug_printf("[Main Thread/ERROR]: Failed to set ADCS attitude control mode");
+//           } else {
+//               debug_printf("[Main Thread/SUCCESS]: ADCS  attitude control mode set");
+//           }
 
 
       //debug_printf(mainStatus);
