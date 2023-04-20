@@ -22,6 +22,11 @@ bool ADCS_ACTIVE = 0;
 bool LOW_POWER_MODE = 0;
 
 uint8_t RxBuffer[7];
+FATFS FatFs; //Fatfs handle
+FIL fil; //File handle
+FIL entryfil; //File containing data entry number
+FRESULT fres; //Result after operations
+FRESULT efres; //Result after opening entryfil
 
 /**
  * Run main thread tasks on satellite. This includes basic
@@ -32,7 +37,7 @@ uint8_t RxBuffer[7];
  */
 void Main_Task(void const *argument) {
     HAL_StatusTypeDef mainStatus = HAL_OK;
-    debug_printf("######## MAIN TASK ########\r\n");
+    debug_printf("MAIN TASK ########\r\n");
 
     /*
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -155,6 +160,66 @@ void Main_Task(void const *argument) {
         debug_printf("[Main Thread/SUCCESS]: UHF temperature: %lf", uhfTemperature);
     }
 
+    //Write to SD Card
+
+
+            //Open the file system
+            fres = f_mount(&FatFs, "0", 1);
+            if(fres != FR_OK){
+            	debug_printf("Fres is not OK");
+                //return HAL_ERROR;
+            }
+
+
+            //Using the data entry number stored in file "data_number.txt", specifies the data file to be created
+            efres = f_open(&entryfil, "entry_number.txt", FA_WRITE | FA_READ | FA_OPEN_ALWAYS);
+
+            if(efres != FR_OK){
+            	debug_printf("Entry file is not ok");
+            }
+
+            unsigned short int entry_id = 0;
+            int success = fscanf(&entryfil, "%d", entry_id);
+
+
+            //If no data entry value is present, provides a starting value
+            if(!success){
+            	entry_id = 0;
+            	debug_printf("File created");
+            }
+
+            debug_printf("%d", entry_id);
+
+            //Adds 1 to the data entry number, closes the file
+            int new_entry_id = entry_id + 1;
+            fprintf(&entryfil, "%d", new_entry_id);
+            fclose(&entryfil);
+
+            //Create the specified data file
+
+            char data_file_name[12];
+
+            int file_type = 1;
+            if(file_type == 0){
+            	sprintf(data_file_name, "dat%d.txt", entry_id);
+            	debug_printf("dat file");
+            }
+            else {
+            	sprintf(data_file_name, "kel%d.txt", entry_id);
+            	debug_printf("kel file");
+            }
+
+
+            //for(int i=0; i<12; i++){
+            	debug_printf("File name: %s", data_file_name);
+            //}
+
+            fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+
+            if(fres != FR_OK){
+                //return HAL_ERROR;
+            }
+
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
 
@@ -177,8 +242,18 @@ void Main_Task(void const *argument) {
 
     int16_t testx;
     int16_t testy;
-    int16_t testz;
-    mainStatus=TLM_170(&testx,&testy,&testz);
+    //int16_t testz;
+    mainStatus=TLM_140(&testx,&testy);
+    debug_printf("%d %d ",testx,testy);
+
+
+         debug_printf("testing TLM_140");
+
+          if (mainStatus != HAL_OK) {
+                  debug_printf("[Main Thread/ERROR]: Failed to test TLM_140");
+               } else {
+                  debug_printf("[Main Thread/SUCCESS]: TLM Worked correctly");
+               }
 
 
     mainStatus = TC_10(1);
@@ -186,30 +261,52 @@ void Main_Task(void const *argument) {
 
 
 
+    mainStatus = TC_13(0, 0, 10);
 
-    mainStatus = TC_2(50, 40);
+           debug_printf("testing Tc_13");
 
-    debug_printf("testing Tc_2");
+           if (mainStatus != HAL_OK) {
+               debug_printf("[Main Thread/ERROR]: Failed to set ADCS attitude control mode");
+           } else {
+               debug_printf("[Main Thread/SUCCESS]: ADCS  attitude control mode set");
+           }
 
-    if (mainStatus != HAL_OK) {
-        debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
-    } else {
-        debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
-    }
 
-    osDelay(1500);
+      //debug_printf(mainStatus);
+//        mainStatus = TC_17(10);
+//
+//        debug_printf("testing Tc_17");
+//
+//        if (mainStatus != HAL_OK) {
+//            debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
+//        } else {
+//            debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
+//        }
 
-    mainStatus = TC_14(0);
 
-        debug_printf("testing Tc_14");
-
-        if (mainStatus != HAL_OK) {
-            debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
-        } else {
-            debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
-        }
-
-        mainStatus = TC_10(0);
+//    mainStatus = TC_2(50, 40);
+//
+//    debug_printf("testing Tc_2");
+//
+//    if (mainStatus != HAL_OK) {
+//        debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
+//    } else {
+//        debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
+//    }
+//
+//    osDelay(1500);
+//
+//    mainStatus = TC_14(0);
+//
+//        debug_printf("testing Tc_14");
+//
+//        if (mainStatus != HAL_OK) {
+//            debug_printf("[Main Thread/ERROR]: Failed to set ADCS Run Mode");
+//        } else {
+//            debug_printf("[Main Thread/SUCCESS]: ADCS Run Mode Set");
+//        }
+//
+//        mainStatus = TC_10(0);
 
 
     //HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
