@@ -874,7 +874,7 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
             return status;
         }
         uint8_t data[6];
-        int couner=0;
+        int counter=0;
         status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
         while((data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F)&&counter<=200){
         	counter=counter+1;
