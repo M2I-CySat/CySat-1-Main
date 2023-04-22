@@ -159,65 +159,121 @@ void Main_Task(void const *argument) {
         debug_printf("[Main Thread/SUCCESS]: UHF temperature: %lf", uhfTemperature);
     }
 
-    //Write to SD Card
+    /*
+	*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	* WRITE TO SD CARD
+	*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
 
+    /* USER CODE BEGIN 1 */
+    FRESULT res; /* FatFs function common result code */
+    FATFS FatFs;
+    uint32_t byteswritten, bytesread; /* File write/read counts */
+    TCHAR const* entryfil_path = "entry_number.txt";
+    TCHAR const* SDPath = "0";
+    uint8_t rtext[_MAX_SS];/* File read buffer */
+    /* USER CODE END 1 */
 
-            //Open the file system
-            fres = f_mount(&FatFs, "0", 1);
-            if(fres != FR_OK){
-            	debug_printf("Fres is not OK");
-                //return HAL_ERROR;
-            }
+    /* USER CODE BEGIN 2 */
+    if(f_mount(&FatFs, (TCHAR const*)SDPath, 0) != FR_OK)
+    {
+    	Error_Handler();
+    }
+    else
+    {
+    	if(f_mkfs(SDPath, 0, sizeof(rtext)) != FR_OK)
+        {
+    		Error_Handler();
+        }
+    	else
+    	{
+    		//Open file for writing (Create)
+    		if(f_open(&entryfil, entryfil_path, FA_READ | FA_WRITE | FA_OPEN_ALWAYS) != FR_OK)
+    		{
+    			Error_Handler();
+    		}
+    		else
+    		{
 
-
-            //Using the data entry number stored in file "data_number.txt", specifies the data file to be created
-            efres = f_open(&entryfil, "entry_number.txt", FA_WRITE | FA_READ | FA_OPEN_ALWAYS);
-
-            if(efres != FR_OK){
-            	debug_printf("Entry file is not ok");
-            }
-
-            unsigned short int entry_id = 0;
-            int success = fscanf(&entryfil, "%d", entry_id);
-
+            unsigned int entry_id = 0;
+            int success = fscanf(&entryfil, "%d", (unsigned int *)entry_id);
 
             //If no data entry value is present, provides a starting value
-            if(!success){
+            if(!success)
+            {
             	entry_id = 0;
             	debug_printf("File created");
             }
 
             debug_printf("%d", entry_id);
 
-            //Adds 1 to the data entry number, closes the file
-            int new_entry_id = entry_id + 1;
-            fprintf(&entryfil, "%d", new_entry_id);
-            fclose(&entryfil);
+    		//Adds 1 to the data entry number
+    		unsigned int new_entry_id = entry_id + 1;
 
-            //Create the specified data file
+    		char new_entry_str[6];
+    		sprintf(new_entry_str, "%i", new_entry_id);
 
-            char data_file_name[12];
+    		debug_printf(new_entry_str);
 
-            int file_type = 1;
-            if(file_type == 0){
-            	sprintf(data_file_name, "dat%d.txt", entry_id);
-            	debug_printf("dat file");
-            }
-            else {
-            	sprintf(data_file_name, "kel%d.txt", entry_id);
-            	debug_printf("kel file");
-            }
+            //Write to the text file
+            res = f_write(&entryfil, new_entry_str, strlen((char *)new_entry_str), (void *)&byteswritten);
+
+            //Closes the file
+    		if((byteswritten == 0) || (res != FR_OK))
+    		{
+    			Error_Handler();
+    		}
+    		else
+    		{
+    		    f_close(&entryfil);
+    		}
 
 
-            //for(int i=0; i<12; i++){
-            	debug_printf("File name: %s", data_file_name);
-            //}
+//					//Create the specified data file
+//					char data_file_name[12];
+//
+//					int file_type = 1;
+//					if(file_type == 0){
+//						sprintf(data_file_name, "dat%d.txt", entry_id);
+//						debug_printf("dat file");
+//					}
+//					else {
+//						sprintf(data_file_name, "kel%d.txt", entry_id);
+//						debug_printf("kel file");
+//					}
+//
+//					debug_printf("File name: %s", data_file_name);
+//
+//					fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+//
+//					if(fres != FR_OK){
+//						debug_printf("Fres is not ok");
+//					}
+//
+//					UINT bytes;
+//					fres = f_write(&fil, (char*)data, (UINT)file_size, &bytes);
+//					if(fres != FR_OK || bytes!= file_size){
+//						status = HAL_ERROR;
+//						debug_printf("HAL Error");
+//					}
+//					f_close(&fil); //Close the file
+//					fres = f_mount(NULL, "", 0);
+//					efres = f_mount(NULL, "", 0); //De-mount the drive
+//
+//
+//					if((byteswritten == 0) || (res != FR_OK))
+//					{
+//						Error_Handler();
+//					}
+//					else
+//					{
+//						f_close(&fil);
+//					}
 
-            fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+    		}
+    	}
+    }
 
-            if(fres != FR_OK){
-                //return HAL_ERROR;
-            }
 
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
