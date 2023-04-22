@@ -88,7 +88,69 @@ debug_led_amber(count, period); // Amber light
 
 The following documents and datasheets can be referenced in the [CySat 1 box folder](https://iastate.app.box.com/folder/174137892065) under Subsystems -> [Subsystem]
 
+## Command Manifest
+
+See the full list of commands in CyBox
+
+- Place commands under their respective type
+- "#" marks the beginning of a subtype
+- cmd_id:com_desc:data_payload(1=True,0=False):gs_sendable(1=True,0=False)
+
+### 10:OBC
+
+0:Ping Response:1:0
+1:Ping Request:0:1
+2:Disable Beacon Response:1:0
+3:Disable Beacon Request:0:1
+4:Basic Health Check Response:1:0
+5:Basic Health Check Request:0:1
+6:Main Operating Response:0:0
+7:Main Operating Request:0:1
+
+### 30:EPS
+
+0:Voltage Response:1:0
+1:Voltage Request:0:1
+
+### 40:SDR
+
+0:Power Status Response:0:0
+1:Power Status Request:0:1
+2:Time Set Response:0:0
+3:Time Set Request:1:1
+4:Set RF Bandwidth Response:1:0
+5:Set RF Bandwidth Request:1:1
+6:Set Calibration 1 Response:0:0
+7:Set Calibration 1 Request:1:1
+8:Set Calibration 2 Response:0:0
+9:Set Calibration 2 Request:1:1
+10:Set DC Gain Response:0:0
+11:Set DC Gain Request:1:1
+12:Set fftsize Response:0:0
+13:Set fftsize Request:1:1
+14:Set Frequency Response:0:0
+15:Set Frequency Request:1:1
+16:Set Integral Response:0:0
+17:Set Integral Request:1:1
+18:Set Sample Rate Response:0:0
+19:Set Sample Rate Request:1:1
+20:Set spavg Response:0:0
+21:Set spavg Request:1:1
+22:Reset SDR to Default Values Response:1:0
+23:Reset SDR to Default Values Request:0:1
+24:SDR Values Response:1:0
+25:SDR Values Request:0:1
+26:Take Measurement Response:1:0
+27:Take Measurement Request:1:1
+28:Start Transfer Response:1:0
+29:Start Transfer Request:1:1
+30:File Finished Response:1:0
+
+## Documentation (Deprecated)
+
 ### ADCS - Attitude Determination and Control System
+
+**ADCS Testing Spreadsheets now in Box: Subsystems/ADCS/Tests**
 
 - `CubeADCS - Commissioning Manual [V3.06]` - This document describes the activities related to the commissioning of a CubeSpace ADCS module in flight.
 - `CubeADCS - Health Check [V3.15]` - This document will provide the instructions and results of the health check of the CubeADCS unit. The instructions provided must be followed exactly and the observed results must be indicated as is.
@@ -134,5 +196,3 @@ The following documents and datasheets can be referenced in the [CySat 1 box fol
 - SDR Carrier Board contains files related to the carrier board dev
 - SDR Board contains files related to the SDR chip
 - SDR Sequence contains developing operation sequence
-
-### ADCS Testing Spreadsheets now in Box: Subsystems/ADCS/Tests
