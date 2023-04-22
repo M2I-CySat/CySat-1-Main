@@ -106,8 +106,6 @@ void Error_Handler(void);
 
 void I2C2_Reset (void);
 
-int handleCySatPacket(CySat_Packet_t packet);
-
 int fprintf(FILE *f, const char* format,...);
 
 #endif    /* MAIN_H */

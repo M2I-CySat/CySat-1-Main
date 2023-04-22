@@ -21,7 +21,6 @@ int NUM_I2C_ERRORS = 0;
 bool ADCS_ACTIVE = 0;
 bool LOW_POWER_MODE = 0;
 
-uint8_t RxBuffer[7];
 FATFS FatFs; //Fatfs handle
 FIL fil; //File handle
 FIL entryfil; //File containing data entry number
@@ -461,61 +460,32 @@ void Main_Task(void const *argument) {
 /*
  * @brief main UHF Task/Thread
  */
-void UHF_Rx_Task(void const *argument) {
-    HAL_StatusTypeDef rxStatus = HAL_OK;
+void UHF_TxRx_Task(void const *argument) {
+    HAL_StatusTypeDef txRxStatus = HAL_OK;
     osDelay(10000);
-    //debug_printf("######## UHF RX TASK ########\r\n");
-    //debug_printf("Starting pipe");
-    //START_PIPE();
-    //HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
-    while (1) {
-    	osDelay(10000);
-    }
-}
-
-/*
- * @brief main UHF Task/Thread
- */
-void UHF_Tx_Task(void const *argument) {
-    HAL_StatusTypeDef txStatus = HAL_OK;
-    debug_printf("######## UHF TX TASK ########\r\n");
-
-    // Two separate UHF tasks, one for transmission
-    // One that listens until a packet is received and then deals with it, executing commands (outputs command outputs possibly to reception buffer)
-    // One that checks the transmission buffer every so often and assembles packets from that data, transmitting them
-    // Also need a transmission buffer
-    // TODO Transmission and reception
-    //uint8_t data[2] = { 0xFF, 0xFF };
-    //CySat_Packet_t outgoingPacket;
-
-    //outgoingPacket.Subsystem_Type = 0x0A;
-    //outgoingPacket.Command = 0xFF;
-    //outgoingPacket.Data = data;
-    //outgoingPacket.Data_Length = 0x02;
-    //outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
-    uint8_t packet[20]="Beep Boop I Am Alive";
-
-    osDelay(30000);
+    debug_printf("######## UHF TX/RX TASK ########\r\n");
     END_BEACON();
-    osDelay(5000);
-    osDelay(99999999999999); //Uncomment to test comms but plug UHF in because the transmission power spike is too much
+    debug_printf("Ending beacon and starting pipe");
     SET_PIPE_TIMEOUT(7);
-    //debug_printf("Starting pipe");
     START_PIPE();
+
+    // Rx listens until a packet is received and then deals with it, executing commands (outputs command outputs possibly to reception buffer)
+    // Tx checks the transmission buffer every so often and assembles packets from that data, transmitting them
+    // osDelay(99999999999999); // Uncomment to test comms but plug UHF in because the transmission power spike is too much
+
+    // Start listening for transmissions from CloneComm
     while (1) {
-        //AMBER_LED_ON();
-    	//debug_printf("Starting pipe");
-    	//debug_printf("About to send packet");
-    	osDelay(1000);
-    	//txStatus = sendCySatPacket(outgoingPacket);
-    	HAL_UART_Transmit(&huart1, packet, 20, 1000);
-    	debug_printf("Packet Sent");
-    	osDelay(3000);
-        //AMBER_LED_OFF();
-        osDelay(1000);
+        AMBER_LED_ON();
+        txRxStatus = HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
+
+        if (txRxStatus == HAL_OK) {
+        	HAL_UART_RxCpltCallback(&huart1, RxBuffer); // TODO: Is this correct? Test
+        	debug_printf("Packet Sent");
+        }
+
+        osDelay(3000);
     }
 }
-
 
 /*
  * @brief main ADCS Task/Thread

@@ -14,5 +14,6 @@
 
 int sendErrorPacket();
 CySat_Packet_t parseCySatPacket(uint8_t* packet);
+int handleCySatPacket(CySat_Packet_t packet);
 
 #endif /* GROUNDSTATION_H_ */

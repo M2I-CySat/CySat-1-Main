@@ -8,6 +8,8 @@
 
 #include "helper_functions.h"
 #include "MCU_init.h"
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_def.h"
 #include <string.h>
 #include <stdlib.h>
 

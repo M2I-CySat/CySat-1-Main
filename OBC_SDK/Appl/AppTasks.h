@@ -31,8 +31,7 @@ extern osThreadId myUHFTxTask;
 void Main_Task(void const * argument);
 void ADCS_Task(void const * argument);
 void R2U2_Task(void const * argument);
-void UHF_Rx_Task(void const * argument);
-void UHF_Tx_Task(void const * argument);
+void UHF_TxRx_Task(void const * argument);
 void BatteryCapacity_Task(void const * argument);
 
 void Fault_Recovery(int, int);

@@ -49,9 +49,6 @@
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 #define INITIAL_WAIT (30 * 60 * 1000) // waits 30 minutes
-uint8_t data[1];
-uint32_t GroundStationRxDataLength;
-uint8_t GroundStationRxBuffer[7];
 
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,10 +78,9 @@ osMutexId Low_Power_Mode_Mutex;
 osMutexId UHF_UART_Mutex;
 
 /* Threads */
-osThreadId myUHFTxTask;
+osThreadId myUHFTxRxTask;
 osThreadId myADCSTask;
 osThreadId myMainTask;
-osThreadId myUHFRxTask;
 
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -169,26 +165,17 @@ int main(void) {
     * TRHEADS INITIALIZATION - Tasks specified in AppTasks.c
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
-    osThreadDef(myMainTask, Main_Task, osPriorityRealtime, 0, 512); // Main mission
+    osThreadDef(myMainTask, Main_Task, osPriorityRealtime, 0, 512); // System initialization
     osThreadCreate(osThread(myMainTask), NULL);
 
-    osThreadDef(myUHFRxTask, UHF_Rx_Task, osPriorityNormal, 0, 512); // UHF Receive
-    osThreadCreate(osThread(myUHFRxTask), NULL);
-
-    osThreadDef(myUHFTxTask, UHF_Tx_Task, osPriorityNormal, 0, 512); // UHF Transmit
-    osThreadCreate(osThread(myUHFTxTask), NULL);
+    osThreadDef(myUHFTxRxTask, UHF_TxRx_Task, osPriorityNormal, 0, 512); // UHF Receive/Transmit
+    osThreadCreate(osThread(myUHFTxRxTask), NULL);
 
     osThreadDef(myADCSTask, ADCS_Task, osPriorityNormal, 0, 1024); // ADCS
     osThreadCreate(osThread(myADCSTask), NULL);
 
     osThreadDef(myBatteryCapacityTask, BatteryCapacity_Task, osPriorityNormal, 0, 256); // Batteries
     osThreadCreate(osThread(myBatteryCapacityTask), NULL);
-
-    //HAL_UART_RxCpltCallback(&huart1);
-
-
-    // TODO: Uncomment to test payload UART receive data
-    // End of Main, main thread running
 
     /* FINAL TASK: Start scheduler */
     osKernelStart();
@@ -199,6 +186,34 @@ int main(void) {
 * INTERNAL (STATIC) ROUTINES DEFINITION
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+
+/**
+ * On receive of UART data from specified UART module, handle the information
+ * Called when a packet is received from a UART device
+ * @param huart - the specified UART module
+ */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart, uint8_t *GroundStationRxBuffer) {
+    // UART for Payload
+    if (huart == &huart6) {
+        if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
+            debug_printf("Reception Callback Called (Error)");
+            sendErrorPacket();
+        }
+        HAL_UART_Receive_IT(&huart6, GroundStationRxBuffer, 4);
+
+    }
+
+    // UART for OBC
+    if (huart == &huart1) {
+        if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
+            debug_printf("Reception Callback Called (Error)");
+            sendErrorPacket();
+        }
+        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 4);
+    }
+    debug_printf("Reception Callback Called");
+    debug_printf("Data: %c %c %c %c",GroundStationRxBuffer[0],GroundStationRxBuffer[1],GroundStationRxBuffer[2],GroundStationRxBuffer[3]);
+}
 
 /**
   * @brief  Period elapsed callback in non blocking mode
@@ -242,36 +257,11 @@ void assert_failed(uint8_t* file, uint32_t line)
 
 /**
  *
- * @param huart
- */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-    // UART for Payload
-    if (huart == &huart6) {
-        if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
-        	debug_printf("Reception Callback Called (Error)");
-            sendErrorPacket();
-        }
-        HAL_UART_Receive_IT(&huart6, GroundStationRxBuffer, 4);
-
-    }
-
-    // UART for OBC
-    if (huart == &huart1) {
-        if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
-        	debug_printf("Reception Callback Called (Error)");
-            sendErrorPacket();
-        }
-        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 4);
-    }
-    debug_printf("Reception Callback Called");
-    debug_printf("Data: %c %c %c %c",GroundStationRxBuffer[0],GroundStationRxBuffer[1],GroundStationRxBuffer[2],GroundStationRxBuffer[3]);
-}
-
-/**
- *
  * @param hi2c
  */
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c) {
+	uint8_t data[1];
+
     if (hi2c == &hi2c1) { //OBC connected to EPS, UHF, and ADCS
         debug_printf("I2C connection established!");
         HAL_I2C_Master_Receive_IT(&hi2c1, 0x18 << 1, data, 1);
