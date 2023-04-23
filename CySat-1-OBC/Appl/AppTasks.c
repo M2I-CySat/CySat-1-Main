@@ -504,6 +504,11 @@ void Main_Task(void const *argument) {
 
     // Main startup complete, begin loop checks
 
+    // Testing Code Separator
+    HAL_StatusTypeDef status;
+    status = CODE_SEPERATOR(0, 1, 0, 1);
+    debug_printf("%d", status);
+
 
 
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");

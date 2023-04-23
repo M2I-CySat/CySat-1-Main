@@ -459,7 +459,9 @@ HAL_StatusTypeDef CODE_SEPERATOR(unsigned short int measurementID, unsigned char
         crc32(packet, (sizeFile - 118 * i) + 6, &packet[6 + (sizeFile - 118 * i)]);
 
         // HAL_UART_Transmit(&huart1, packet, 6+ (sizeFile - 118 * i), 1000); // Do not use for standalone testing!!!!!!
+        debug_printf("Packet %d: %s", i, packet);
     }
+
 
     return HAL_OK;
 }
