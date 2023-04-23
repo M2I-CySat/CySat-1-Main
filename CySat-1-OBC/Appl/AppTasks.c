@@ -503,6 +503,9 @@ void Main_Task(void const *argument) {
     //HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
 
     // Main startup complete, begin loop checks
+
+
+
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
 
     while (1) {
