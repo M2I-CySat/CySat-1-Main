@@ -476,40 +476,40 @@ HAL_StatusTypeDef CODE_SEPERATOR(unsigned short int measurementID, unsigned char
 
 
 
-int packet_size(char *fileName, int packetNumber)
-{
-     #define SEGMENT 120 // approximate target size of small file long
-    
-    
-    int segments=0, i, len, offset;
-    FILE *fp1, *fp2;
-    
-    
-    long sizeFile = file_size(fileName);
-    
-    segments = sizeFile/SEGMENT + 1;  //ensure end of file
-    
-    char smallFileName[260]; // small File Name
-    char line[1080]; // not sure what this is doing
-    fp1 = fopen(fileName, "r");
-    
-    
-    if(fp1){
-    	for(i=0;i<segments;i++){
-    		offset = 0;
-    		sprintf(smallFileName, "%s%d.txt", fileName, i);
-    		fp2 = fopen(smallFileName, "w");
-    		if(fp2){
-    			while(fgets(line, 1080, fp1) && offset <= SEGMENT){
-    				offset += strlen(line);//track size of growing file
-    				fputs(line, fp2);
-    			}
-    			fclose(fp2);
-    		}
-    	}
-    	fclose(fp1);
-    }
-}
+//int packet_size(char *fileName, int packetNumber)
+//{
+//     #define SEGMENT 120 // approximate target size of small file long
+//
+//
+//    int segments=0, i, len, offset;
+//    FILE *fp1, *fp2;
+//
+//
+//    long sizeFile = file_size(fileName);
+//
+//    segments = sizeFile/SEGMENT + 1;  //ensure end of file
+//
+//    char smallFileName[260]; // small File Name
+//    char line[1080]; // not sure what this is doing
+//    fp1 = fopen(fileName, "r");
+//
+//
+//    if(fp1){
+//    	for(i=0;i<segments;i++){
+//    		offset = 0;
+//    		sprintf(smallFileName, "%s%d.txt", fileName, i);
+//    		fp2 = fopen(smallFileName, "w");
+//    		if(fp2){
+//    			while(fgets(line, 1080, fp1) && offset <= SEGMENT){
+//    				offset += strlen(line);//track size of growing file
+//    				fputs(line, fp2);
+//    			}
+//    			fclose(fp2);
+//    		}
+//    	}
+//    	fclose(fp1);
+//    }
+//}
 
 /**
  * @brief Sends a write command to the payload over UART
