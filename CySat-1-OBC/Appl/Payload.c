@@ -396,7 +396,9 @@ HAL_StatusTypeDef CODE_SEPERATOR(unsigned short int measurementID, unsigned char
         return HAL_ERROR;
     }
 
-    long int sizeFile = file_size(fp); // Determines the size of the file in bytes
+//    long int sizeFile = file_size(fp); // Determines the size of the file in bytes
+    fseek(fp, 0L, SEEK_END);
+    long int sizeFile = ftell(fp0);
 
     if (fseek(fp, 118*startPacket, 0) != 0) // seek to start of data
     {
