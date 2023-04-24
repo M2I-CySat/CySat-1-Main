@@ -94,14 +94,13 @@ extern uint32_t calendar_format;
 
 extern Sat_Flags_t SatFlags;
 
-extern uint16_t obc[];
+extern uint8_t GroundStationRxBuffer[7];
 
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * EXTERNAL ROUTINES DECLARATIONS 
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
 void Error_Handler(void);
 
 void I2C2_Reset (void);

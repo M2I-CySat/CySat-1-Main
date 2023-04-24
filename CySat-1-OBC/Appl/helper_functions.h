@@ -8,7 +8,6 @@
 #ifndef HELPER_FUNCTIONS_H_
 #define HELPER_FUNCTIONS_H_
 
-#include <GroundStation.h>
 #include "OBC.h"
 #include  <stdarg.h>
 #include "stm32f4xx_hal.h"

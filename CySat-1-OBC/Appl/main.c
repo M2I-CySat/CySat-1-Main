@@ -63,7 +63,11 @@
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 Sat_Flags_t SatFlags;
+
+uint8_t GroundStationRxBuffer[7];
+
 uint32_t calendar_format;
+
 FILE *COMM = COM1;
 FILE *PAYLOAD = COM4;
 FILE *SYSCON = COM6;
@@ -172,10 +176,17 @@ int main(void) {
     osThreadCreate(osThread(myUHFTxRxTask), NULL);
 
     osThreadDef(myADCSTask, ADCS_Task, osPriorityNormal, 0, 1024); // ADCS
-    osThreadCreate(osThread(myADCSTask), NULL);
+    // TODO: Uncomment osThreadCreate(osThread(myADCSTask), NULL);
 
     osThreadDef(myBatteryCapacityTask, BatteryCapacity_Task, osPriorityNormal, 0, 256); // Batteries
-    osThreadCreate(osThread(myBatteryCapacityTask), NULL);
+    // TODO: Uncomment osThreadCreate(osThread(myBatteryCapacityTask), NULL);
+
+    /*
+     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     * CALLBACKS INITIALIZATION - Callbacks from STM Drivers
+     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+    HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 7);
 
     /* FINAL TASK: Start scheduler */
     osKernelStart();
@@ -192,14 +203,18 @@ int main(void) {
  * Called when a packet is received from a UART device
  * @param huart - the specified UART module
  */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart, uint8_t *GroundStationRxBuffer) {
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+    debug_printf("WE GOT A PACKET!");
+    AMBER_LED_ON();
+
     // UART for Payload
     if (huart == &huart6) {
         if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
             debug_printf("Reception Callback Called (Error)");
             sendErrorPacket();
         }
-        HAL_UART_Receive_IT(&huart6, GroundStationRxBuffer, 4);
+
+        HAL_UART_Receive_IT(&huart6, GroundStationRxBuffer, 7);
 
     }
 
@@ -209,10 +224,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart, uint8_t *GroundStationRx
             debug_printf("Reception Callback Called (Error)");
             sendErrorPacket();
         }
-        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 4);
+
+        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 7);
     }
-    debug_printf("Reception Callback Called");
-    debug_printf("Data: %c %c %c %c",GroundStationRxBuffer[0],GroundStationRxBuffer[1],GroundStationRxBuffer[2],GroundStationRxBuffer[3]);
+
+    AMBER_LED_OFF();
 }
 
 /**
@@ -276,6 +292,7 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c) {
 void Error_Handler(void) {
     /* USER CODE BEGIN Error_Handler */
     /* User can add his own implementation to report the HAL error return state */
+	debug_printf("Error Handler triggered");
 #ifdef DEBUG_ENABLE
     while(1)
     {

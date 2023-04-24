@@ -39,12 +39,14 @@ int sendErrorPacket(){
  */
 int handleCySatPacket(CySat_Packet_t packet){
     debug_printf("WE GOT A PACKET!");
+
     HAL_StatusTypeDef status;
     CySat_Packet_t outgoingPacket;
+
     switch(packet.Subsystem_Type){
-        case OBC_SUBSYSTEM_TYPE: //OBC
+        case OBC_SUBSYSTEM_TYPE: // OBC
             switch(packet.Command){
-                case 0x01: { //Ping Request
+                case 0x01: { // Ping Request
                     char message[58] = "Alive and well, Ames! Congratulations to the CySat-1 Team!";
                     outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
                     outgoingPacket.Command = 0x00; //Ping response
@@ -104,15 +106,12 @@ int handleCySatPacket(CySat_Packet_t packet){
                 break;
 
             }
-
-
-
-            break;
-        case ADCS_SUBSYSTEM_TYPE: //ADCS
-
             break;
 
-        case EPS_SUBSYSTEM_TYPE: //EPS
+        case ADCS_SUBSYSTEM_TYPE: // ADCS
+            break;
+
+        case EPS_SUBSYSTEM_TYPE: // EPS
             switch(packet.Command){
                 case 0x01: { //Battery Pack Voltage/Current Request
                     float voltage, current;

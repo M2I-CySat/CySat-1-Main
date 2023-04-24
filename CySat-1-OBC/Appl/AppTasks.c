@@ -35,8 +35,9 @@ FRESULT efres; //Result after opening entryfil
  * @brief Main Task/Thread
  */
 void Main_Task(void const *argument) {
-    HAL_StatusTypeDef mainStatus = HAL_OK;
     debug_printf("MAIN TASK ########\r\n");
+
+    HAL_StatusTypeDef mainStatus = HAL_OK;
 
     /*
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -134,8 +135,6 @@ void Main_Task(void const *argument) {
     mainStatus = START_BEACON();
     osDelay(1000);
 
-    // Commented out a bunch of UHF stuff that may get deleted later
-
     // Stop Test - Tested and works
     //mainStatus = END_BEACON();
     // osDelay(1000);
@@ -159,76 +158,76 @@ void Main_Task(void const *argument) {
         debug_printf("[Main Thread/SUCCESS]: UHF temperature: %lf", uhfTemperature);
     }
 
-    /*
-	*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	* WRITE TO SD CARD
-	*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    */
-
-    /* USER CODE BEGIN 1 */
-    FRESULT res; /* FatFs function common result code */
-    FATFS FatFs;
-    uint32_t byteswritten, bytesread; /* File write/read counts */
-    TCHAR const* entryfil_path = "entry_number.txt";
-    TCHAR const* SDPath = "0";
-    uint8_t rtext[_MAX_SS];/* File read buffer */
-    /* USER CODE END 1 */
-
-    /* USER CODE BEGIN 2 */
-    if(f_mount(&FatFs, (TCHAR const*)SDPath, 0) != FR_OK)
-    {
-    	Error_Handler();
-    }
-    else
-    {
-    	if(f_mkfs(SDPath, 0, sizeof(rtext)) != FR_OK)
-        {
-    		Error_Handler();
-        }
-    	else
-    	{
-    		//Open file for writing (Create)
-    		if(f_open(&entryfil, entryfil_path, FA_READ | FA_WRITE | FA_OPEN_ALWAYS) != FR_OK)
-    		{
-    			Error_Handler();
-    		}
-    		else
-    		{
-
-            unsigned int entry_id = 0;
-            int success = fscanf(&entryfil, "%d", (unsigned int *)entry_id);
-
-            //If no data entry value is present, provides a starting value
-            if(!success)
-            {
-            	entry_id = 0;
-            	debug_printf("File created");
-            }
-
-            debug_printf("%d", entry_id);
-
-    		//Adds 1 to the data entry number
-    		unsigned int new_entry_id = entry_id + 1;
-
-    		char new_entry_str[6];
-    		sprintf(new_entry_str, "%i", new_entry_id);
-
-    		debug_printf(new_entry_str);
-
-            //Write to the text file
-            res = f_write(&entryfil, new_entry_str, strlen((char *)new_entry_str), (void *)&byteswritten);
-
-            //Closes the file
-    		if((byteswritten == 0) || (res != FR_OK))
-    		{
-    			Error_Handler();
-    		}
-    		else
-    		{
-    		    f_close(&entryfil);
-    		}
-
-
+//    /*
+//	*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//	* WRITE TO SD CARD
+//	*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//    */
+//
+//    /* USER CODE BEGIN 1 */
+//    FRESULT res; /* FatFs function common result code */
+//    FATFS FatFs;
+//    uint32_t byteswritten, bytesread; /* File write/read counts */
+//    TCHAR const* entryfil_path = "entry_number.txt";
+//    TCHAR const* SDPath = "0";
+//    uint8_t rtext[_MAX_SS];/* File read buffer */
+//    /* USER CODE END 1 */
+//
+//    /* USER CODE BEGIN 2 */
+//    if(f_mount(&FatFs, (TCHAR const*)SDPath, 0) != FR_OK)
+//    {
+//    	Error_Handler();
+//    }
+//    else
+//    {
+//    	if(f_mkfs(SDPath, 0, sizeof(rtext)) != FR_OK)
+//        {
+//    		Error_Handler();
+//        }
+//    	else
+//    	{
+//    		//Open file for writing (Create)
+//    		if(f_open(&entryfil, entryfil_path, FA_READ | FA_WRITE | FA_OPEN_ALWAYS) != FR_OK)
+//    		{
+//    			Error_Handler();
+//    		}
+//    		else
+//    		{
+//
+//            unsigned int entry_id = 0;
+//            int success = fscanf(&entryfil, "%d", (unsigned int *)entry_id);
+//
+//            //If no data entry value is present, provides a starting value
+//            if(!success)
+//            {
+//            	entry_id = 0;
+//            	debug_printf("File created");
+//            }
+//
+//            debug_printf("%d", entry_id);
+//
+//    		//Adds 1 to the data entry number
+//    		unsigned int new_entry_id = entry_id + 1;
+//
+//    		char new_entry_str[6];
+//    		sprintf(new_entry_str, "%i", new_entry_id);
+//
+//    		debug_printf(new_entry_str);
+//
+//            //Write to the text file
+//            res = f_write(&entryfil, new_entry_str, strlen((char *)new_entry_str), (void *)&byteswritten);
+//
+//            //Closes the file
+//    		if((byteswritten == 0) || (res != FR_OK))
+//    		{
+//    			Error_Handler();
+//    		}
+//    		else
+//    		{
+//    		    f_close(&entryfil);
+//    		}
+//
+//
 //					//Create the specified data file
 //					char data_file_name[12];
 //
@@ -269,10 +268,10 @@ void Main_Task(void const *argument) {
 //					{
 //						f_close(&fil);
 //					}
-
-    		}
-    	}
-    }
+//
+//    		}
+//    	}
+//    }
 
 
     // Enable Transparent Mode
@@ -291,52 +290,57 @@ void Main_Task(void const *argument) {
     * EPS, ADCS, SDR, OBC, UHF transceiver
     */
 
+    /*
+	*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	* ADCS TESTING
+	*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
 
-    osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
-
-
-    int16_t test1;
-    int16_t test2;
-    //int16_t testz;
-    mainStatus=TLM_140(&test1,&test2);
-    debug_printf("%d %d ",test1,test2);
-
-
-         debug_printf("testing TLM_140");
-
-          if (mainStatus != HAL_OK) {
-                  debug_printf("[Main Thread/ERROR]: Failed to test TLM_140");
-               } else {
-                  debug_printf("[Main Thread/SUCCESS]: TLM_140 Worked correctly");
-               }
-
-          float testx;
-          float testy;
-          float testz;
-
-          mainStatus=TLM_155(&testx,&testy, &testz);
-          debug_printf("%f %f %f",testx,testy, testz);
-
-          debug_printf("testing TLM_155");
-
-          if (mainStatus != HAL_OK) {
-        	  debug_printf("[Main Thread/ERROR]: Failed to test TLM_155");
-          } else {
-        	  debug_printf("[Main Thread/SUCCESS]: TLM_155 Worked correctly");
-          }
-
-          int16_t val1;
-
-          mainStatus=TLM_156(&val1);
-          debug_printf("%d", val1);
-
-          debug_printf("testing TLM_156");
-
-          if (mainStatus != HAL_OK) {
-        	  debug_printf("[Main Thread/ERROR]: Failed to test TLM_156");
-          } else {
-        	  debug_printf("[Main Thread/SUCCESS]: TLM_156 Worked correctly");
-          }
+//    osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
+//
+//
+//    int16_t test1;
+//    int16_t test2;
+//    //int16_t testz;
+//    mainStatus=TLM_140(&test1,&test2);
+//    debug_printf("%d %d ",test1,test2);
+//
+//
+//         debug_printf("testing TLM_140");
+//
+//          if (mainStatus != HAL_OK) {
+//                  debug_printf("[Main Thread/ERROR]: Failed to test TLM_140");
+//               } else {
+//                  debug_printf("[Main Thread/SUCCESS]: TLM_140 Worked correctly");
+//               }
+//
+//          float testx;
+//          float testy;
+//          float testz;
+//
+//          mainStatus=TLM_155(&testx,&testy, &testz);
+//          debug_printf("%f %f %f",testx,testy, testz);
+//
+//          debug_printf("testing TLM_155");
+//
+//          if (mainStatus != HAL_OK) {
+//        	  debug_printf("[Main Thread/ERROR]: Failed to test TLM_155");
+//          } else {
+//        	  debug_printf("[Main Thread/SUCCESS]: TLM_155 Worked correctly");
+//          }
+//
+//          int16_t val1;
+//
+//          mainStatus=TLM_156(&val1);
+//          debug_printf("%d", val1);
+//
+//          debug_printf("testing TLM_156");
+//
+//          if (mainStatus != HAL_OK) {
+//        	  debug_printf("[Main Thread/ERROR]: Failed to test TLM_156");
+//          } else {
+//        	  debug_printf("[Main Thread/SUCCESS]: TLM_156 Worked correctly");
+//          }
 
 //          float testx;
 //          float testy;
@@ -499,17 +503,12 @@ void Main_Task(void const *argument) {
 //
 //        mainStatus = TC_10(0);
 
-
-    //HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
-
     // Main startup complete, begin loop checks
 
     // Testing Code Separator
     HAL_StatusTypeDef status;
     status = CODE_SEPERATOR(0, 1, 0, 1);
-    debug_printf("%d", status);
-
-
+    debug_printf("Payload Packet Seperator: %d", status);
 
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
 
@@ -525,28 +524,26 @@ void Main_Task(void const *argument) {
  * @brief main UHF Task/Thread
  */
 void UHF_TxRx_Task(void const *argument) {
+	osDelay(10000); // Delay 10 seconds
+	debug_printf("######## UHF TX/RX TASK ########\r\n");
+
     HAL_StatusTypeDef txRxStatus = HAL_OK;
-    osDelay(10000);
-    debug_printf("######## UHF TX/RX TASK ########\r\n");
+
     END_BEACON();
     debug_printf("Ending beacon and starting pipe");
-    SET_PIPE_TIMEOUT(7);
-    START_PIPE();
+//    SET_PIPE_TIMEOUT(25);
+//    START_PIPE();
 
     // Rx listens until a packet is received and then deals with it, executing commands (outputs command outputs possibly to reception buffer)
     // Tx checks the transmission buffer every so often and assembles packets from that data, transmitting them
-    // osDelay(99999999999999); // Uncomment to test comms but plug UHF in because the transmission power spike is too much
 
     // Start listening for transmissions from CloneComm
+    AMBER_LED_OFF();
+
     while (1) {
-        AMBER_LED_ON();
-        txRxStatus = HAL_UART_Receive_IT(&huart1, RxBuffer, 4);
-
-        if (txRxStatus == HAL_OK) {
-        	HAL_UART_RxCpltCallback(&huart1, RxBuffer); // TODO: Is this correct? Test
-        	debug_printf("Packet Sent");
-        }
-
+    	// FOR TESTING ONLY // HAL_UART_Transmit(&huart1, GroundStationRxBuffer, 7, 1000);
+    	// FOR TESTING ONLY // HAL_UART_Receive(&huart1, GroundStationRxBuffer, 7, 1000);
+    	// debug_printf("%d Rx: %s\n\r", txRxStatus, GroundStationRxBuffer);
         osDelay(3000);
     }
 }
@@ -557,8 +554,6 @@ void UHF_TxRx_Task(void const *argument) {
  */
 void ADCS_Task(void const *argument) {
     HAL_StatusTypeDef adcsStatus = HAL_OK;
-
-    osDelay(999999999999); // TODO: Remove, this is for testing
     debug_printf("######## ADCS TASK ########\r\n");
 
     //status = enable_EPS_Output_1(); //Enabling the boost board is done in the main task
@@ -598,7 +593,7 @@ void ADCS_Task(void const *argument) {
  * @brief Task/Thread responsible for calculating battery capacity
  */
 void BatteryCapacity_Task(void const *argument) {
-    osDelay(999999999999); //TODO: Remove, this is for testing
+    osDelay(100000); //TODO: Remove, this is for testing
     debug_printf("######## BATTERY CHECK TASK ########\r\n");
 
     float Five_Bus_Current, Three_Bus_Current;

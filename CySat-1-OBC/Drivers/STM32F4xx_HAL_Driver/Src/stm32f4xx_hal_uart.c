@@ -795,6 +795,7 @@ HAL_StatusTypeDef HAL_UART_Transmit_IT(UART_HandleTypeDef *huart, uint8_t *pData
 HAL_StatusTypeDef HAL_UART_Receive_IT(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size) {
     /* Check that a Rx process is not already ongoing */
     if (huart->RxState == HAL_UART_STATE_READY) {
+    	debug_printf("UART Rx Ready");
         if ((pData == NULL) || (Size == 0)) {
             return HAL_ERROR;
         }
@@ -820,6 +821,7 @@ HAL_StatusTypeDef HAL_UART_Receive_IT(UART_HandleTypeDef *huart, uint8_t *pData,
 
         return HAL_OK;
     } else {
+    	debug_printf("UART Rx Busy");
         return HAL_BUSY;
     }
 }
