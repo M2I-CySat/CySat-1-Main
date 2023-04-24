@@ -2,16 +2,19 @@
  * Payload.c
  *
  *  Created on: Oct 2, 2021
- *  Updated on: Nov 1, 2021
+ *  Modified on: Nov 1, 2021
+ *  Modified on Apr 23, 2023
  *      Author: Alexis Aurandt
+ *      		Manas Mathur
  */
 
-#include <Payload.h>
-#include <CySatPacketProtocol.h>
-#include <helper_functions.h>
+#include <stdio.h>
 #include <string.h>
 #include <fatfs.h>
 #include <math.h>
+#include <Payload.h>
+#include <CySatPacketProtocol.h>
+#include <helper_functions.h>
 
 /*************************** CALIBRATION FUNCTIONS *****************************/
 /**
@@ -378,16 +381,13 @@ HAL_StatusTypeDef KELVIN_FILE_TRANSFER(){
  * 
 */
 HAL_StatusTypeDef CODE_SEPERATOR(unsigned short int measurementID, unsigned char dataType, unsigned short int startPacket, unsigned short int endPacket){
-
     if (startPacket > endPacket)
     {
         return HAL_ERROR;
     }
 
-
     char * dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
     char *fileName = asprintf("%d%s", measurementID, dataTypeStr); // Grabs the file from the SD card
-
 
     FILE *fp = fopen(fileName, "r");
     if (fp == NULL)
@@ -396,19 +396,14 @@ HAL_StatusTypeDef CODE_SEPERATOR(unsigned short int measurementID, unsigned char
         return HAL_ERROR;
     }
 
-//    long int sizeFile = file_size(fp); // Determines the size of the file in bytes
     fseek(fp, 0L, SEEK_END);
-    long int sizeFile = ftell(fp0);
+    long int sizeFile = ftell(fp);
 
     if (fseek(fp, 118*startPacket, 0) != 0) // seek to start of data
     {
         fclose(fp);
         return HAL_ERROR;
     }
-
-
-    // START_PIPE(); // For standalone testing do not use this!!!!!!!!!!!!!!!!!!!!!!
-
 
     unsigned char packet[128];
 
@@ -467,8 +462,6 @@ HAL_StatusTypeDef CODE_SEPERATOR(unsigned short int measurementID, unsigned char
 
     return HAL_OK;
 }
-
-
 
 /*
 */
