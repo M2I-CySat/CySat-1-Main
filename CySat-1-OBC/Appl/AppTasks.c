@@ -22,10 +22,19 @@ bool ADCS_ACTIVE = 0;
 bool LOW_POWER_MODE = 0;
 
 FATFS FatFs; //Fatfs handle
-FIL fil; //File handle
+//FIL fil; //File handle
 FIL entryfil; //File containing data entry number
 FRESULT fres; //Result after operations
 FRESULT efres; //Result after opening entryfil
+
+/* USER CODE BEGIN 1 */
+FRESULT res; /* FatFs function common result code */
+uint32_t byteswritten, bytesread; /* File write/read counts */
+TCHAR const* entryfilPath = "entryNumber.txt";
+TCHAR const* SDPath = "0";
+uint8_t rtext[_MAX_SS];/* File read buffer */
+/* USER CODE END 1 */
+
 
 /**
  * Run main thread tasks on satellite. This includes basic
@@ -158,121 +167,116 @@ void Main_Task(void const *argument) {
         debug_printf("[Main Thread/SUCCESS]: UHF temperature: %lf", uhfTemperature);
     }
 
-//    /*
-//	*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//	* WRITE TO SD CARD
-//	*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//    */
-//
-//    /* USER CODE BEGIN 1 */
-//    FRESULT res; /* FatFs function common result code */
-//    FATFS FatFs;
-//    uint32_t byteswritten, bytesread; /* File write/read counts */
-//    TCHAR const* entryfil_path = "entry_number.txt";
-//    TCHAR const* SDPath = "0";
-//    uint8_t rtext[_MAX_SS];/* File read buffer */
-//    /* USER CODE END 1 */
-//
-//    /* USER CODE BEGIN 2 */
-//    if(f_mount(&FatFs, (TCHAR const*)SDPath, 0) != FR_OK)
-//    {
-//    	Error_Handler();
-//    }
-//    else
-//    {
-//    	if(f_mkfs(SDPath, 0, sizeof(rtext)) != FR_OK)
-//        {
-//    		Error_Handler();
-//        }
-//    	else
-//    	{
-//    		//Open file for writing (Create)
-//    		if(f_open(&entryfil, entryfil_path, FA_READ | FA_WRITE | FA_OPEN_ALWAYS) != FR_OK)
-//    		{
-//    			Error_Handler();
-//    		}
-//    		else
-//    		{
-//
-//            unsigned int entry_id = 0;
-//            int success = fscanf(&entryfil, "%d", (unsigned int *)entry_id);
-//
-//            //If no data entry value is present, provides a starting value
-//            if(!success)
-//            {
-//            	entry_id = 0;
-//            	debug_printf("File created");
-//            }
-//
-//            debug_printf("%d", entry_id);
-//
-//    		//Adds 1 to the data entry number
-//    		unsigned int new_entry_id = entry_id + 1;
-//
-//    		char new_entry_str[6];
-//    		sprintf(new_entry_str, "%i", new_entry_id);
-//
-//    		debug_printf(new_entry_str);
-//
-//            //Write to the text file
-//            res = f_write(&entryfil, new_entry_str, strlen((char *)new_entry_str), (void *)&byteswritten);
-//
-//            //Closes the file
-//    		if((byteswritten == 0) || (res != FR_OK))
-//    		{
-//    			Error_Handler();
-//    		}
-//    		else
-//    		{
-//    		    f_close(&entryfil);
-//    		}
-//
-//
-//					//Create the specified data file
-//					char data_file_name[12];
-//
-//					int file_type = 1;
-//					if(file_type == 0){
-//						sprintf(data_file_name, "dat%d.txt", entry_id);
-//						debug_printf("dat file");
-//					}
-//					else {
-//						sprintf(data_file_name, "kel%d.txt", entry_id);
-//						debug_printf("kel file");
-//					}
-//
-//					debug_printf("File name: %s", data_file_name);
-//
-//					fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-//
-//					if(fres != FR_OK){
-//						debug_printf("Fres is not ok");
-//					}
-//
-//					UINT bytes;
-//					fres = f_write(&fil, (char*)data, (UINT)file_size, &bytes);
-//					if(fres != FR_OK || bytes!= file_size){
-//						status = HAL_ERROR;
-//						debug_printf("HAL Error");
-//					}
-//					f_close(&fil); //Close the file
-//					fres = f_mount(NULL, "", 0);
-//					efres = f_mount(NULL, "", 0); //De-mount the drive
-//
-//
-//					if((byteswritten == 0) || (res != FR_OK))
-//					{
-//						Error_Handler();
-//					}
-//					else
-//					{
-//						f_close(&fil);
-//					}
-//
-//    		}
-//    	}
-//    }
+    /* Write to SD Card */
+//    SD_Write_Task();
 
+    /**
+     * Write to SD card
+     */
+
+//    void SD_Write_Task(void const *argument) {
+
+    /* USER CODE BEGIN 2 */
+
+    if(f_mount(&FatFs, "", 0) != FR_OK)
+    {
+    debug_printf("[SD Write/ERROR]: Failed to mount SD drive");
+    //Error_Handler();
+    }
+    else
+    {
+    	debug_printf("[SD Write/SUCCESS]: SD drive mounted successfully");
+        //Open file for writing (Create)
+
+    	fres = f_open(&entryfil, "entry.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
+        if(fres != FR_OK)
+        {
+        	debug_printf("[SD Write/ERROR]: Failed to open entry number file");
+        }
+        else
+        {
+			debug_printf("[SD Write/SUCCESS]: Entry number file opened successfully");
+
+        	unsigned int entry_id = 0;
+			int success = f_read(&entryfil, &entry_id, 4, &bytesread);
+
+			//If no data entry value is present, provides a starting value
+			if(!success)
+			{
+				entry_id = 0;
+				debug_printf("[SD Write]: Entry number file created");
+			}
+
+			debug_printf("[SD Write]: Old entry id: %d", entry_id);
+
+			//Adds 1 to the data entry number
+			unsigned int new_entry_id = entry_id + 1;
+
+			debug_printf("[SD Write]: New entry id: %d", new_entry_id);
+
+			char new_entry_str[6];
+			sprintf(new_entry_str, "%i", new_entry_id);
+
+			debug_printf(new_entry_str);
+
+			//Write to the text file
+			res = f_write(&entryfil, new_entry_str, strlen((char *)new_entry_str), (void *)&byteswritten);
+
+			//Closes the file
+			if((byteswritten == 0) || (res != FR_OK))
+			{
+				debug_printf("[SD Write/ERROR]: Failed write to entry number file");
+//				Error_Handler();
+			}
+			else
+			{
+				f_close(&entryfil);
+			}
+
+    //
+    //			//Create the specified data file
+    //			char data_file_name[12];
+    //
+    //			int file_type = 1;
+    //			if(file_type == 0){
+    //				sprintf(data_file_name, "dat%d.txt", entry_id);
+    //				debug_printf("dat file");
+    //			}
+    //			else {
+    //				sprintf(data_file_name, "kel%d.txt", entry_id);
+    //				debug_printf("kel file");
+    //			}
+    //
+    //			debug_printf("File name: %s", data_file_name);
+    //
+    //			fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+    //
+    //			if(fres != FR_OK){
+    //				debug_printf("Fres is not ok");
+    //			}
+    //
+    //			UINT bytes;
+    //			fres = f_write(&fil, (char*)data, (UINT)file_size, &bytes);
+    //
+    //			if(fres != FR_OK || bytes!= file_size){
+    //				debug_printf("HAL Error");
+    //			}
+    //			f_close(&fil); //Close the file
+    //			fres = f_mount(NULL, "", 0);
+    //			efres = f_mount(NULL, "", 0); //De-mount the drive
+    //
+    //
+    //			if((byteswritten == 0) || (res != FR_OK))
+    //			{
+    //				Error_Handler();
+    //			}
+    //			else {
+    //				f_close(&fil);
+    //			}
+
+
+        	}
+        }
 
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
@@ -506,9 +510,9 @@ void Main_Task(void const *argument) {
     // Main startup complete, begin loop checks
 
     // Testing Code Separator
-    HAL_StatusTypeDef status;
-    status = CODE_SEPERATOR(0, 1, 0, 1);
-    debug_printf("Payload Packet Seperator: %d", status);
+
+    //status = CODE_SEPERATOR(0, 1, 0, 1);
+    //debug_printf("Payload Packet Seperator: %s", status);
 
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
 
@@ -593,7 +597,7 @@ void ADCS_Task(void const *argument) {
  * @brief Task/Thread responsible for calculating battery capacity
  */
 void BatteryCapacity_Task(void const *argument) {
-    osDelay(100000); //TODO: Remove, this is for testing
+    //osDelay(100000); //TODO: Remove, this is for testing
     debug_printf("######## BATTERY CHECK TASK ########\r\n");
 
     float Five_Bus_Current, Three_Bus_Current;
