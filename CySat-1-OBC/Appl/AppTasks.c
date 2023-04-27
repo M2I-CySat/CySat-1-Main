@@ -26,11 +26,11 @@ FATFS FatFs; //Fatfs handle
 FIL entryfil; //File containing data entry number
 FRESULT fres; //Result after operations
 FRESULT efres; //Result after opening entryfil
+FRESULT success;
 
 /* USER CODE BEGIN 1 */
 FRESULT res; /* FatFs function common result code */
-uint32_t byteswritten, bytesread; /* File write/read counts */
-TCHAR const* entryfilPath = "entryNumber.txt";
+UINT byteswritten, bytesread; /* File write/read counts */
 TCHAR const* SDPath = "0";
 uint8_t rtext[_MAX_SS];/* File read buffer */
 /* USER CODE END 1 */
@@ -188,7 +188,7 @@ void Main_Task(void const *argument) {
     	debug_printf("[SD Write/SUCCESS]: SD drive mounted successfully");
         //Open file for writing (Create)
 
-    	fres = f_open(&entryfil, "entry.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
+    	fres = f_open(&entryfil, "entry7.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
         if(fres != FR_OK)
         {
         	debug_printf("[SD Write/ERROR]: Failed to open entry number file");
@@ -197,25 +197,26 @@ void Main_Task(void const *argument) {
         {
 			debug_printf("[SD Write/SUCCESS]: Entry number file opened successfully");
 
-        	unsigned int entry_id = 0;
-			int success = f_read(&entryfil, &entry_id, 4, &bytesread);
+        	long int entry_id;
+			success = f_read(&entryfil, &entry_id, 16, &bytesread);
+
 
 			//If no data entry value is present, provides a starting value
-			if(!success)
+			if(success != FR_OK)
 			{
 				entry_id = 0;
 				debug_printf("[SD Write]: Entry number file created");
 			}
 
-			debug_printf("[SD Write]: Old entry id: %d", entry_id);
+			debug_printf("[SD Write]: Old entry id: %ld", entry_id);
 
 			//Adds 1 to the data entry number
-			unsigned int new_entry_id = entry_id + 1;
+			long int new_entry_id = entry_id + 1;
 
-			debug_printf("[SD Write]: New entry id: %d", new_entry_id);
+			debug_printf("[SD Write]: New entry id: %ld", new_entry_id);
 
 			char new_entry_str[6];
-			sprintf(new_entry_str, "%i", new_entry_id);
+			sprintf(new_entry_str, "%ld", new_entry_id);
 
 			debug_printf(new_entry_str);
 
