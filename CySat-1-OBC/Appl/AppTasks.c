@@ -196,7 +196,7 @@ void Main_Task(void const *argument) {
         {
 			debug_printf("[SD Write/SUCCESS]: Entry number file opened successfully");
 
-        	char temp_bytes [8]="";
+        	char temp_bytes [8]="00000000";
 
         	long int entry_id = 0;
 			success = f_read(&entryfil, &temp_bytes, 8, &bytesread);
@@ -209,14 +209,14 @@ void Main_Task(void const *argument) {
 				debug_printf("[SD Write]: Entry number file created");
 			}
 
-			debug_printf("[SD Write]: Old entry id char and long: %c%c%c%c %ld", temp_bytes[0],temp_bytes[1],temp_bytes[2],temp_bytes[3],entry_id);
+			debug_printf("[SD Write]: Old entry id char and long: %c%c%c%c%c%c%c%c %ld", temp_bytes[0],temp_bytes[1],temp_bytes[2],temp_bytes[3],temp_bytes[4],temp_bytes[5],temp_bytes[6],temp_bytes[7],entry_id);
 
 			//Adds 1 to the data entry number
 			long int new_entry_id = entry_id + 1;
 
 			debug_printf("[SD Write]: New entry id: %ld", new_entry_id);
 
-			char new_entry_str[8]="";
+			char new_entry_str[8]="00000000";
 			sprintf(new_entry_str, "%ld", new_entry_id);
 
 			debug_printf(new_entry_str);
