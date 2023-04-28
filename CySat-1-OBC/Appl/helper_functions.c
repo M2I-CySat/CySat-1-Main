@@ -17,6 +17,19 @@
   * @brief Formats and prints data out on to the debug UART line. Formatting works in standard printf fashion
   * @retval Returns the status of the HAL UART transmission
   */
+
+long ConvertCharToLong(char *pSrc) {
+    int i=1;
+    long result = (int)pSrc[0] - '0';
+    while(i<strlen(pSrc)){
+         result = result * 10 + ((int)pSrc[i] - '0');
+         ++i;
+    }
+    return result;
+}
+
+
+
 HAL_StatusTypeDef debug_printf(char* format, ...){
 
     uint32_t bufferSize = 512;

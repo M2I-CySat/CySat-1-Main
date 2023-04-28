@@ -187,8 +187,7 @@ void Main_Task(void const *argument) {
     {
     	debug_printf("[SD Write/SUCCESS]: SD drive mounted successfully");
         //Open file for writing (Create)
-
-    	fres = f_open(&entryfil, "entry7.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
+    	fres = f_open(&entryfil, "entry.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
         if(fres != FR_OK)
         {
         	debug_printf("[SD Write/ERROR]: Failed to open entry number file");
@@ -197,9 +196,11 @@ void Main_Task(void const *argument) {
         {
 			debug_printf("[SD Write/SUCCESS]: Entry number file opened successfully");
 
-        	long int entry_id;
-			success = f_read(&entryfil, &entry_id, 16, &bytesread);
+        	char temp_bytes [8]="";
 
+        	long int entry_id = 0;
+			success = f_read(&entryfil, &temp_bytes, 8, &bytesread);
+			sscanf(&temp_bytes,"%ld",&entry_id);
 
 			//If no data entry value is present, provides a starting value
 			if(success != FR_OK)
@@ -208,20 +209,26 @@ void Main_Task(void const *argument) {
 				debug_printf("[SD Write]: Entry number file created");
 			}
 
-			debug_printf("[SD Write]: Old entry id: %ld", entry_id);
+			debug_printf("[SD Write]: Old entry id char and long: %c%c%c%c %ld", temp_bytes[0],temp_bytes[1],temp_bytes[2],temp_bytes[3],entry_id);
 
 			//Adds 1 to the data entry number
 			long int new_entry_id = entry_id + 1;
 
 			debug_printf("[SD Write]: New entry id: %ld", new_entry_id);
 
-			char new_entry_str[6];
+			char new_entry_str[8]="";
 			sprintf(new_entry_str, "%ld", new_entry_id);
 
 			debug_printf(new_entry_str);
 
-			//Write to the text file
+			//Write to the text file, rewinding first
+			res = f_lseek(&entryfil, 0);
 			res = f_write(&entryfil, new_entry_str, strlen((char *)new_entry_str), (void *)&byteswritten);
+
+			if(res != FR_OK)
+			{
+				debug_printf("[SD Write]: Write Unsuccessful");
+			}
 
 			//Closes the file
 			if((byteswritten == 0) || (res != FR_OK))
