@@ -28,12 +28,10 @@ FRESULT fres; //Result after operations
 FRESULT efres; //Result after opening entryfil
 FRESULT success;
 
-/* USER CODE BEGIN 1 */
 FRESULT res; /* FatFs function common result code */
 UINT byteswritten, bytesread; /* File write/read counts */
 TCHAR const* SDPath = "0";
 uint8_t rtext[_MAX_SS];/* File read buffer */
-/* USER CODE END 1 */
 
 
 /**
@@ -167,21 +165,14 @@ void Main_Task(void const *argument) {
         debug_printf("[Main Thread/SUCCESS]: UHF temperature: %lf", uhfTemperature);
     }
 
-    /* Write to SD Card */
-//    SD_Write_Task();
 
     /**
      * Write to SD card
      */
 
-//    void SD_Write_Task(void const *argument) {
-
-    /* USER CODE BEGIN 2 */
-
     if(f_mount(&FatFs, "", 0) != FR_OK)
     {
     debug_printf("[SD Write/ERROR]: Failed to mount SD drive");
-    //Error_Handler();
     }
     else
     {
@@ -234,57 +225,58 @@ void Main_Task(void const *argument) {
 			if((byteswritten == 0) || (res != FR_OK))
 			{
 				debug_printf("[SD Write/ERROR]: Failed write to entry number file");
-//				Error_Handler();
 			}
 			else
 			{
 				f_close(&entryfil);
 			}
 
-    //
-    //			//Create the specified data file
-    //			char data_file_name[12];
-    //
-    //			int file_type = 1;
-    //			if(file_type == 0){
-    //				sprintf(data_file_name, "dat%d.txt", entry_id);
-    //				debug_printf("dat file");
-    //			}
-    //			else {
-    //				sprintf(data_file_name, "kel%d.txt", entry_id);
-    //				debug_printf("kel file");
-    //			}
-    //
-    //			debug_printf("File name: %s", data_file_name);
-    //
-    //			fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-    //
-    //			if(fres != FR_OK){
-    //				debug_printf("Fres is not ok");
-    //			}
-    //
-    //			UINT bytes;
-    //			fres = f_write(&fil, (char*)data, (UINT)file_size, &bytes);
-    //
-    //			if(fres != FR_OK || bytes!= file_size){
-    //				debug_printf("HAL Error");
-    //			}
-    //			f_close(&fil); //Close the file
-    //			fres = f_mount(NULL, "", 0);
-    //			efres = f_mount(NULL, "", 0); //De-mount the drive
-    //
-    //
-    //			if((byteswritten == 0) || (res != FR_OK))
-    //			{
-    //				Error_Handler();
-    //			}
-    //			else {
-    //				f_close(&fil);
-    //			}
+
+    		//Create the specified data file
+			//NOTE: Currently nonfunctional, requires data and data file size as inputs (which are not in the current file)
+
+//    		char data_file_name[12];
+//
+//    		int file_type = 1;
+//    		if(file_type == 0){
+//    			sprintf(data_file_name, "dat%ld.txt", entry_id);
+//    			debug_printf("dat file");
+//    		}
+//    		else {
+//    			sprintf(data_file_name, "kel%ld.txt", entry_id);
+//    			debug_printf("kel file");
+//    		}
+//
+//    		debug_printf("File name: %s", data_file_name);
+//
+//    		fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+//
+//    		if(fres != FR_OK){
+//    			debug_printf("Fres is not ok");
+//    		}
+//
+//    		UINT bytes;
+//
+//    		fres = f_write(&fil, (char*)data, (UINT)file_size, &bytes);
+//
+//    		if(fres != FR_OK || bytes != file_size){
+//    			debug_printf("HAL Error");
+//    		}
+//    		f_close(&fil); //Close the file
+//    		fres = f_mount(NULL, "", 0);
+//    		efres = f_mount(NULL, "", 0); //De-mount the drive
+//
+//    		if((byteswritten == 0) || (res != FR_OK))
+//    		{
+//    			Error_Handler();
+//    		}
+//    		else {
+//    			f_close(&fil);
+//    		}
 
 
-        	}
-        }
+       	}
+    }
 
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode

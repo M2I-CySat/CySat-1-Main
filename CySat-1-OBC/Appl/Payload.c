@@ -295,68 +295,115 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type){
         for(int i = 0; i < file_size; i++){
             debug_printf("%d", data[i]);
         }
+
         //Write to SD Card
+        //NOTE: Code to read from entry number file inserted after successful testing in AppTasks, may need some tweaks to run in Payload
+
         FATFS FatFs; //Fatfs handle
-        FIL fil; //File handle
+        //FIL fil; //File handle
         FIL entryfil; //File containing data entry number
         FRESULT fres; //Result after operations
+        FRESULT efres; //Result after opening entryfil
+        FRESULT success;
 
-        //Open the file system
-        fres = f_mount(&FatFs, "0", 1);
-        if(fres != FR_OK){
-            return HAL_ERROR;
+        FRESULT res; /* FatFs function common result code */
+        UINT byteswritten, bytesread; /* File write/read counts */
+        TCHAR const* SDPath = "0";
+        uint8_t rtext[_MAX_SS];/* File read buffer */
+
+        if(f_mount(&FatFs, "", 0) != FR_OK)
+        {
+        debug_printf("[SD Write/ERROR]: Failed to mount SD drive");
+        //Error_Handler();
         }
+        else
+        {
+        	debug_printf("[SD Write/SUCCESS]: SD drive mounted successfully");
+            //Open file for writing (Create)
+        	fres = f_open(&entryfil, "entry.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
+            if(fres != FR_OK)
+            {
+            	debug_printf("[SD Write/ERROR]: Failed to open entry number file");
+            }
+            else
+            {
+    			debug_printf("[SD Write/SUCCESS]: Entry number file opened successfully");
 
-        //Using the data entry number stored in file "data_number.txt", specifies the data file to be created
-        f_open(&entryfil, "entry_number.txt", FA_WRITE | FA_READ | FA_OPEN_ALWAYS);
-        char filename_buff[25];
+            	char temp_bytes [8]="00000000";
 
-        unsigned short int entry_id;
-        int success = fscanf(&entryfil, "%d", entry_id);
+            	long int entry_id = 0;
+    			success = f_read(&entryfil, &temp_bytes, 8, &bytesread);
+    			sscanf(&temp_bytes,"%ld",&entry_id);
 
-        //If no data entry value is present, provides a starting value
-        if(!success){
-        	entry_id = 0;
-        	debug_printf("File created");
+    			//If no data entry value is present, provides a starting value
+    			if(success != FR_OK)
+    			{
+    				entry_id = 0;
+    				debug_printf("[SD Write]: Entry number file created");
+    			}
+
+    			debug_printf("[SD Write]: Old entry id char and long: %c%c%c%c%c%c%c%c %ld", temp_bytes[0],temp_bytes[1],temp_bytes[2],temp_bytes[3],temp_bytes[4],temp_bytes[5],temp_bytes[6],temp_bytes[7],entry_id);
+
+    			//Adds 1 to the data entry number
+    			long int new_entry_id = entry_id + 1;
+
+    			debug_printf("[SD Write]: New entry id: %ld", new_entry_id);
+
+    			char new_entry_str[8]="00000000";
+    			sprintf(new_entry_str, "%ld", new_entry_id);
+
+    			debug_printf(new_entry_str);
+
+    			//Write to the text file, rewinding first
+    			res = f_lseek(&entryfil, 0);
+    			res = f_write(&entryfil, new_entry_str, strlen((char *)new_entry_str), (void *)&byteswritten);
+
+    			if(res != FR_OK)
+    			{
+    				debug_printf("[SD Write]: Write Unsuccessful");
+    			}
+
+    			//Closes the file
+    			if((byteswritten == 0) || (res != FR_OK))
+    			{
+    				debug_printf("[SD Write/ERROR]: Failed write to entry number file");
+    			}
+    			else
+    			{
+    				f_close(&entryfil);
+    			}
+
+			//Create the specified data file
+
+			char data_file_name[12]={"\0"};
+
+			if(file_type == 0){
+				data_file_name[0] = sprintf(filename_buff, "dat%d.txt", entry_id);
+				debug_printf("dat file");
+			}
+			else {
+				data_file_name[0] = sprintf(filename_buff, "kel%d.txt", entry_id);
+				debug_printf("kel file");
+			}
+
+			debug_printf("%s", data_file_name);
+
+			fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+
+			if(fres != FR_OK){
+				return HAL_ERROR;
+			}
+			UINT bytes;
+			fres = f_write(&fil, (char*)data, (UINT)file_size, &bytes);
+			if(fres != FR_OK || bytes!= file_size){
+				//status = HAL_ERROR;
+				return HAL_ERROR;
+			}
+			f_close(&fil); //Close the file
+			f_mount(NULL, "", 0); //De-mount the drive
         }
-
-        debug_printf("%d", entry_id);
-
-        //Adds 1 to the data entry number, closes the file
-        fprintf(&entryfil, "%d", entry_id+1);
-        fclose(&entryfil);
-
-        //Create the specified data file
-
-        char data_file_name[12]={"\0"};
-
-        if(file_type == 0){
-        	data_file_name[0] = sprintf(filename_buff, "dat%d.txt", entry_id);
-        	debug_printf("dat file");
-        }
-        else {
-        	data_file_name[0] = sprintf(filename_buff, "kel%d.txt", entry_id);
-        	debug_printf("kel file");
-        }
-
-        debug_printf("%s", data_file_name);
-
-        fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-
-        if(fres != FR_OK){
-            return HAL_ERROR;
-        }
-        UINT bytes;
-        fres = f_write(&fil, (char*)data, (UINT)file_size, &bytes);
-        if(fres != FR_OK || bytes!= file_size){
-            //status = HAL_ERROR;
-        }
-        f_close(&fil); //Close the file
-        f_mount(NULL, "", 0); //De-mount the drive
     }
-    else{
-        return HAL_ERROR;
-    }
+
     return status;
 }
 
@@ -375,6 +422,49 @@ HAL_StatusTypeDef DAT_FILE_TRANSFER(){
 HAL_StatusTypeDef KELVIN_FILE_TRANSFER(){
     return FILE_TRANSFER(0x01);
 }
+
+/**
+ * @brief Deletes the specified data file from the SD card
+ *
+ */
+HAL_StatusTypeDef DELETE_DATA_FILE(int data_file_no){
+
+	//UNFINISHED, LIKELY NONFUNCTIONAL: Needs testing and error checking!
+	//Needs to be linked to a command (packet)
+
+	FATFS FatFs;
+	FIL datfil;
+	FIL kelfil;
+	FRESULT dfiledel;
+	FRESULT kfiledel;
+
+	if(f_mount(&FatFs, "", 0) != FR_OK)
+	{
+	    debug_printf("File deletion unsuccessful: Failed to mount SD drive.");
+	    return HAL_ERROR;
+	}
+	else {
+
+		sprintf(dat_file_name, "dat%d.txt", data_file_no);
+		dfiledel = f_unlink(dat_file_name);
+		if(dfiledel == FR_OK){
+			debug_printf("Data file %d deleted successfully.", data_file_no);
+			return HAL_OK; //Change this later to correspond with a packet-sending operation
+		}
+
+		sprintf(kel_file_name, "kel%d.txt", data_file_no);
+		kfiledel = f_unlink(kel_file_name);
+		if(kfilefound == FR_OK){
+			debug_printf("Kel file %d deleted successfully.", data_file_no);
+			return HAL_OK; //Same here
+		}
+		else {
+			debug_printf("File deletion unsuccessful: File not found.");
+			return HAL_ERROR;
+		}
+	}
+}
+
 
 /**
  * @brief Selects which part of the data is transmitted and sends that part home 
@@ -597,12 +687,13 @@ int convert_to_int(uint8_t* data_ptr, int length){
  * @param length : The length of the array that will be returned
  */
 void convert_to_bytes(uint8_t* data, int num, int length){
-    if (num < 0)
+    if (num < 0){
         num += pow(2, 8*length);
+    }
     int index = length - 1;
     for(int i = 0; i < length; i++){
         data[i] = (num >> (index*8)) & 0xFF;
         index--;
     }
 }
-
+}
