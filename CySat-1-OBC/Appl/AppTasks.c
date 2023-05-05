@@ -10,6 +10,7 @@
 #include "EPS.h"
 #include "UHF.h"
 #include "helper_functions.h"
+#include "Payload.h"
 
 #include <fatfs.h>
 #include <string.h>
@@ -22,7 +23,7 @@ bool ADCS_ACTIVE = 0;
 bool LOW_POWER_MODE = 0;
 
 FATFS FatFs; //Fatfs handle
-//FIL fil; //File handle
+FIL fil; //File handle
 FIL entryfil; //File containing data entry number
 FRESULT fres; //Result after operations
 FRESULT efres; //Result after opening entryfil
@@ -169,7 +170,7 @@ void Main_Task(void const *argument) {
     /**
      * Write to SD card
      */
-
+/*
     if(f_mount(&FatFs, "", 0) != FR_OK)
     {
     debug_printf("[SD Write/ERROR]: Failed to mount SD drive");
@@ -230,7 +231,7 @@ void Main_Task(void const *argument) {
 			{
 				f_close(&entryfil);
 			}
-
+*/
 
     		//Create the specified data file
 			//NOTE: Currently nonfunctional, requires data and data file size as inputs (which are not in the current file)
@@ -275,8 +276,8 @@ void Main_Task(void const *argument) {
 //    		}
 
 
-       	}
-    }
+       	//}
+    //}
 
     // Enable Transparent Mode
     // TODO: Send command to UHF transceiver to enable transparent mode
@@ -510,8 +511,10 @@ void Main_Task(void const *argument) {
     // Main startup complete, begin loop checks
 
     // Testing Code Separator
+    START_PIPE();
+    debug_printf("Before separator");
+    PACKET_SEPARATOR(0, 0, 0, 4);
 
-    //status = CODE_SEPERATOR(0, 1, 0, 1);
     //debug_printf("Payload Packet Seperator: %s", status);
 
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
@@ -528,7 +531,7 @@ void Main_Task(void const *argument) {
  * @brief main UHF Task/Thread
  */
 void UHF_TxRx_Task(void const *argument) {
-	osDelay(10000); // Delay 10 seconds
+	osDelay(10000000000000000); // Delay 10 seconds
 	debug_printf("######## UHF TX/RX TASK ########\r\n");
 
     HAL_StatusTypeDef txRxStatus = HAL_OK;

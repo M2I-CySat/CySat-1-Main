@@ -16,6 +16,14 @@
 #include <CySatPacketProtocol.h>
 #include <helper_functions.h>
 
+
+#include  <stdarg.h>
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_def.h"
+
+
+
+
 /*************************** CALIBRATION FUNCTIONS *****************************/
 /**
  * @brief Gets the power status for the Payload
@@ -231,11 +239,14 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time){
     return status;
 }
 
+
 /**
  * @brief Private function to transfer file type
  *
  * @param file_type: 0 = dat file and 1 = kelvin file
  */
+
+/**
 HAL_StatusTypeDef FILE_TRANSFER(int file_type){
     // Start transfer request to payload
     CySat_Packet_t packet;
@@ -306,10 +317,10 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type){
         FRESULT efres; //Result after opening entryfil
         FRESULT success;
 
-        FRESULT res; /* FatFs function common result code */
-        UINT byteswritten, bytesread; /* File write/read counts */
+        FRESULT res; //FatFs function common result code
+        UINT byteswritten, bytesread; // File write/read counts
         TCHAR const* SDPath = "0";
-        uint8_t rtext[_MAX_SS];/* File read buffer */
+        uint8_t rtext[_MAX_SS];//File read buffer
 
         if(f_mount(&FatFs, "", 0) != FR_OK)
         {
@@ -406,6 +417,7 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type){
 
     return status;
 }
+*/
 
 /**
  * @brief Commands the payload to transfer the DAT file
@@ -427,6 +439,8 @@ HAL_StatusTypeDef KELVIN_FILE_TRANSFER(){
  * @brief Deletes the specified data file from the SD card
  *
  */
+
+/*
 HAL_StatusTypeDef DELETE_DATA_FILE(int data_file_no){
 
 	//UNFINISHED, LIKELY NONFUNCTIONAL: Needs testing and error checking!
@@ -464,36 +478,73 @@ HAL_StatusTypeDef DELETE_DATA_FILE(int data_file_no){
 		}
 	}
 }
+*/
 
 
 /**
  * @brief Selects which part of the data is transmitted and sends that part home 
  * 
 */
-HAL_StatusTypeDef CODE_SEPERATOR(unsigned short int measurementID, unsigned char dataType, unsigned short int startPacket, unsigned short int endPacket){
-    if (startPacket > endPacket)
+HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, char dataType, unsigned short int startPacket, unsigned short int endPacket){
+	debug_printf("very beginning");
+	FATFS FatFs; //Fatfs handle
+	//FIL fil; //File handle
+	debug_printf("after fatfs");
+	FIL currfile; //File containing data entry number
+	debug_printf("after currfile");
+	FRESULT fres; //Result after operations
+
+
+	debug_printf("Past declarations");
+	if (startPacket > endPacket) //Checks to make sure packet ordering is valid
     {
-        return HAL_ERROR;
+        debug_printf("[PACKET_SEPARATOR/ERROR]: Start Packet is greater than End Packet");
+		return HAL_ERROR;
+    }
+	debug_printf("Past ordering check");
+    if(f_mount(&FatFs, "", 0) != FR_OK) //Checks to make sure drive mounted successfully
+    {
+    	debug_printf("[PACKET_SEPARATOR]: Failed to mount SD drive");
+    	return HAL_ERROR;
+    }
+    debug_printf("Past mounting");
+    //char dataTypeStr [7]="";
+    //char* dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
+
+//    if(dataType==0){
+//    	char dataTypeStr[7] = ".kelvin";
+//    }else if(dataType==1){
+//    	char dataTypeStr[4] = ".dat";
+//    }else{
+//    	debug_printf("[PACKET_SEPARATOR/ERROR]: Invalid data type");
+//    	fres = f_unmount ("");
+//    	return HAL_ERROR;
+//    }
+
+
+    debug_printf("Past dataType");
+    //char fileName = sprintf("%d%s", measurementID, *dataTypeStr); // Grabs the file from the SD card
+    char fileName[7]=".kelvin";
+    debug_printf("File name: %s",fileName);
+
+    fres = f_open(&currfile, fileName, FA_OPEN_ALWAYS | FA_READ);
+    if(fres != FR_OK)
+    {
+    	fres = f_unmount ("");
+    	debug_printf("[PACKET_SEPARATOR/ERROR]: Failed to open measurement file");
     }
 
-    char * dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
-    char *fileName = asprintf("%d%s", measurementID, dataTypeStr); // Grabs the file from the SD card
+    //fseek(fp, 0L, SEEK_END);
+    long unsigned int sizeFile = f_size(&currfile);
+    debug_printf("File size is %lu",sizeFile);
 
-    FILE *fp = fopen(fileName, "r");
-    if (fp == NULL)
-    {
-        fclose(fp);
-        return HAL_ERROR;
-    }
+    //if (fseek(fp, 118*startPacket, 0) != 0) // seek to start of data
+    //{
+    //    fclose(fp);
+    //    return HAL_ERROR;
+    //}
 
-    fseek(fp, 0L, SEEK_END);
-    long int sizeFile = ftell(fp);
 
-    if (fseek(fp, 118*startPacket, 0) != 0) // seek to start of data
-    {
-        fclose(fp);
-        return HAL_ERROR;
-    }
 
     unsigned char packet[128];
 
@@ -512,41 +563,28 @@ HAL_StatusTypeDef CODE_SEPERATOR(unsigned short int measurementID, unsigned char
         // ASK STEVEN WHAT HE MEANS BY "A FILE"
 
         unsigned char data[118] = {'\0'};
+        UINT bytesRead=0;
 
-        if (sizeFile - 118 * i <118) // Check to see if packet requested is the last packet of a file (if so, FREAD until end instead of 120)
-        {
-            size_t read  = fread(&data, 1, sizeFile - 118 * i, fp);
-            if (read != sizeFile - 118 * i) // Check to see if the fread was successful
-            {
-                fclose(fp);
-                return HAL_ERROR;
-            }
+		//size_t read  = fread(&data, 1, sizeFile - 118 * i, fp);
+		fres = f_read(&currfile, &data, 118, &bytesRead);
+		if(fres != FR_OK)
+		{
+			f_close(&currfile);
+			fres = f_unmount ("");
+			debug_printf("[PACKET_SEPARATOR]: Error reading file");
+			return HAL_ERROR;
+		}
 
-            for (int j = 0; j < sizeFile - 118 * i; j++) // Copy the data into the packet
-            {
-                packet[6+j] = data[j];
-            }
+		for (int j = 0; j < bytesRead; j++) // Copy the data into the packet
+		{
+			packet[6+j] = data[j];
+		}
 
-        }
-        else
-        {
-        size_t read = fread(&data, 1, 118, fp);
-        if (read != 118)
-        {
-            fclose(fp);
-            return HAL_ERROR;
-        }
+        crc32(packet, (sizeFile - bytesRead * i) + 6, &packet[6 + (sizeFile - bytesRead * i)]);
 
-        for (int j = 0; j < 118; j++)
-        {
-            packet[6+j] = data[j];
-        }
-        }
-
-        crc32(packet, (sizeFile - 118 * i) + 6, &packet[6 + (sizeFile - 118 * i)]);
-
-        // HAL_UART_Transmit(&huart1, packet, 6+ (sizeFile - 118 * i), 1000); // Do not use for standalone testing!!!!!!
         debug_printf("Packet %d: %s", i, packet);
+        HAL_UART_Transmit(&huart1, packet, 6+ (sizeFile - bytesRead * i), 1000); // Do not use for standalone testing!!!!!!
+        osDelay(50);
     }
 
 
@@ -696,4 +734,4 @@ void convert_to_bytes(uint8_t* data, int num, int length){
         index--;
     }
 }
-}
+
