@@ -150,8 +150,10 @@ void Main_Task(void const *argument) {
     osDelay(1000);
     // Start Test
     mainStatus = START_BEACON();
+    SET_BEACON_PERIOD(3);
     debug_printf("Beaconing");
-    osDelay(30000);
+    osDelay(4000);
+    END_BEACON();
 
     // Stop Test - Tested and works
     //mainStatus = END_BEACON();

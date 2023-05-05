@@ -542,7 +542,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, unsigned sh
 
     for (unsigned short int i = startPacket; i <= endPacket; i++)
     {
-    	uint8_t packet[128]={""};
+    	char packet[128];
         // Header data
         packet[0] = 0xFF;
 
@@ -597,12 +597,12 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, unsigned sh
         //crc32(packet, (sizeFile - bytesRead * i) + 6, &packet[6 + (sizeFile - bytesRead * i)]);
         debug_printf("Packet %d: %s", i, packet);
 
-        packet[0]="H";
-        packet[1]="E";
-        packet[2]="L";
-        packet[3]="P";
+        //packet[0]="H";
+        //packet[1]="E";
+        //packet[2]="L";
+        //packet[3]="P";
         //HAL_UART_Transmit(&huart1, packet, 6+ (sizeFile - bytesRead * i), 200); // Do not use for standalone testing!!!!!!
-        HAL_UART_Transmit(&huart1, &packet, 4, 50);
+        HAL_UART_Transmit(&huart1, packet, 4, 50);
         osDelay(2000);
     }
 
