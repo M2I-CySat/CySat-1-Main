@@ -17,11 +17,6 @@
 #include <helper_functions.h>
 
 
-#include  <stdarg.h>
-#include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_def.h"
-
-
 
 
 /*************************** CALIBRATION FUNCTIONS *****************************/
@@ -485,11 +480,14 @@ HAL_StatusTypeDef DELETE_DATA_FILE(int data_file_no){
  * @brief Selects which part of the data is transmitted and sends that part home 
  * 
 */
-HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, char dataType, unsigned short int startPacket, unsigned short int endPacket){
+
+HAL_StatusTypeDef PACKET_PRINT(){
+	debug_printf("This is a test");
+}
+
+
+HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, unsigned short int dataType, unsigned short int startPacket, unsigned short int endPacket){
 	debug_printf("very beginning");
-	FATFS FatFs; //Fatfs handle
-	//FIL fil; //File handle
-	debug_printf("after fatfs");
 	FIL currfile; //File containing data entry number
 	debug_printf("after currfile");
 	FRESULT fres; //Result after operations
@@ -502,14 +500,8 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, char dataTy
 		return HAL_ERROR;
     }
 	debug_printf("Past ordering check");
-    if(f_mount(&FatFs, "", 0) != FR_OK) //Checks to make sure drive mounted successfully
-    {
-    	debug_printf("[PACKET_SEPARATOR]: Failed to mount SD drive");
-    	return HAL_ERROR;
-    }
-    debug_printf("Past mounting");
     //char dataTypeStr [7]="";
-    //char* dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
+    char *dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
 
 //    if(dataType==0){
 //    	char dataTypeStr[7] = ".kelvin";
@@ -523,11 +515,11 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, char dataTy
 
 
     debug_printf("Past dataType");
-    //char fileName = sprintf("%d%s", measurementID, *dataTypeStr); // Grabs the file from the SD card
-    char fileName[7]=".kelvin";
-    debug_printf("File name: %s",fileName);
+    //char fileName = sprintf("%d%s", measurementID, &dataTypeStr); // Grabs the file from the SD card
+    //char fileName="0.kelvin";
+    //debug_printf("File name: %s",fileName);
 
-    fres = f_open(&currfile, fileName, FA_OPEN_ALWAYS | FA_READ);
+    fres = f_open(&currfile, "entry18.txt", FA_OPEN_ALWAYS | FA_READ);
     if(fres != FR_OK)
     {
     	fres = f_unmount ("");
@@ -546,23 +538,45 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, char dataTy
 
 
 
-    unsigned char packet[128];
+
 
     for (unsigned short int i = startPacket; i <= endPacket; i++)
     {
+    	uint8_t packet[128]={""};
         // Header data
         packet[0] = 0xFF;
-        packet[1] = (measurementID >> 8) & 0xFF;
-        packet[2] = measurementID & 0xFF;
-        packet[3] = dataType;
-        packet[4] = (i >> 8) & 0xFF;
-        packet[5] = i & 0xFF;
+
+        char id[2]="00";
+        sprintf(id, "%02d", measurementID);
+
+        char id2[2]="00";
+		sprintf(id2, "%02d", i);
+
+		//debug_printf("id: %s id2: %s dataType: %d", id, id2,dataType);
+        //packet[1] = (measurementID >> 8) & 0xFF;
+        //packet[2] = measurementID & 0xFF;
+
+        packet[1]=id[0];
+        packet[2]=id[1];
+
+        if(dataType==0){
+        	packet[3]=48;
+        }else if(dataType==1){
+        	packet[3]=49;
+        }
+        //packet[3] = dataType;
+
+        packet[4]=id2[0];
+	    packet[5]=id2[1];
+
+        //packet[4] = (i >> 8) & 0xFF;
+        //packet[5] = i & 0xFF;
 
 
         //PSEUDOCODE FOR: Check to see if packet requested is greater than the length of a file (if so break out of the loop)
         // ASK STEVEN WHAT HE MEANS BY "A FILE"
 
-        unsigned char data[118] = {'\0'};
+        char data[118] = {'\0'};
         UINT bytesRead=0;
 
 		//size_t read  = fread(&data, 1, sizeFile - 118 * i, fp);
@@ -580,11 +594,16 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, char dataTy
 			packet[6+j] = data[j];
 		}
 
-        crc32(packet, (sizeFile - bytesRead * i) + 6, &packet[6 + (sizeFile - bytesRead * i)]);
-
+        //crc32(packet, (sizeFile - bytesRead * i) + 6, &packet[6 + (sizeFile - bytesRead * i)]);
         debug_printf("Packet %d: %s", i, packet);
-        HAL_UART_Transmit(&huart1, packet, 6+ (sizeFile - bytesRead * i), 1000); // Do not use for standalone testing!!!!!!
-        osDelay(50);
+
+        packet[0]="H";
+        packet[1]="E";
+        packet[2]="L";
+        packet[3]="P";
+        //HAL_UART_Transmit(&huart1, packet, 6+ (sizeFile - bytesRead * i), 200); // Do not use for standalone testing!!!!!!
+        HAL_UART_Transmit(&huart1, &packet, 4, 50);
+        osDelay(2000);
     }
 
 

@@ -80,6 +80,15 @@ void Main_Task(void const *argument) {
     osMutexDef(UHF_UART_Mutex);
     UHF_UART_Mutex = osMutexCreate(osMutex(UHF_UART_Mutex));
 
+
+
+
+    if(f_mount(&FatFs, "", 0) != FR_OK) //Checks to make sure drive mounted successfully
+    {
+    	debug_printf("Failed to mount SD drive");
+    }
+    debug_printf("Mounted SD card");
+
     /*
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     * UHF INITIALIZATION - BEACON FREQ 436.375 MHz @ 9600 UART BAUD
@@ -141,7 +150,8 @@ void Main_Task(void const *argument) {
     osDelay(1000);
     // Start Test
     mainStatus = START_BEACON();
-    osDelay(1000);
+    debug_printf("Beaconing");
+    osDelay(30000);
 
     // Stop Test - Tested and works
     //mainStatus = END_BEACON();
@@ -514,6 +524,7 @@ void Main_Task(void const *argument) {
     START_PIPE();
     debug_printf("Before separator");
     PACKET_SEPARATOR(0, 0, 0, 4);
+    //PACKET_PRINT();
 
     //debug_printf("Payload Packet Seperator: %s", status);
 
