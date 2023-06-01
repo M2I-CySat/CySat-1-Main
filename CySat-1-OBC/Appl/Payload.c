@@ -414,50 +414,66 @@ HAL_StatusTypeDef KELVIN_FILE_TRANSFER(int increment){
     return FILE_TRANSFER(0x01,increment);
 }
 
+// DELETE files
+
 /**
  * @brief Deletes the specified data file from the SD card
- *
+ *  Deletes the DAT file
  */
+HAL_StatusTypeDef DELETE_DATA_FILE_DAT(int data_file_no){
 
-/*
+    // It's going to be very similar to DELETE_DATA_FILE_DAT
+    // deletes kel%d.txt
+
+    // make the file name using the data_file_no
+    int num_length = (data_file_no==0)?1:log10(data_file_no)+1; // number of digits in file no
+    char file_name[num_length + 8]; // length of full name 8 = num of characters in kel.txt + 1
+    sprintf(file_name, "dat%d.txt", data_file_no);
+
+    // try to delete
+    if( remove(file_name) != 0 ) {
+        perror("Error deleting file");
+    }
+
+    else {
+        puts("File successfully deleted");
+    }
+
+
+/**
+ * @brief Deletes the specified data file from the SD card
+ *  Deletes the KEL file
+ */
+HAL_StatusTypeDef DELETE_DATA_FILE_KEL(int data_file_no){
+    // It's going to be very similar to DELETE_DATA_FILE_DAT
+    // deletes kel%d.txt
+
+    // make the file name using the data_file_no
+    int num_length = (data_file_no==0)?1:log10(data_file_no)+1; // number of digits in file no
+    char file_name[num_length + 8]; // length of full name 8 = num of characters in kel.txt + 1
+    sprintf(file_name, "kel%d.txt", data_file_no);
+
+    // try to delete
+    if( remove(file_name) != 0 ) {
+        perror("Error deleting file");
+    }
+
+    else {
+        puts("File successfully deleted");
+    }
+}
+
+/**
+ * @brief Deletes the specified data file from the SD card
+ *  Deletes the KEL and DAT file
+ */
 HAL_StatusTypeDef DELETE_DATA_FILE(int data_file_no){
 
-	//UNFINISHED, LIKELY NONFUNCTIONAL: Needs testing and error checking!
-	//Needs to be linked to a command (packet)
+    DELETE_DATA_FILE_KEL(data_file_no);
+    DELETE_DATA_FILE_DAT(data_file_no);
 
-	FATFS FatFs;
-	FIL datfil;
-	FIL kelfil;
-	FRESULT dfiledel;
-	FRESULT kfiledel;
-
-	if(f_mount(&FatFs, "", 0) != FR_OK)
-	{
-	    debug_printf("File deletion unsuccessful: Failed to mount SD drive.");
-	    return HAL_ERROR;
-	}
-	else {
-
-		sprintf(dat_file_name, "dat%d.txt", data_file_no);
-		dfiledel = f_unlink(dat_file_name);
-		if(dfiledel == FR_OK){
-			debug_printf("Data file %d deleted successfully.", data_file_no);
-			return HAL_OK; //Change this later to correspond with a packet-sending operation
-		}
-
-		sprintf(kel_file_name, "kel%d.txt", data_file_no);
-		kfiledel = f_unlink(kel_file_name);
-		if(kfilefound == FR_OK){
-			debug_printf("Kel file %d deleted successfully.", data_file_no);
-			return HAL_OK; //Same here
-		}
-		else {
-			debug_printf("File deletion unsuccessful: File not found.");
-			return HAL_ERROR;
-		}
-	}
 }
-*/
+
 
 
 /**
