@@ -526,6 +526,8 @@ void Main_Task(void const *argument) {
     START_PIPE();
     debug_printf("Before separator");
     PACKET_SEPARATOR(0, 0, 0, 4);
+    FILE_TRANSFER(0,1);
+    FILE_TRANSFER(1,0);
     //PACKET_PRINT();
 
     //debug_printf("Payload Packet Seperator: %s", status);

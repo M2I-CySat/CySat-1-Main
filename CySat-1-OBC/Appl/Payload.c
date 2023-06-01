@@ -236,13 +236,14 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time){
 
 
 /**
- * @brief Private function to transfer file type
+ * @brief Private function to transfer file type. Sends request for measurement transfer to payload and acquires .dat and .kelvin files. Writes
  *
  * @param file_type: 0 = dat file and 1 = kelvin file
+ * @param increment: 0 = do not increase file number and 1 = increase file number. Very jank poor practice workaround to another problem. Sorry.
  */
 
-/**
-HAL_StatusTypeDef FILE_TRANSFER(int file_type){
+
+HAL_StatusTypeDef FILE_TRANSFER(int file_type, int increment){
     // Start transfer request to payload
     CySat_Packet_t packet;
     packet.Subsystem_Type = PAYLOAD_SUBSYSTEM_TYPE;
@@ -301,133 +302,115 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type){
         for(int i = 0; i < file_size; i++){
             debug_printf("%d", data[i]);
         }
-
-        //Write to SD Card
-        //NOTE: Code to read from entry number file inserted after successful testing in AppTasks, may need some tweaks to run in Payload
-
-        FATFS FatFs; //Fatfs handle
-        //FIL fil; //File handle
-        FIL entryfil; //File containing data entry number
-        FRESULT fres; //Result after operations
-        FRESULT efres; //Result after opening entryfil
-        FRESULT success;
-
-        FRESULT res; //FatFs function common result code
-        UINT byteswritten, bytesread; // File write/read counts
-        TCHAR const* SDPath = "0";
-        uint8_t rtext[_MAX_SS];//File read buffer
-
-        if(f_mount(&FatFs, "", 0) != FR_OK)
-        {
-        debug_printf("[SD Write/ERROR]: Failed to mount SD drive");
-        //Error_Handler();
-        }
-        else
-        {
-        	debug_printf("[SD Write/SUCCESS]: SD drive mounted successfully");
-            //Open file for writing (Create)
-        	fres = f_open(&entryfil, "entry.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
-            if(fres != FR_OK)
-            {
-            	debug_printf("[SD Write/ERROR]: Failed to open entry number file");
-            }
-            else
-            {
-    			debug_printf("[SD Write/SUCCESS]: Entry number file opened successfully");
-
-            	char temp_bytes [8]="00000000";
-
-            	long int entry_id = 0;
-    			success = f_read(&entryfil, &temp_bytes, 8, &bytesread);
-    			sscanf(&temp_bytes,"%ld",&entry_id);
-
-    			//If no data entry value is present, provides a starting value
-    			if(success != FR_OK)
-    			{
-    				entry_id = 0;
-    				debug_printf("[SD Write]: Entry number file created");
-    			}
-
-    			debug_printf("[SD Write]: Old entry id char and long: %c%c%c%c%c%c%c%c %ld", temp_bytes[0],temp_bytes[1],temp_bytes[2],temp_bytes[3],temp_bytes[4],temp_bytes[5],temp_bytes[6],temp_bytes[7],entry_id);
-
-    			//Adds 1 to the data entry number
-    			long int new_entry_id = entry_id + 1;
-
-    			debug_printf("[SD Write]: New entry id: %ld", new_entry_id);
-
-    			char new_entry_str[8]="00000000";
-    			sprintf(new_entry_str, "%ld", new_entry_id);
-
-    			debug_printf(new_entry_str);
-
-    			//Write to the text file, rewinding first
-    			res = f_lseek(&entryfil, 0);
-    			res = f_write(&entryfil, new_entry_str, strlen((char *)new_entry_str), (void *)&byteswritten);
-
-    			if(res != FR_OK)
-    			{
-    				debug_printf("[SD Write]: Write Unsuccessful");
-    			}
-
-    			//Closes the file
-    			if((byteswritten == 0) || (res != FR_OK))
-    			{
-    				debug_printf("[SD Write/ERROR]: Failed write to entry number file");
-    			}
-    			else
-    			{
-    				f_close(&entryfil);
-    			}
-
-			//Create the specified data file
-
-			char data_file_name[12]={"\0"};
-
-			if(file_type == 0){
-				data_file_name[0] = sprintf(filename_buff, "dat%d.txt", entry_id);
-				debug_printf("dat file");
-			}
-			else {
-				data_file_name[0] = sprintf(filename_buff, "kel%d.txt", entry_id);
-				debug_printf("kel file");
-			}
-
-			debug_printf("%s", data_file_name);
-
-			fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-
-			if(fres != FR_OK){
-				return HAL_ERROR;
-			}
-			UINT bytes;
-			fres = f_write(&fil, (char*)data, (UINT)file_size, &bytes);
-			if(fres != FR_OK || bytes!= file_size){
-				//status = HAL_ERROR;
-				return HAL_ERROR;
-			}
-			f_close(&fil); //Close the file
-			f_mount(NULL, "", 0); //De-mount the drive
-        }
     }
+
+	//Write to SD Card
+	//NOTE: Code to read from entry number file inserted after successful testing in AppTasks, may need some tweaks to run in Payload
+
+	FIL fil; //File handle
+	FRESULT fres; //Result after operations
+	UINT byteswritten, bytesread; // File write/read counts
+	//TCHAR const* SDPath = "0"; //Unused but worth keeping I think
+
+	//Open file that has the data number in it
+	fres = f_open(&fil, "entry.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
+	if(fres != FR_OK){
+		debug_printf("[SD Write/ERROR]: Failed to open entry number file");
+		return HAL_ERROR;
+	}
+	debug_printf("[SD Write/SUCCESS]: Entry number file opened successfully");
+
+	//Read the number from the file that has the data number in it
+	char temp_bytes [8]="00000000";
+	long int entry_id = 0;
+	fres = f_read(&fil, &temp_bytes, 8, &bytesread);
+	sscanf(temp_bytes,"%ld",&entry_id);
+
+	//If no data number is present, provides a starting value
+	if(fres != FR_OK){
+		entry_id = 0;
+		debug_printf("[SD Write]: Entry number file created");
+	}
+
+	debug_printf("[SD Write]: Old entry id char and long: %c%c%c%c%c%c%c%c %ld", temp_bytes[0],temp_bytes[1],temp_bytes[2],temp_bytes[3],temp_bytes[4],temp_bytes[5],temp_bytes[6],temp_bytes[7],entry_id);
+
+	//Adds 1 to the data entry number and writes it to the sd card, only if increment is true
+
+	if(increment==1){
+		long int new_entry_id = entry_id + 1;
+		debug_printf("[SD Write]: New entry id: %ld", new_entry_id);
+		char new_entry_str[8]="00000000";
+		sprintf(new_entry_str, "%ld", new_entry_id);
+		debug_printf(new_entry_str);
+
+		//Write to the text file, rewinding first
+		fres = f_lseek(&fil, 0);
+		if(fres != FR_OK){
+			debug_printf("[SD Write]: Write Unsuccessful (rewind)");
+			return HAL_ERROR;
+		}
+		fres = f_write(&fil, new_entry_str, strlen((char *)new_entry_str), (void *)&byteswritten);
+		if(fres != FR_OK){
+			debug_printf("[SD Write]: Write Unsuccessful (write)");
+			return HAL_ERROR;
+		}
+
+		//Checks for actual writing or fres not okay
+		if((byteswritten == 0) || (fres != FR_OK)){
+			debug_printf("[SD Write/ERROR]: Failed write to entry number file");
+		}
+	}
+
+	//Closes the file
+	f_close(&fil);
+
+	//Assemble the file name from the dat/kelvin and measurement number
+	char data_file_name[12]={"\0"}; //Might have to initialize to just [12]; if it fails
+	if(file_type == 0){
+		data_file_name[0] = sprintf(data_file_name, "%ld.dat", entry_id);
+		debug_printf("dat file");
+	}
+	else {
+		data_file_name[0] = sprintf(data_file_name, "%ld.kelvin", entry_id);
+		debug_printf("kel file");
+	}
+	debug_printf("%s", data_file_name);
+
+	//Opens the file
+	fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+	if(fres != FR_OK){
+		return HAL_ERROR;
+	}
+
+	//Writes to the file
+	UINT bytes;
+	fres = f_write(&fil, (char*)data, (UINT)file_size, &bytes);
+	if(fres != FR_OK || bytes!= file_size){
+		//status = HAL_ERROR;
+		return HAL_ERROR;
+	}
+	f_close(&fil); //Close the file
 
     return status;
 }
-*/
+
 
 /**
  * @brief Commands the payload to transfer the DAT file
+ * @param whether or not to increment the measurement number (jank but it works)
  *
  */
-HAL_StatusTypeDef DAT_FILE_TRANSFER(){
-    return FILE_TRANSFER(0x00);
+HAL_StatusTypeDef DAT_FILE_TRANSFER(int increment){
+    return FILE_TRANSFER(0x00,increment);
 }
 
 /**
  * @brief Commands the payload to transfer the KELVIN file
+ * @param whether or not to increment the measurement number (jank but it works)
  *
  */
-HAL_StatusTypeDef KELVIN_FILE_TRANSFER(){
-    return FILE_TRANSFER(0x01);
+HAL_StatusTypeDef KELVIN_FILE_TRANSFER(int increment){
+    return FILE_TRANSFER(0x01,increment);
 }
 
 /**
@@ -483,26 +466,22 @@ HAL_StatusTypeDef DELETE_DATA_FILE(int data_file_no){
 
 HAL_StatusTypeDef PACKET_PRINT(){
 	debug_printf("This is a test");
+	return HAL_OK;
 }
 
 
 HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, unsigned short int dataType, unsigned short int startPacket, unsigned short int endPacket){
-	debug_printf("very beginning");
 	FIL currfile; //File containing data entry number
-	debug_printf("after currfile");
 	FRESULT fres; //Result after operations
-
-
-	debug_printf("Past declarations");
 	if (startPacket > endPacket) //Checks to make sure packet ordering is valid
     {
         debug_printf("[PACKET_SEPARATOR/ERROR]: Start Packet is greater than End Packet");
 		return HAL_ERROR;
     }
-	debug_printf("Past ordering check");
-    //char dataTypeStr [7]="";
-    char *dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
 
+    char dataTypeStr [7]={"\0"};
+    //char *dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
+    //data_file_name[0] = sprintf(data_file_name, "%ld.dat", entry_id);
 //    if(dataType==0){
 //    	char dataTypeStr[7] = ".kelvin";
 //    }else if(dataType==1){
@@ -546,10 +525,10 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, unsigned sh
         // Header data
         packet[0] = 0xFF;
 
-        char id[2]="00";
+        char id[3]="00"; //If it stops working change it back to 2, null terminator might be weird
         sprintf(id, "%02d", measurementID);
 
-        char id2[2]="00";
+        char id2[3]="00";
 		sprintf(id2, "%02d", i);
 
 		//debug_printf("id: %s id2: %s dataType: %d", id, id2,dataType);

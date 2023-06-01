@@ -32,8 +32,9 @@ HAL_StatusTypeDef GET_PAYLOAD_VALUES(float*, float*, float*, float*, float*,
 
 /*************************** MEASUREMENT FUNCTIONS *****************************/
 HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t);
-HAL_StatusTypeDef DAT_FILE_TRANSFER();
-HAL_StatusTypeDef KELVIN_FILE_TRANSFER();
+HAL_StatusTypeDef FILE_TRANSFER(int, int);
+HAL_StatusTypeDef DAT_FILE_TRANSFER(int);
+HAL_StatusTypeDef KELVIN_FILE_TRANSFER(int);
 
 /*************************** TRANSMISSION FUNCTIONS *****************************/
 HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, unsigned short int dataType, unsigned short int startPacket, unsigned short int endPacket);

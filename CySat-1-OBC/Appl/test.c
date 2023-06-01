@@ -88,10 +88,10 @@ bool PAYLOAD_TEST_RETRIEVING_DATA(){
     status = TAKE_MEASUREMENT(10);
     if(status != HAL_OK)
         return false;
-    status = DAT_FILE_TRANSFER();
+    status = DAT_FILE_TRANSFER(1);
     if(status != HAL_OK)
         return false;
-    status = KELVIN_FILE_TRANSFER();
+    status = KELVIN_FILE_TRANSFER(0);
     if(status != HAL_OK)
         return false;
     return true;
