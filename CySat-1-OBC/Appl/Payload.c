@@ -6,6 +6,7 @@
  *  Modified on Apr 23, 2023
  *      Author: Alexis Aurandt
  *      		Manas Mathur
+ * 			Vanessa Whitehead
  */
 
 #include <stdio.h>
