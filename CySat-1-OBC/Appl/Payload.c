@@ -438,6 +438,7 @@ HAL_StatusTypeDef DELETE_DATA_FILE_DAT(int data_file_no){
     else {
         puts("File successfully deleted");
     }
+}
 
 
 /**
