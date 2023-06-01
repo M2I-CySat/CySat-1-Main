@@ -367,11 +367,11 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int increment){
 	//Assemble the file name from the dat/kelvin and measurement number
 	char data_file_name[12]={"\0"}; //Might have to initialize to just [12]; if it fails
 	if(file_type == 0){
-		data_file_name[0] = sprintf(data_file_name, "%ld.dat", entry_id);
+		sprintf(data_file_name, "%ld.dat", entry_id);  // Prepend with "data_file_name[0] = " in case doesn't work, same with below version
 		debug_printf("dat file");
 	}
 	else {
-		data_file_name[0] = sprintf(data_file_name, "%ld.kelvin", entry_id);
+		sprintf(data_file_name, "%ld.kelvin", entry_id);
 		debug_printf("kel file");
 	}
 	debug_printf("%s", data_file_name);
@@ -479,24 +479,24 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, unsigned sh
 		return HAL_ERROR;
     }
 
-    char dataTypeStr [7]={"\0"};
+    char* dataTypeStr1 =".kelvin";
+    char* dataTypeStr2 =".dat";
+    char fileName[20];
     //char *dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
-    //data_file_name[0] = sprintf(data_file_name, "%ld.dat", entry_id);
-//    if(dataType==0){
-//    	char dataTypeStr[7] = ".kelvin";
-//    }else if(dataType==1){
-//    	char dataTypeStr[4] = ".dat";
-//    }else{
-//    	debug_printf("[PACKET_SEPARATOR/ERROR]: Invalid data type");
-//    	fres = f_unmount ("");
-//    	return HAL_ERROR;
-//    }
+    //sprintf(dataTypeStr, "%ld.%s", entry_id);
+    if(dataType==0){
+    	sprintf(fileName,"%d%s", measurementID, dataTypeStr1);
+    }else if(dataType==1){
+    	sprintf(fileName,"%d%s", measurementID, dataTypeStr2);
+    }else{
+    	debug_printf("[PACKET_SEPARATOR/ERROR]: Invalid data type");
+    	return HAL_ERROR;
+    }
 
 
-    debug_printf("Past dataType");
     //char fileName = sprintf("%d%s", measurementID, &dataTypeStr); // Grabs the file from the SD card
     //char fileName="0.kelvin";
-    //debug_printf("File name: %s",fileName);
+    debug_printf("File name: %s",fileName);
 
     fres = f_open(&currfile, "entry18.txt", FA_OPEN_ALWAYS | FA_READ);
     if(fres != FR_OK)
