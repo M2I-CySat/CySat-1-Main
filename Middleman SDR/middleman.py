@@ -15,7 +15,7 @@ print(msg)
 
 
 # Serial Setup
-ser = serial.Serial('/dev/serial0', 115200, timeout=10) # This will have to be changed once we test with the actual machine
+ser = serial.Serial('COM3', 115200, timeout=10) # This will have to be changed once we test with the actual machine
 
 
 
@@ -39,9 +39,9 @@ if StartupMeasurement == True:
     time.sleep(MeasurementDelay)
 
     # ---> Sends first file
-    f = open("test.kelvin", "r")
-    print(f.readline())
-    ser.write('Sent %d time(s)')
+    #f = open("test.kelvin", "r")
+    #print(f.readline())
+    #ser.write('Sent %d time(s)')
 
     # Waits for OBC response
 
