@@ -13,6 +13,12 @@ print(msg)
 
 # Contact Steven Scheuermann for help, ultimatesteve99@gmail.com
 
+
+# Serial Setup
+ser = serial.Serial('/dev/serial0', 115200, timeout=10) # This will have to be changed once we test with the actual machine
+
+
+
 # Initial Declarations
 StartupDelay=1 #For deployment switch to 600 seconds
 MeasurementDelay=1 #For deployment this might be OBC specified, unsure
@@ -25,16 +31,17 @@ time.sleep(StartupDelay)
 
 # Checks if take measurement at startup is true or false
 if StartupMeasurement == True:
-    os.system('cmd /c "python radiometer_app.py"')
-    #os.system('cmd /c "dir"') #Temporary command prompt, use one above for testing
-    print("AAAAA")
-    time.sleep(1)
-    print("BBBB")
     # If true, take measurement, if false, skip and go to additional commands. This might change to needing OBC prompt to take measurement.
+    os.system('cmd /c "python radiometer_app.py"') # The path has to be changed a bit for this to work but it might eventually work
+
 
     # Waits for measurment to be taken, until OBC responds with send me the measurement
+    time.sleep(MeasurementDelay)
 
     # ---> Sends first file
+    f = open("test.kelvin", "r")
+    print(f.readline())
+    ser.write('Sent %d time(s)')
 
     # Waits for OBC response
 
