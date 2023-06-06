@@ -45,6 +45,8 @@ if StartupMeasurement == True:
 
     # Waits for OBC response
 
+    # Check if file exists
+
     # If error, try resending, but if 2 errors, send abort message and delete measurement probably
 
     # If success, delete measurement, step not needed if GNU radio does this automatically, unsure if overwrite deletes or overwrites
