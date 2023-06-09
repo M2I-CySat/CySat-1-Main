@@ -96,6 +96,7 @@ void Main_Task(void const *argument) {
     */
 
     // Enable
+    osDelay(2000);
     mainStatus = enable_UHF();
 
     if (mainStatus != HAL_OK) {
@@ -106,7 +107,7 @@ void Main_Task(void const *argument) {
     osDelay(2000); // Optional delay
 
     // Turn on SDR/Payload
-    mainStatus = enable_Payload();
+    //mainStatus = enable_Payload();
     if (mainStatus != HAL_OK) {
         debug_printf("[Main Thread/ERROR]: EPS Payload Enable Error: %s", mainStatus);
     } else {
@@ -313,23 +314,24 @@ void Main_Task(void const *argument) {
 	*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
 
-//    osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
-//
-//
-//    int16_t test1;
-//    int16_t test2;
-//    //int16_t testz;
-//    mainStatus=TLM_140(&test1,&test2);
-//    debug_printf("%d %d ",test1,test2);
-//
-//
-//         debug_printf("testing TLM_140");
-//
-//          if (mainStatus != HAL_OK) {
-//                  debug_printf("[Main Thread/ERROR]: Failed to test TLM_140");
-//               } else {
-//                  debug_printf("[Main Thread/SUCCESS]: TLM_140 Worked correctly");
-//               }
+    osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
+
+
+    int16_t test1;
+    int16_t test2;
+    //int16_t testz;
+    mainStatus=TLM_140(&test1,&test2);
+    debug_printf("%d %d ",test1,test2);
+
+
+	debug_printf("testing TLM_140");
+
+    if (mainStatus != HAL_OK) {
+	    debug_printf("[Main Thread/ERROR]: Failed to test TLM_140");
+     } else {
+    	  debug_printf("[Main Thread/SUCCESS]: TLM_140 Worked correctly");
+     }
+
 //
 //          float testx;
 //          float testy;
@@ -525,7 +527,8 @@ void Main_Task(void const *argument) {
     // Testing Code Separator
     START_PIPE();
     debug_printf("Before separator");
-    PACKET_SEPARATOR(0, 0, 0, 4);
+    DELETE_DATA_FILE_DAT(3);
+    PACKET_SEPARATOR(0, 0, 0, 84);
     FILE_TRANSFER(0,1);
     FILE_TRANSFER(1,0);
     //PACKET_PRINT();

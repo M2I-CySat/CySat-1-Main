@@ -428,16 +428,19 @@ HAL_StatusTypeDef DELETE_DATA_FILE_DAT(int data_file_no){
     // make the file name using the data_file_no
     int num_length = (data_file_no==0)?1:log10(data_file_no)+1; // number of digits in file no
     char file_name[num_length + 8]; // length of full name 8 = num of characters in kel.txt + 1
-    sprintf(file_name, "dat%d.txt", data_file_no);
+    sprintf(file_name, "%d.dat", data_file_no);
+
+    debug_printf("Trying to delete file: %s",file_name);
 
     // try to delete
     if( remove(file_name) != 0 ) {
-        perror("Error deleting file");
+    	debug_printf("Error deleting file");
     }
 
     else {
-        puts("File successfully deleted");
+    	debug_printf("File successfully deleted");
     }
+    return HAL_OK;
 }
 
 
@@ -592,15 +595,14 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, unsigned sh
 		}
 
         //crc32(packet, (sizeFile - bytesRead * i) + 6, &packet[6 + (sizeFile - bytesRead * i)]);
-        debug_printf("Packet %d: %s", i, packet);
+		//crc32(packet, (sizeFile - bytesRead * i) + 6, &packet[121]);
+        //crc32(command, 12, &command[13]);
+        debug_printf("Packet %d: %s", i, packet); //crc32 is done by the antenna, unneeded. We can use the extra 8bytes for transmitting actual data.
 
-        //packet[0]="H";
-        //packet[1]="E";
-        //packet[2]="L";
-        //packet[3]="P";
+
         //HAL_UART_Transmit(&huart1, packet, 6+ (sizeFile - bytesRead * i), 200); // Do not use for standalone testing!!!!!!
-        HAL_UART_Transmit(&huart1, packet, 120, 50);
-        osDelay(2000);
+        HAL_UART_Transmit(&huart1, &packet, 128, 128);
+        osDelay(229);
     }
 
 
