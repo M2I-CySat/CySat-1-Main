@@ -425,8 +425,6 @@ HAL_StatusTypeDef DELETE_DATA_FILE_DAT(int data_file_no){
     // It's going to be very similar to DELETE_DATA_FILE_KEL
     // deletes %d.dat
     // make the file name using the data_file_no
-    int num_length = (data_file_no==0)?1:log10(data_file_no)+1; // number of digits in file no
-    char file_name[num_length + 8]; // length of full name 8 = num of characters in kel.txt + 1
     char file_name[16]={"\0"}; // length of full name with some buffer and clearing memory
     sprintf(file_name, "%d.dat", data_file_no);
     debug_printf("Trying to delete file: %s",file_name);
