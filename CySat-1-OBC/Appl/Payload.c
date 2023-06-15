@@ -496,7 +496,7 @@ HAL_StatusTypeDef PACKET_PRINT(){
 }
 
 
-HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, unsigned short int dataType, unsigned short int startPacket, unsigned short int endPacket){
+HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int dataType, unsigned int startPacket, unsigned int endPacket){
 	FIL currfile; //File containing data entry number
 	FRESULT fres; //Result after operations
 	if (startPacket > endPacket) //Checks to make sure packet ordering is valid
@@ -505,11 +505,17 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned short int measurementID, unsigned sh
 		return HAL_ERROR;
     }
 
-    char* dataTypeStr1 =".kelvin";
-    char* dataTypeStr2 =".dat";
+    char* dataTypeStr1 = ".kelvin";
+    char* dataTypeStr2 = ".dat";
+    char* dataTypeStr3 = ".meta";
+    char* dataTypeStr4 = ".master";
     char fileName[20];
-    //char *dataTypeStr = dataType == 0 ? ".kelvin" : ".dat"; // 0 = kelvin, 1 = dat
-    //sprintf(dataTypeStr, "%ld.%s", entry_id);
+
+    switch(dataType) {
+       case 1:
+          statement(s);
+       case 2:
+    }
     if(dataType==0){
     	sprintf(fileName,"%d%s", measurementID, dataTypeStr1);
     }else if(dataType==1){
