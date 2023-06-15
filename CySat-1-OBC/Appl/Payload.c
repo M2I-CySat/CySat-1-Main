@@ -422,25 +422,24 @@ HAL_StatusTypeDef KELVIN_FILE_TRANSFER(int increment){
  */
 HAL_StatusTypeDef DELETE_DATA_FILE_DAT(int data_file_no){
 
-    // It's going to be very similar to DELETE_DATA_FILE_DAT
-    // deletes kel%d.txt
-
+    // It's going to be very similar to DELETE_DATA_FILE_KEL
+    // deletes %d.dat
     // make the file name using the data_file_no
     int num_length = (data_file_no==0)?1:log10(data_file_no)+1; // number of digits in file no
     char file_name[num_length + 8]; // length of full name 8 = num of characters in kel.txt + 1
+    char file_name[16]={"\0"}; // length of full name with some buffer and clearing memory
     sprintf(file_name, "%d.dat", data_file_no);
-
     debug_printf("Trying to delete file: %s",file_name);
 
     // try to delete
-    if( remove(file_name) != 0 ) {
+    if(f_unlink(file_name)!=FR_OK) {
     	debug_printf("Error deleting file");
+    	return HAL_ERROR;
     }
-
     else {
     	debug_printf("File successfully deleted");
+    	return HAL_OK;
     }
-    return HAL_OK;
 }
 
 
@@ -450,20 +449,21 @@ HAL_StatusTypeDef DELETE_DATA_FILE_DAT(int data_file_no){
  */
 HAL_StatusTypeDef DELETE_DATA_FILE_KEL(int data_file_no){
     // It's going to be very similar to DELETE_DATA_FILE_DAT
-    // deletes kel%d.txt
-
+    // deletes &d.kelvin
     // make the file name using the data_file_no
-    int num_length = (data_file_no==0)?1:log10(data_file_no)+1; // number of digits in file no
-    char file_name[num_length + 8]; // length of full name 8 = num of characters in kel.txt + 1
-    sprintf(file_name, "kel%d.txt", data_file_no);
+	char file_name[16]={"\0"}; // length of full name 8 = num of characters in kel.txt + 1
+    sprintf(file_name, "%d.kelvin", data_file_no);
+    debug_printf("Trying to delete file: %s",file_name);
 
     // try to delete
-    if( remove(file_name) != 0 ) {
-        perror("Error deleting file");
+    if(f_unlink(file_name)!=FR_OK) {
+    	debug_printf("Error deleting file");
+    	return HAL_ERROR;
     }
 
     else {
-        puts("File successfully deleted");
+    	debug_printf("File successfully deleted");
+    	return HAL_OK;
     }
 }
 
@@ -472,10 +472,17 @@ HAL_StatusTypeDef DELETE_DATA_FILE_KEL(int data_file_no){
  *  Deletes the KEL and DAT file
  */
 HAL_StatusTypeDef DELETE_DATA_FILE(int data_file_no){
-
-    DELETE_DATA_FILE_KEL(data_file_no);
-    DELETE_DATA_FILE_DAT(data_file_no);
-
+	HAL_StatusTypeDef status = HAL_OK;
+    status=DELETE_DATA_FILE_KEL(data_file_no);
+    if (status != HAL_OK){
+    	debug_printf("Error deleting .kelvin file");
+    	return status;
+    }
+    status=DELETE_DATA_FILE_DAT(data_file_no);
+    if (status != HAL_OK){
+    	debug_printf("Error deleting .dat file");
+    }
+    return status;
 }
 
 
