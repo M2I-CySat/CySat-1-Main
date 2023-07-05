@@ -663,7 +663,7 @@ void MX_USART1_UART_Init(void)
 
 }
 
-/* USART6 init function */
+/* USART6 init function - Payload */
 void MX_USART6_UART_Init(void)
 {
 

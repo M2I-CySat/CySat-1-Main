@@ -237,6 +237,22 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time){
 
 
 /**
+ * @brief Private function to transfer spectrum.dat file from radiometer to SD card.
+ *
+ *
+ *
+ */
+
+
+HAL_StatusTypeDef NEW_FILE_TRANSFER(int file_type, int increment){
+	message = "1";
+	status = HAL_UART_Transmit(&huart6, message, 2, 1000);
+}
+
+
+
+
+/**
  * @brief Private function to transfer file type. Sends request for measurement transfer to payload and acquires .dat and .kelvin files. Writes
  *
  * @param file_type: 0 = dat file and 1 = kelvin file
@@ -505,89 +521,67 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 		return HAL_ERROR;
     }
 
+    char* dataTypeStr0 = ".dat";
     char* dataTypeStr1 = ".kelvin";
-    char* dataTypeStr2 = ".dat";
-    char* dataTypeStr3 = ".meta";
-    char* dataTypeStr4 = ".master";
+    char* dataTypeStr2 = ".meta";
+    char* dataTypeStr3 = ".list";
     char fileName[20];
 
     switch(dataType) {
+       case 0:
+    	   sprintf(fileName,"%d%s", measurementID, dataTypeStr0);
        case 1:
-          statement(s);
+    	   sprintf(fileName,"%d%s", measurementID, dataTypeStr1);
        case 2:
-    }
-    if(dataType==0){
-    	sprintf(fileName,"%d%s", measurementID, dataTypeStr1);
-    }else if(dataType==1){
-    	sprintf(fileName,"%d%s", measurementID, dataTypeStr2);
-    }else{
-    	debug_printf("[PACKET_SEPARATOR/ERROR]: Invalid data type");
-    	return HAL_ERROR;
+    	   sprintf(fileName,"%d%s", measurementID, dataTypeStr2);
+       case 3:
+    	   sprintf(fileName,"list.%s",dataTypeStr3);
+	   default:
+		   debug_printf("[PACKET_SEPARATOR/ERROR]: Invalid data type");
+		   return HAL_ERROR;
     }
 
-
-    //char fileName = sprintf("%d%s", measurementID, &dataTypeStr); // Grabs the file from the SD card
-    //char fileName="0.kelvin";
     debug_printf("File name: %s",fileName);
 
-    fres = f_open(&currfile, "entry18.txt", FA_OPEN_ALWAYS | FA_READ);
-    if(fres != FR_OK)
-    {
-    	fres = f_unmount ("");
+    fres = f_open(&currfile, fileName, FA_OPEN_ALWAYS | FA_READ);
+    if(fres != FR_OK){
     	debug_printf("[PACKET_SEPARATOR/ERROR]: Failed to open measurement file");
+    	return HAL_ERROR;
     }
+    debug_printf("[PACKET_SEPARATOR]: Successfully opened measurement file %s,fileName");
 
-    //fseek(fp, 0L, SEEK_END);
     long unsigned int sizeFile = f_size(&currfile);
-    debug_printf("File size is %lu",sizeFile);
-
-    //if (fseek(fp, 118*startPacket, 0) != 0) // seek to start of data
-    //{
-    //    fclose(fp);
-    //    return HAL_ERROR;
-    //}
-
-
+    debug_printf("File size is %lu bytes, %4.2d kilobytes, or %4.2d megabytes",sizeFile,sizeFile/1000,sizeFile/1000000);
 
 
 
     for (unsigned short int i = startPacket; i <= endPacket; i++)
     {
-    	char packet[128];
-        // Header data
+    	char packet[128]={"\0"};
+        // Byte 0 lets us know the packet is getting started
         packet[0] = 0xFF;
 
-        char id[3]="00"; //If it stops working change it back to 2, null terminator might be weird
-        sprintf(id, "%02d", measurementID);
+        // Byte 1 is the data type, 0=dat, 1=kelvin, rest might be used for stuff later like meta files
+        packet[1]=dataType;
 
-        char id2[3]="00";
-		sprintf(id2, "%02d", i);
+        // Setting up char arrays that contain measurement id and packet id
+        char id[6]="00000"; //If it stops working change it back to 5, null terminator might be weird
+        sprintf(id, "%05d", measurementID);
 
-		//debug_printf("id: %s id2: %s dataType: %d", id, id2,dataType);
-        //packet[1] = (measurementID >> 8) & 0xFF;
-        //packet[2] = measurementID & 0xFF;
+        char id2[6]="00000";
+		sprintf(id2, "%05d", i);
 
-        packet[1]=id[0];
-        packet[2]=id[1];
-
-        if(dataType==0){
-        	packet[3]=48;
-        }else if(dataType==1){
-        	packet[3]=49;
-        }
-        //packet[3] = dataType;
-
-        packet[4]=id2[0];
-	    packet[5]=id2[1];
-
-        //packet[4] = (i >> 8) & 0xFF;
-        //packet[5] = i & 0xFF;
-
+		// Write measurement id and packet id to the packet array, there has to be a better way to do this
+		// Each gets 5 bytes supporting files up to ~7.6 Megabytes
+		// This can be done in hex instead of decimal to save some space in the packets but I don't know how and that would make my life harder
+		for(int i=0; i<=4; i++){
+			packet[i+2]=id[i];
+			packet[i+7]=id2[i];
+		}
 
         //PSEUDOCODE FOR: Check to see if packet requested is greater than the length of a file (if so break out of the loop)
-        // ASK STEVEN WHAT HE MEANS BY "A FILE"
 
-        char data[118] = {'\0'};
+        char data[116] = {'\0'};
         UINT bytesRead=0;
 
 		//size_t read  = fread(&data, 1, sizeFile - 118 * i, fp);
@@ -605,15 +599,10 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 			packet[6+j] = data[j];
 		}
 
-        //crc32(packet, (sizeFile - bytesRead * i) + 6, &packet[6 + (sizeFile - bytesRead * i)]);
-		//crc32(packet, (sizeFile - bytesRead * i) + 6, &packet[121]);
-        //crc32(command, 12, &command[13]);
         debug_printf("Packet %d: %s", i, packet); //crc32 is done by the antenna, unneeded. We can use the extra 8bytes for transmitting actual data.
 
-
-        //HAL_UART_Transmit(&huart1, packet, 6+ (sizeFile - bytesRead * i), 200); // Do not use for standalone testing!!!!!!
         HAL_UART_Transmit(&huart1, &packet, 128, 128);
-        osDelay(229);
+        osDelay(3); //It wants 3ms of delay to ensure no dropped data, not sure how much delay the above code will cause but just being safe in case it is below 3
     }
 
 
