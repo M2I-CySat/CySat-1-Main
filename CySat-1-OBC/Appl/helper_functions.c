@@ -53,6 +53,30 @@ HAL_StatusTypeDef debug_printf(char* format, ...){
     return status;
 }
 
+
+HAL_StatusTypeDef debug_printf_no_newline(char* format, ...){
+
+    uint32_t bufferSize = 512;
+    uint8_t formatBuffer[bufferSize];
+
+    va_list args;
+    va_start(args, format);
+    int len = vsnprintf(formatBuffer, bufferSize, format, args); //warning due to use of uint8_t instead of int8_t
+    va_end(args);
+
+    HAL_StatusTypeDef status = HAL_ERROR;
+    if (len > 0) {
+        status = HAL_UART_Transmit(&huart6, formatBuffer, len, 1000);
+        //uint8_t crlf[] = "\r\n";
+        //status = HAL_UART_Transmit(&huart6, crlf, 2, 1000); //sends a carrige return and a line feed to UART (meant for putty/windows)
+    }
+    else{
+        status = HAL_ERROR;
+    }
+
+    return status;
+}
+
 /**
  * Flash the Green LED located on the OBC
  * @param count - The number of cycles to flash

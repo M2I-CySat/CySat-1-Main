@@ -314,23 +314,23 @@ void Main_Task(void const *argument) {
 	*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
 
-    osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
+    //osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
 
 
-    int16_t test1;
-    int16_t test2;
+    //int16_t test1;
+    // test2;
     //int16_t testz;
-    mainStatus=TLM_140(&test1,&test2);
-    debug_printf("%d %d ",test1,test2);
+    //mainStatus=TLM_140(&test1,&test2);
+    //debug_printf("%d %d ",test1,test2);
 
 
-	debug_printf("testing TLM_140");
+	//debug_printf("testing TLM_140");
 
-    if (mainStatus != HAL_OK) {
-	    debug_printf("[Main Thread/ERROR]: Failed to test TLM_140");
-     } else {
-    	  debug_printf("[Main Thread/SUCCESS]: TLM_140 Worked correctly");
-     }
+    //if (mainStatus != HAL_OK) {
+	//    debug_printf("[Main Thread/ERROR]: Failed to test TLM_140");
+     //} else {
+    //	  debug_printf("[Main Thread/SUCCESS]: TLM_140 Worked correctly");
+     //}
 
 //
 //          float testx;
@@ -525,12 +525,18 @@ void Main_Task(void const *argument) {
     // Main startup complete, begin loop checks
 
     // Testing Code Separator
-    START_PIPE();
+
+    f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks
+
+
+
+    //START_PIPE();
     debug_printf("Before separator");
-    DELETE_DATA_FILE_DAT(3);
-    PACKET_SEPARATOR(0, 0, 0, 84);
-    FILE_TRANSFER(0,1);
-    FILE_TRANSFER(1,0);
+    //DELETE_DATA_FILE(3);
+    //PACKET_SEPARATOR(8, 0, 0, 84);
+    //PACKET_SEPARATOR(29,0,0,200);
+    //FILE_TRANSFER(0,1);
+    //FILE_TRANSFER(1,0);
     //PACKET_PRINT();
 
     //debug_printf("Payload Packet Seperator: %s", status);

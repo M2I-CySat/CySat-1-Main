@@ -245,8 +245,9 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time){
 
 
 HAL_StatusTypeDef NEW_FILE_TRANSFER(int file_type, int increment){
-	message = "1";
-	status = HAL_UART_Transmit(&huart6, message, 2, 1000);
+	//message = "1";
+	//status = HAL_UART_Transmit(&huart6, message, 2, 1000);
+
 }
 
 
@@ -487,11 +488,11 @@ HAL_StatusTypeDef DELETE_DATA_FILE_KEL(int data_file_no){
  */
 HAL_StatusTypeDef DELETE_DATA_FILE(int data_file_no){
 	HAL_StatusTypeDef status = HAL_OK;
-    status=DELETE_DATA_FILE_KEL(data_file_no);
-    if (status != HAL_OK){
-    	debug_printf("Error deleting .kelvin file");
-    	return status;
-    }
+    //status=DELETE_DATA_FILE_KEL(data_file_no);
+    //if (status != HAL_OK){
+    //	debug_printf("Error deleting .kelvin file");
+    //	return status;
+    //}
     status=DELETE_DATA_FILE_DAT(data_file_no);
     if (status != HAL_OK){
     	debug_printf("Error deleting .dat file");
@@ -530,12 +531,16 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
     switch(dataType) {
        case 0:
     	   sprintf(fileName,"%d%s", measurementID, dataTypeStr0);
+    	   break;
        case 1:
     	   sprintf(fileName,"%d%s", measurementID, dataTypeStr1);
+    	   break;
        case 2:
     	   sprintf(fileName,"%d%s", measurementID, dataTypeStr2);
+    	   break;
        case 3:
     	   sprintf(fileName,"list.%s",dataTypeStr3);
+    	   break;
 	   default:
 		   debug_printf("[PACKET_SEPARATOR/ERROR]: Invalid data type");
 		   return HAL_ERROR;
@@ -543,15 +548,17 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 
     debug_printf("File name: %s",fileName);
 
-    fres = f_open(&currfile, fileName, FA_OPEN_ALWAYS | FA_READ);
+    fres = f_open(&currfile, fileName, FA_READ);
     if(fres != FR_OK){
     	debug_printf("[PACKET_SEPARATOR/ERROR]: Failed to open measurement file");
     	return HAL_ERROR;
     }
-    debug_printf("[PACKET_SEPARATOR]: Successfully opened measurement file %s,fileName");
+    debug_printf("[PACKET_SEPARATOR]: Successfully opened measurement file %s",fileName);
 
-    long unsigned int sizeFile = f_size(&currfile);
-    debug_printf("File size is %lu bytes, %4.2d kilobytes, or %4.2d megabytes",sizeFile,sizeFile/1000,sizeFile/1000000);
+    //long unsigned int sizeFile = f_size(&currfile);
+    //debug_printf("before lseek");
+    //f_lseek(&currfile, -1);
+    //debug_printf("File size is %lu bytes, %4.2d kilobytes, or %4.2d megabytes",sizeFile,sizeFile/1000,sizeFile/1000000);
 
 
 
@@ -570,7 +577,6 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 
         char id2[6]="00000";
 		sprintf(id2, "%05d", i);
-
 		// Write measurement id and packet id to the packet array, there has to be a better way to do this
 		// Each gets 5 bytes supporting files up to ~7.6 Megabytes
 		// This can be done in hex instead of decimal to save some space in the packets but I don't know how and that would make my life harder
@@ -583,23 +589,28 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 
         char data[116] = {'\0'};
         UINT bytesRead=0;
-
 		//size_t read  = fread(&data, 1, sizeFile - 118 * i, fp);
-		fres = f_read(&currfile, &data, 118, &bytesRead);
+		fres = f_read(&currfile, data, 116, &bytesRead);
 		if(fres != FR_OK)
 		{
 			f_close(&currfile);
-			fres = f_unmount ("");
+			//fres = f_unmount ("");
 			debug_printf("[PACKET_SEPARATOR]: Error reading file");
 			return HAL_ERROR;
 		}
 
 		for (int j = 0; j < bytesRead; j++) // Copy the data into the packet
 		{
-			packet[6+j] = data[j];
+			packet[12+j] = data[j];
 		}
 
-        debug_printf("Packet %d: %s", i, packet); //crc32 is done by the antenna, unneeded. We can use the extra 8bytes for transmitting actual data.
+        debug_printf("\nPacket %d: %s", i, packet); //crc32 is done by the antenna, unneeded. We can use the extra 8bytes for transmitting actual data.
+
+        for (int k=0; k<128; k++)
+        {
+        	debug_printf_no_newline("%c",packet[k]);
+        }
+
 
         HAL_UART_Transmit(&huart1, &packet, 128, 128);
         osDelay(3); //It wants 3ms of delay to ensure no dropped data, not sure how much delay the above code will cause but just being safe in case it is below 3
