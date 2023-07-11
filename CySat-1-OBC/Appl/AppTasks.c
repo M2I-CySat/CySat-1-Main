@@ -533,8 +533,8 @@ void Main_Task(void const *argument) {
     //START_PIPE();
     debug_printf("Before separator");
     //DELETE_DATA_FILE(3);
-    //PACKET_SEPARATOR(8, 0, 0, 84);
-    //PACKET_SEPARATOR(29,0,0,200);
+    PACKET_SEPARATOR(8, 0, 0, 84);
+    PACKET_SEPARATOR(29,0,0,200);
     //FILE_TRANSFER(0,1);
     //FILE_TRANSFER(1,0);
     //PACKET_PRINT();

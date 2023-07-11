@@ -526,7 +526,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
     char* dataTypeStr1 = ".kelvin";
     char* dataTypeStr2 = ".meta";
     char* dataTypeStr3 = ".list";
-    char fileName[20];
+    char fileName[20] = {"\0"}; // Changed to null, if this doesn't work, try passing in file extension instead of dynamically generating it
 
     switch(dataType) {
        case 0:
