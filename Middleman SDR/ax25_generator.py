@@ -1,6 +1,12 @@
 import math
 import crcmod
 
+srcCall = "FFFFFF"
+#srcCall = "KB0MGQ"
+
+destCall = " W0ISU"
+destCall = "FFFFFF"
+informationField = "Hello World!"
 
 def display_string_as_hex(thestring):
     fullstring=""
@@ -35,6 +41,45 @@ overall=bytearray()
 
 # Preamble
 overall.extend(bytearray.fromhex("7E7E7E7E7E7E7E7E"))
+
+# Flag
+overall.extend(bytearray.fromhex("7E"))
+
+# Destination Address
+destAddr_in_bytes = bytearray(destCall, 'ascii')
+destAddr_in_bytes_Lshift = destAddr_in_bytes << 2
+overall.extend(destAddr_in_bytes)
+
+# SSID
+SSID = bytearray.fromhex("E0")
+SSID_Lshift = SSID << 2
+overall.extend(SSID_Lshift)
+
+
+# Source Address
+srcAddr_in_bytes = bytearray(srcCall, 'ascii')
+srcAddr_in_bytes_Lshift = srcAddr_in_bytes << 2
+overall.extend(srcAddr_in_bytes_Lshift)
+
+# SSID
+overall.extend(bytearray.fromhex("E1"))
+# Control
+overall.extend(bytearray.fromhex("03"))
+
+# PID
+overall.extend(bytearray.fromhex("F0"))
+
+# Information Field
+informationField_in_hex = bytearray(informationField, 'ascii')
+overall.extend(informationField_in_hex)
+
+# End Flag
+overall.extend(bytearray.fromhex("7E"))
+
+# Postamble
+overall.extend(bytearray.fromhex("7E7E7E"))
+
+
 
 
 
