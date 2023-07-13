@@ -57,17 +57,22 @@ void testEnergyDischarge(){
   */
 float calculateEnergyRecharge(BatteryMeasurement_t e1, BatteryMeasurement_t e2){
 
-	float dv, di;
+	float dv, di, mv, mi, bv, bi, energy_regenerated;
 	uint64_t dt;
 
-	dt= (e2.time-e1.time); // dt in seconds
+	dt= e2.time-e1.time; // dt in seconds
 	dv = e2.batt_voltage - e1.batt_voltage;
 	di = e2.batt_current - e1.batt_current;
 
-	float energy_regenerated = (dv * di) / 3.0f
-				 + (dv * e1.batt_current + di * e1.batt_voltage) / 2.0f
-				 + (e1.batt_current * e1.batt_voltage);
-	energy_regenerated *= dt;
+	mv = dv/dt;
+	mi = di/dt
+
+	bv = e1.batt_voltage * e2.time - e2.batt_voltage * e1.time;
+	bi = e1.batt_current * e2.time - e2.batt_current * e1.time;
+
+	energy_regenerated = (mv * mi * (pow(e2.time, 3) - pow(e1.time, 3)))/ 3.0f + 
+		(mv*bi + mi*bv) * (pow(e2.time, 2) - pow(e1.time, 2))/2.0f +
+		bi * bv * dt;
 
 	return energy_regenerated;
 }
@@ -174,5 +179,11 @@ int8_t updateCapacityCallback(I2C_HandleTypeDef handle){
     //float total_delta_capacity = calculateEnergyRecharge(EPS_Battery_History[1], EPS_Battery_History[0]) + calculateEnergyDischarge(EPS_Battery_History[1], EPS_Battery_History[0]);
     //EPS_Battery_Capacity = min(EPS_Battery_Capacity + total_delta_capacity, INITIAL_BATTERY_CAPACITY);
     //system log something
+
+	
+
+
+
+
 	return -1;
 }
