@@ -526,15 +526,15 @@ void Main_Task(void const *argument) {
 
     // Testing Code Separator
 
-    f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks
+    //f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks
 
 
 
     //START_PIPE();
     debug_printf("Before separator");
     //DELETE_DATA_FILE(3);
-    PACKET_SEPARATOR(8, 0, 0, 84);
-    PACKET_SEPARATOR(29,0,0,200);
+    PACKET_SEPARATOR(8, 0, 0, 84, ".DAT");
+    PACKET_SEPARATOR(29,0,0,200, ".DAT");
     //FILE_TRANSFER(0,1);
     //FILE_TRANSFER(1,0);
     //PACKET_PRINT();

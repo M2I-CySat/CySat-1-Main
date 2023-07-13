@@ -39,8 +39,8 @@ Header = "ES+"
 Command_Type = "W"
 Address = "22"
 Command_Code = "FB"
-Message = "Message Received! LETSGOOO!"
-Message_Length = str(len(Message))
+Message = "YeetYeetYeetYeetYeet"
+Message_Length = str(hex(len(Message)))[2:]
 Carriage_Return="\r"
 Data_Field_2 = Header + Command_Type + Address + Command_Code + Message_Length + Message + Carriage_Return
 
@@ -57,7 +57,7 @@ overall.extend(bytearray.fromhex("AAAAAAAAAA7E"))
 
 # Length of Data Field 2
 
-Data_Field_2_Bytes_Length = str(hex(len(Data_Field_2_Bytes)-1))[2:]
+Data_Field_2_Bytes_Length = str(hex(len(Data_Field_2_Bytes)))[2:]
 bothdatafields.extend(bytearray.fromhex(Data_Field_2_Bytes_Length))
 
 # Data Field 2
@@ -85,3 +85,5 @@ overall.extend(bytearray.fromhex(crc_value_converted))
 print("CRC value: "+hex(crc_value))
 print("Hex bytes: ", end="")
 display_bytearray_as_hex(overall)
+print("ASCII: ")
+print(bytes(overall).decode('utf-8', errors = "ignore"))

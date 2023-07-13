@@ -37,7 +37,7 @@ HAL_StatusTypeDef DAT_FILE_TRANSFER(int);
 HAL_StatusTypeDef KELVIN_FILE_TRANSFER(int);
 
 /*************************** TRANSMISSION FUNCTIONS *****************************/
-HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int dataType, unsigned int startPacket, unsigned int endPacket);
+HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int dataType, unsigned int startPacket, unsigned int endPacket, char* extension);
 HAL_StatusTypeDef PACKET_PRINT();
 /*************************** HELPER FUNCTIONS **********************************/
 HAL_StatusTypeDef PAYLOAD_WRITE(uint8_t command, uint8_t* in_data_ptr, uint8_t in_byte);

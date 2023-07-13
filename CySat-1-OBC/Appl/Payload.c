@@ -513,7 +513,7 @@ HAL_StatusTypeDef PACKET_PRINT(){
 }
 
 
-HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int dataType, unsigned int startPacket, unsigned int endPacket){
+HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int dataType, unsigned int startPacket, unsigned int endPacket, char* extension){
 	FIL currfile; //File containing data entry number
 	FRESULT fres; //Result after operations
 	if (startPacket > endPacket) //Checks to make sure packet ordering is valid
@@ -526,25 +526,27 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
     char* dataTypeStr1 = ".kelvin";
     char* dataTypeStr2 = ".meta";
     char* dataTypeStr3 = ".list";
-    char fileName[20] = {"\0"}; // Changed to null, if this doesn't work, try passing in file extension instead of dynamically generating it
+    char fileName[5] = {"\0"}; // Changed to null, if this doesn't work, try passing in file extension instead of dynamically generating it
 
     switch(dataType) {
        case 0:
-    	   sprintf(fileName,"%d%s", measurementID, dataTypeStr0);
+    	   //sprintf(fileName,"%d%s", measurementID, dataTypeStr0);
     	   break;
        case 1:
-    	   sprintf(fileName,"%d%s", measurementID, dataTypeStr1);
+    	   //sprintf(fileName,"%d%s", measurementID, dataTypeStr1);
     	   break;
        case 2:
-    	   sprintf(fileName,"%d%s", measurementID, dataTypeStr2);
+    	   //sprintf(fileName,"%d%s", measurementID, dataTypeStr2);
     	   break;
        case 3:
-    	   sprintf(fileName,"list.%s",dataTypeStr3);
+    	   //sprintf(fileName,"list.%s",dataTypeStr3);
     	   break;
 	   default:
 		   debug_printf("[PACKET_SEPARATOR/ERROR]: Invalid data type");
 		   return HAL_ERROR;
     }
+    sprintf(fileName,"%d%s", measurementID, extension);
+
 
     debug_printf("File name: %s",fileName);
 
@@ -561,10 +563,10 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
     //debug_printf("File size is %lu bytes, %4.2d kilobytes, or %4.2d megabytes",sizeFile,sizeFile/1000,sizeFile/1000000);
 
 
-
+    START_PIPE();
     for (unsigned short int i = startPacket; i <= endPacket; i++)
     {
-    	char packet[128]={"\0"};
+    	char packet[129]={"\0"}; //129 so the last byte doesn't get cut off by end of char character
         // Byte 0 lets us know the packet is getting started
         packet[0] = 0xFF;
 
@@ -587,7 +589,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 
         //PSEUDOCODE FOR: Check to see if packet requested is greater than the length of a file (if so break out of the loop)
 
-        char data[116] = {'\0'};
+        char data[117] = {'\0'};
         UINT bytesRead=0;
 		//size_t read  = fread(&data, 1, sizeFile - 118 * i, fp);
 		fres = f_read(&currfile, data, 116, &bytesRead);
@@ -604,17 +606,19 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 			packet[12+j] = data[j];
 		}
 
-        debug_printf("\nPacket %d: %s", i, packet); //crc32 is done by the antenna, unneeded. We can use the extra 8bytes for transmitting actual data.
+        //debug_printf("\nPacket %d: %s", i, packet); //crc32 is done by the antenna, unneeded. We can use the extra 8bytes for transmitting actual data.
 
-        for (int k=0; k<128; k++)
-        {
-        	debug_printf_no_newline("%c",packet[k]);
-        }
+        //for (int k=0; k<128; k++)
+        //{
+        	//debug_printf_no_newline("%c",packet[k]);
+        //}
 
 
         HAL_UART_Transmit(&huart1, &packet, 128, 128);
         osDelay(3); //It wants 3ms of delay to ensure no dropped data, not sure how much delay the above code will cause but just being safe in case it is below 3
     }
+
+    //TODO: Close file
 
 
     return HAL_OK;
