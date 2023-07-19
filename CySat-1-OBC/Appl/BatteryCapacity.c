@@ -70,8 +70,8 @@ float calculateEnergyRecharge(BatteryMeasurement_t e1, BatteryMeasurement_t e2){
 	bv = e1.batt_voltage * e2.time - e2.batt_voltage * e1.time;
 	bi = e1.batt_current * e2.time - e2.batt_current * e1.time;
 
-	energy_regenerated = (mv * mi * (pow(e2.time, 3) - pow(e1.time, 3)))/ 3.0f + 
-		(mv*bi + mi*bv) * (pow(e2.time, 2) - pow(e1.time, 2))/2.0f +
+	energy_regenerated = (mv * mi * (pow(e2.time, 3.0) - pow(e1.time, 3.0)))/ 3.0f + 
+		(mv*bi + mi*bv) * (pow(e2.time, 2.0) - pow(e1.time, 2.0))/2.0f +
 		bi * bv * dt;
 
 	return energy_regenerated;
