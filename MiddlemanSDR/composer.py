@@ -164,6 +164,8 @@ for i in fileList:
 
     f.write(data_String)
 
+    f.close()
+
 
 
 
