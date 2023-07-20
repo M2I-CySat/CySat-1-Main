@@ -1,12 +1,13 @@
 import math
 import os
 import binascii
-import codecs
 import sys
-import ast
 import codecs
 
+print("\n  result \n\n")
+
 # Find file: this the filename and directory
+# To Do: File name will need to be changed
 filename = '/Users/v1/Documents/GitHub/CySat-1-Main/MiddlemanSDR/packetsthursday.txt'
 
 #-------- Read the hex data fromt he file ----------------
@@ -43,12 +44,23 @@ data.append(packet)
 #-------  Seperate becon data and packet data ------
 beacon_data = []
 packet_data = []
+other_data = [] # command data??
+other_count = 0;
 
 for i in data :
     if i[0] == '9' and i[1] == '6':
         beacon_data.append(i)
-    else :
+    elif i[0] == 'F' and i[1] == 'F' :
         packet_data.append(i)
+    else :
+        other_data.append(i)
+        other_count = other_count +1 
+
+if other_count > 0 :
+    print("number of files that aren't beacon data or other data: ")
+    print(other_count)
+    print("data: ")
+    print(other_data)
 
 
 # ------- Sort packet data using key -------
@@ -87,19 +99,72 @@ packet_data.sort(key=takeSecond)
 # Sort by Measurement ID
 packet_data.sort(key=takeFirst)
 
-
-print("\n  result \n\n")
-
 #print(packet_data)
 
-# Convert to Normal String
-str = ""
+# ---- Test PASSED: Convert to Normal String to making sure sort() works  --- 
+# str = ""
+# for i in packet_data:
+#    if(len(i) >= 25):
+#        str += bytes.fromhex(i).decode('utf-8', errors='rer ') 
+# print(str)
 
-for i in packet_data:
-    if(len(i) >= 25):
-        str += bytes.fromhex(i[24:-2]).decode('utf-8', errors='ignore')
 
-print(str)
+# ------ Make Files ---------------
+# inner 116-118
+# look at max length for packets for fill in size
+    # if packet is missing, fill in with FFFF
+
+# empty space 
+# make different files for different measurements
+
+# Step 1: Get a set of the Measurment IDs
+Measurment_IDs = []
+
+for i in packet_data : 
+    Measurment_IDs.append(takeFirst(i))
+
+Measurment_IDs = [*set(Measurment_IDs)]     # ensures there are no repeats
+
+
+# Step 2: Seperate Measurments into separate lists and Make files
+fileList = []
+
+for i in Measurment_IDs:
+    Set = []
+    Set.clear()
+
+    for j in packet_data:
+
+        if takeFirst(j) == i: 
+            Set.append(j)
+    
+    Set = [*set(Set)]
+
+    fileList.append(Set)
+
+
+
+# Step 3:  Make the files
+for i in fileList:
+
+    filename = "Measurement_ID_"
+    filename += takeFirst(i[0])
+    filename += ".txt"
+
+    print("filename: ", filename)
+
+    f= open(filename,"w+") # creates file
+
+    data_String = ""
+
+    for j in i:
+        data_String += j
+
+    print("MEASUREMENT", takeFirst(i[0]), data_String, "\n\n")
+
+    f.write(data_String)
+
+
 
 
 
