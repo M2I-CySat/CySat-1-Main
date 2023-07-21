@@ -4,11 +4,12 @@ import binascii
 import sys
 import codecs
 
-print("\n  result \n\n")
+print("\nComposer Running...\n")
 
 # Find file: this the filename and directory
-# To Do: File name will need to be changed
+# TODO: File name will need to be changed
 filename = '/Users/v1/Documents/GitHub/CySat-1-Main/MiddlemanSDR/packetsthursday.txt'
+SIZE_OF_BUFFER = 24 # is the size of FF + 10 digit Measurement ID + 10 digit packet ID
 
 #-------- Read the hex data fromt he file ----------------
 with open(filename,'rb') as f:
@@ -45,7 +46,7 @@ data.append(packet)
 beacon_data = []
 packet_data = []
 other_data = [] # command data??
-other_count = 0;
+other_count = 0
 
 for i in data :
     if i[0] == '9' and i[1] == '6':
@@ -63,7 +64,7 @@ if other_count > 0 :
     print(other_data)
 
 
-# ------- Sort packet data using key -------
+# ------- Sorting Functions -------
 
 def takeFirst(elem): 
 
@@ -73,9 +74,11 @@ def takeFirst(elem):
 
     Measurment_ID_hex = elem[4:14]
 
-    Measurment_ID_dec = bytes.fromhex(Measurment_ID_hex).decode('utf-8')
+    str = ""
 
-    return Measurment_ID_dec
+    str += bytes.fromhex(Measurment_ID_hex).decode('utf-8', errors='ignore') 
+
+    return str
 
 
 def takeSecond(elem): 
@@ -86,45 +89,36 @@ def takeSecond(elem):
 
     Packet_ID_hex = elem[14:24]
 
-    Packet_ID_dec = bytes.fromhex(Packet_ID_hex).decode('utf-8')
+    str = ""
 
-    #Packet_ID_dec = ast.literal_eval(Packet_ID_hex)
-    return Packet_ID_dec
+    str += bytes.fromhex(Packet_ID_hex).decode('utf-8', errors='ignore') 
+
+    return str
+
+def takeSecondInt(elem):
+    return int(takeSecond(elem))
 
 
-# This sorting method takes advatnage of Python's stable sorting
 # Sort by Packet ID
-packet_data.sort(key=takeSecond)
-
-# Sort by Measurement ID
-packet_data.sort(key=takeFirst)
-
-#print(packet_data)
+packet_data.sort(key=takeSecondInt)
 
 # ---- Test PASSED: Convert to Normal String to making sure sort() works  --- 
-# str = ""
+# str1 = ""
+
 # for i in packet_data:
-#    if(len(i) >= 25):
-#        str += bytes.fromhex(i).decode('utf-8', errors='rer ') 
-# print(str)
+#     str1 += i
+
+# print(str1)
 
 
-# ------ Make Files ---------------
-# inner 116-118
-# look at max length for packets for fill in size
-    # if packet is missing, fill in with FFFF
-
-# empty space 
-# make different files for different measurements
-
-# Step 1: Get a set of the Measurment IDs
+#----- Get a set of the Measurment IDs ---- 
 Measurment_IDs = []
 
 for i in packet_data : 
     Measurment_IDs.append(takeFirst(i))
 
-Measurment_IDs = [*set(Measurment_IDs)]     # ensures there are no repeats
-
+Measurment_IDs = [*set(Measurment_IDs)] # ensures there are no repeats
+Measurment_IDs.sort(key = int)          # Sorts Measurment ID by int value
 
 # Step 2: Seperate Measurments into separate lists and Make files
 fileList = []
@@ -134,40 +128,53 @@ for i in Measurment_IDs:
     Set.clear()
 
     for j in packet_data:
-
         if takeFirst(j) == i: 
             Set.append(j)
     
-    Set = [*set(Set)]
-
     fileList.append(Set)
 
+print("Measurment IDs: ", Measurment_IDs)
 
+#---- Step 3: Make Files -----
+count_file = 0
 
-# Step 3:  Make the files
 for i in fileList:
-
+    
+    # file name
     filename = "Measurement_ID_"
-    filename += takeFirst(i[0])
+    filename += Measurment_IDs[count_file]
     filename += ".txt"
+    print("\nfilename: ", filename)
 
-    print("filename: ", filename)
+    # create file
+    f= open(filename,"w+")
 
-    f= open(filename,"w+") # creates file
+    # num of packets
+    MAXPACKETNUM = takeSecondInt(i[-1])
+    MINPACKETNUM = takeSecondInt(i[0])
+    PACKETLEN = len(i[0]) - SIZE_OF_BUFFER
 
-    data_String = ""
+    count = 0
+    str = ""
+    missing_int = []
 
-    for j in i:
-        data_String += j
+    for j in range(0, MAXPACKETNUM+1): 
+        if takeSecondInt(i[count]) != j :
+            str += "F" * PACKETLEN
+            missing_int.append(j)
 
-    print("MEASUREMENT", takeFirst(i[0]), data_String, "\n\n")
+        elif takeSecondInt(i[count]) == j:
+            newstr = i[count]
+            str += newstr[SIZE_OF_BUFFER:]
+            count += 1
 
-    f.write(data_String)
+    
+    print("missing packets: ", missing_int, "\n")
 
-    f.close()
+    f.write(str)
 
-
-
+    count_file += 1
+    
 
 
 
