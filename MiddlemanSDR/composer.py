@@ -9,13 +9,15 @@ print("\nComposer Running...\n")
 # Find file: this the filename and directory
 # TODO: File name will need to be changed
 filename = '/Users/v1/Documents/GitHub/CySat-1-Main/MiddlemanSDR/packetsthursday.txt'
+
+# Possible change: Buffer size!
 SIZE_OF_BUFFER = 24 # is the size of FF + 10 digit Measurement ID + 10 digit packet ID
 
 #-------- Read the hex data fromt he file ----------------
 with open(filename,'rb') as f:
-    buff = f.read() # it reads the whole file into memory
+    reader = f.read() # it reads the whole file into memory
 
-out_hex = ['{:02X}'.format(b) for b in buff]
+out_hex = ['{:02X}'.format(b) for b in reader]
 
 
 #----- Convert out_hex into a list of the packets -------
@@ -147,7 +149,7 @@ for i in fileList:
     print("\nfilename: ", filename)
 
     # create file
-    f= open(filename,"w+")
+    f= open(filename,"wb+")
 
     # num of packets
     MAXPACKETNUM = takeSecondInt(i[-1])
@@ -171,7 +173,9 @@ for i in fileList:
     
     print("missing packets: ", missing_int, "\n")
 
-    f.write(str)
+    bytes = bytearray.fromhex(str)
+
+    f.write(bytes)
 
     count_file += 1
     
