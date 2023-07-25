@@ -238,18 +238,23 @@ HAL_StatusTypeDef SET_SOURCE_CALLSIGN(uint8_t *call_sign) {
  * @brief Turns on the  pipe.
  */
 HAL_StatusTypeDef START_PIPE() {
-    uint8_t data[23];
+    uint8_t data[23]={'/0'};
     uint8_t bits[4];
     HAL_StatusTypeDef status = GET_UHF_STATUS(data);
     if (status != HAL_OK) {
+    	debug_printf("Start Pipe: UHF Status not OK");
         return status;
     }
+    //debug_printf("Start Pipe UHF Status: %s",data);
 
     //Perserve other settings and only enable beacon
+
+    //debug_printf("Start pipe bits before: %x %x %x %x",data[9], data[10], data[11], data[12]);
     bits[0] = data[9];
     bits[1] = data[10];
     bits[2] = ((data[11] - 0x30) | 0x02) + 0x30; //set bit 5(Pipe) to 1
-    bits[3] = data[13];
+    bits[3] = data[12];
+    //debug_printf("Start pipe bits after: %x %x %x %x",bits[0], bits[1], bits[2], bits[3]);
 
 
     uint8_t command[22];
@@ -286,7 +291,7 @@ HAL_StatusTypeDef END_PIPE() {
     bits[0] = data[9];
     bits[1] = data[10];
     bits[2] = ((data[11] - 0x30) & 0xFD) + 0x30; //set bit 5(Pipe) to 0
-    bits[3] = data[13];
+    bits[3] = data[12];
 
 
     uint8_t command[22];
@@ -349,9 +354,24 @@ HAL_StatusTypeDef SET_PIPE_TIMEOUT(uint8_t timeout) {
 HAL_StatusTypeDef GET_UHF_STATUS(uint8_t *data) {
     uint8_t read_command[] = "ES+R2200 BD888E1F\r";
     HAL_StatusTypeDef status = UHF_READ(read_command, data, 18, 23);
-    if (data[0] != 'O' || data[1] != 'K') {
-        return HAL_ERROR;
+    if (status != HAL_OK){
+    	debug_printf("UHF Status status variable is not HAL_ok");
     }
+
+    if (data[0] != 'O' || data[1] != 'K') {
+    	debug_printf("Get UHF Status Read Error");
+    	debug_printf("UHF Status: %s",data);
+    	debug_printf("Sometimes the status is shifted one byte, trying that.");
+    	for (int k = 0; k < 22; k++){
+    	    data[k]=data[k+1];
+    	}
+    	if (data[0] != 'O' || data[1] != 'K') {
+    		debug_printf("Ok its actually broken, exiting get UHF status");
+    		return HAL_ERROR;
+    	}
+
+    }
+    debug_printf("Successful UHF Status");
     return status;
 }
 
@@ -648,8 +668,8 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
     status = HAL_UART_Receive(&huart1, data, 25, UHF_UART_TIMEOUT);
     osMutexRelease(UART_Mutex);
     //Gets rid of the new line character messing up all of my print statements
-    data[sizeof(data)/sizeof(uint8_t)-1] = '\0';
-    command[in_byte-1] = '\0';
+    //data[sizeof(data)/sizeof(uint8_t)-1] = '\0';
+    //command[in_byte-1] = '\0';
     if (data[0] != 'O' || data[1] != 'K') {
 
         debug_printf("[UHF_WRITE/ERROR]: UART Rx FAIL. Command: %s Data: %s",command,data);

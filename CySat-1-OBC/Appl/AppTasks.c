@@ -150,6 +150,7 @@ void Main_Task(void const *argument) {
     }
     osDelay(1000);
     // Start Test
+    SET_PIPE_TIMEOUT(5);
     mainStatus = START_BEACON();
     SET_BEACON_PERIOD(3);
     debug_printf("Beaconing");
@@ -533,8 +534,11 @@ void Main_Task(void const *argument) {
     //START_PIPE();
     debug_printf("Before separator");
     //DELETE_DATA_FILE(3);
-    PACKET_SEPARATOR(8, 0, 0, 84, ".DAT");
-    PACKET_SEPARATOR(29,0,0,200, ".DAT");
+    //PACKET_SEPARATOR(8, 0, 0, 84, ".DAT");
+    PACKET_SEPARATOR(8,0,0,84,".DAT");
+    PACKET_SEPARATOR(29,0,0,40, ".DAT");
+    PACKET_SEPARATOR(8,0,0,85,".DAT");
+	PACKET_SEPARATOR(29,0,0,40, ".DAT");
     //FILE_TRANSFER(0,1);
     //FILE_TRANSFER(1,0);
     //PACKET_PRINT();

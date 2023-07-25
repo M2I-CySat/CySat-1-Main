@@ -65,7 +65,7 @@ float calculateEnergyRecharge(BatteryMeasurement_t e1, BatteryMeasurement_t e2){
 	di = e2.batt_current - e1.batt_current;
 
 	mv = dv/dt;
-	mi = di/dt
+	mi = di/dt;
 
 	bv = e1.batt_voltage * e2.time - e2.batt_voltage * e1.time;
 	bi = e1.batt_current * e2.time - e2.batt_current * e1.time;

@@ -1,6 +1,7 @@
 import math
 import crcmod
 import crcmod.predefined
+import numpy as np
 
 #srcCall = "FFFFFF"
 srcCall = "KB0MGQ "
@@ -11,12 +12,7 @@ informationField = "Hello World!"
 
 
 def bitstring_to_bytes(s):
-    v = int(s, 2)
-    b = bytearray()
-    while v:
-        b.append(v & 0xff)
-        v >>= 8
-    return bytes(b[::-1])
+    return int(s, 2).to_bytes((len(s) + 7) // 8, byteorder='big')
 
 
 def display_string_as_hex(thestring):
@@ -33,9 +29,20 @@ def display_bytearray_as_hex(thestring):
         if(len(str(hex(thestring[i])[2:]))) == 1:
             fullstring=fullstring+"0"
         fullstring=fullstring+hex(thestring[i])[2:]
-        fullstring=fullstring+(" ")
+        #fullstring=fullstring+(" ")
     print(fullstring)
-
+    
+def bytearray_to_bitlist(thestring):
+    fullstring=""
+    tempstring=""
+    for i in range (0,len(thestring)):
+        if(len(str(hex(thestring[i])[2:]))) == 1:
+            tempstring=tempstring+"0"
+        tempstring=tempstring+hex(thestring[i])[2:]
+        fullstring = fullstring + "{0:08b}".format(int(tempstring, 16))
+        tempstring = ""
+    print(fullstring)
+    return(fullstring)
         
 
 
@@ -78,7 +85,7 @@ axlayer.extend(informationField_in_hex)
 #crc16_function=crcmod.mkCrcFun(0x11021,initCrc=0xFFFF,rev=True,xorOut=0xFFFF)
 #crc16_function=crcmod.mkCrcFun('x-25')
 # crc16_function = crcmod.mkCrcFun(0x11021, 0x0000, False, 0x0000) #xmodem
-crc16_function = crcmod.mkCrcFun(0x18408, 0xFFFF, True, 0xFFFF)
+crc16_function = crcmod.mkCrcFun(0x11021, 0xFFFF, True, 0xFFFF)
 
 crc_value = crc16_function(axlayer)
 
@@ -86,13 +93,17 @@ crc_value_converted = str(hex(crc_value))[2:]
 axlayer.extend(bytearray.fromhex(crc_value_converted))
 
 
+# CRC 16 is probably wrong
 
+# bit stuffing
 
-print("Hex bytes: ", end="")
 display_bytearray_as_hex(axlayer)
-
-
-
+axlayerbits = bytearray_to_bitlist(axlayer)
+axlayerbits=axlayerbits.replace("11111","111110")
+print(axlayerbits)
+axlayerstuffed = bitstring_to_bytes(axlayerbits)
+axlyaerstuffed=bytearray(axlayerstuffed)
+display_bytearray_as_hex(axlayerstuffed)
 
 
 overall=bytearray()
@@ -102,3 +113,18 @@ overall.extend(bytearray.fromhex("7E7E7E7E7E7E7E7E"))
 
 # Flag
 overall.extend(bytearray.fromhex("7E"))
+
+# AX.25
+
+overall.extend(axlayerstuffed)
+
+# Flag
+
+overall.extend(bytearray.fromhex("7E"))
+
+# Postamble
+
+overall.extend(bytearray.fromhex("7E7E7E"))
+
+display_bytearray_as_hex(overall)
+

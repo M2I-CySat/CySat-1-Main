@@ -16,6 +16,7 @@
 #include <Payload.h>
 #include <CySatPacketProtocol.h>
 #include <helper_functions.h>
+#include <UHF.h>
 
 
 
@@ -522,29 +523,29 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 		return HAL_ERROR;
     }
 
-    char* dataTypeStr0 = ".dat";
-    char* dataTypeStr1 = ".kelvin";
-    char* dataTypeStr2 = ".meta";
-    char* dataTypeStr3 = ".list";
-    char fileName[5] = {"\0"}; // Changed to null, if this doesn't work, try passing in file extension instead of dynamically generating it
+    //char* dataTypeStr0 = ".dat";
+    //char* dataTypeStr1 = ".kelvin";
+    //char* dataTypeStr2 = ".meta";
+    //char* dataTypeStr3 = ".list";
+    char fileName[15] = {"\0"}; // Changed to null, if this doesn't work, try passing in file extension instead of dynamically generating it
 
-    switch(dataType) {
-       case 0:
+    //switch(dataType) {
+    //   case 0:
     	   //sprintf(fileName,"%d%s", measurementID, dataTypeStr0);
-    	   break;
-       case 1:
+    //	   break;
+    //   case 1:
     	   //sprintf(fileName,"%d%s", measurementID, dataTypeStr1);
-    	   break;
-       case 2:
-    	   //sprintf(fileName,"%d%s", measurementID, dataTypeStr2);
-    	   break;
-       case 3:
+    //	   break;
+    //   case 2:
+    //	   //sprintf(fileName,"%d%s", measurementID, dataTypeStr2);
+    //	   break;
+    //   case 3:
     	   //sprintf(fileName,"list.%s",dataTypeStr3);
-    	   break;
-	   default:
-		   debug_printf("[PACKET_SEPARATOR/ERROR]: Invalid data type");
-		   return HAL_ERROR;
-    }
+    //	   break;
+	//   default:
+	//	   debug_printf("[PACKET_SEPARATOR/ERROR]: Invalid data type");
+	//	   return HAL_ERROR;
+    //}
     sprintf(fileName,"%d%s", measurementID, extension);
 
 
@@ -562,8 +563,12 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
     //f_lseek(&currfile, -1);
     //debug_printf("File size is %lu bytes, %4.2d kilobytes, or %4.2d megabytes",sizeFile,sizeFile/1000,sizeFile/1000000);
 
+    HAL_StatusTypeDef status;
+    status = START_PIPE();
+    if(status!=HAL_OK){
+    	debug_printf("Transparent mode start error");
+    }
 
-    START_PIPE();
     for (unsigned short int i = startPacket; i <= endPacket; i++)
     {
     	char packet[129]={"\0"}; //129 so the last byte doesn't get cut off by end of char character
@@ -593,6 +598,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
         UINT bytesRead=0;
 		//size_t read  = fread(&data, 1, sizeFile - 118 * i, fp);
 		fres = f_read(&currfile, data, 116, &bytesRead);
+		debug_printf("Bytes read: %d",bytesRead);
 		if(fres != FR_OK)
 		{
 			f_close(&currfile);
@@ -600,10 +606,12 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 			debug_printf("[PACKET_SEPARATOR]: Error reading file");
 			return HAL_ERROR;
 		}
+		//debug_printf("\nBytes read: %d\nData read: %s\nPacket: ",bytesRead,data);
 
 		for (int j = 0; j < bytesRead; j++) // Copy the data into the packet
 		{
 			packet[12+j] = data[j];
+			//debug_printf_no_newline("%c",packet[j+12]);
 		}
 
         //debug_printf("\nPacket %d: %s", i, packet); //crc32 is done by the antenna, unneeded. We can use the extra 8bytes for transmitting actual data.
@@ -614,9 +622,12 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
         //}
 
 
-        HAL_UART_Transmit(&huart1, &packet, 128, 128);
+        HAL_UART_Transmit(&huart1, &packet, bytesRead+12, bytesRead+15);
         osDelay(3); //It wants 3ms of delay to ensure no dropped data, not sure how much delay the above code will cause but just being safe in case it is below 3
     }
+    f_close(&currfile);
+    osDelay(8000); //Let the pipe timeout so we don't get 0x80s in the wrong places
+    //END_PIPE();
 
     //TODO: Close file
 
