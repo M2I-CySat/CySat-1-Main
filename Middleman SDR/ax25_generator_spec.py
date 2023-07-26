@@ -9,15 +9,14 @@ import sys
 
 # Ground station is KB0MGQ, satellite is W0ISU. Make sure to add spaces to bring this up to six characters.
 # Callsigns are temporarily reversed for match testing.
-srcCall = "W0ISU "
-destCall = "KB0MGQ"
+srcCall = "KB0MGQ"
+destCall = "W0ISU "
 # The contents of the AX.25 packet. This will eventually be a function argument when this is made into a function.
-informationField = "YeetYeetYeetYeetYeet"
+informationField = "I hate Endurosat screw this"
 
 sys.set_int_max_str_digits(100000)
 
-def bitstring_to_bytes(s):
-    
+def bitstring_to_bytes(s): 
     v = int(s, 2)
     b = bytearray()
     while v:
@@ -25,11 +24,11 @@ def bitstring_to_bytes(s):
         v >>= 8
     return bytes(b[::-1])
 
-def bitstring_to_bytes_but_left_justified(bits):
+def bitstring_to_bytes_but_left_justified(bits): # CRITICAL BUG: Hex byte 0x03 00000011 will be printed as 0x30 00110000, so it has a problem with leading zeros
     bytes = [bits[i:i+8] for i in range(0, len(bits), 8)]
     exitstring=""
     for i in range(len(bytes)):
-        exitstring=exitstring+("{0:02s}".format(hex(int(bytes[i].ljust(8,"0"), 2))[2:])) # This is somehow uglier than my face, I didn't know that was possible
+        exitstring=exitstring+(hex(int(bytes[i].ljust(8,"0"), 2))[2:].zfill(2)) # This is somehow uglier than my face, I didn't know that was possible
     print(exitstring)
     return(bytearray.fromhex(exitstring))
 
@@ -110,7 +109,6 @@ axlayer.extend(bytearray.fromhex("03")) # Predefined byte
 # PID
 axlayer.extend(bytearray.fromhex("F0")) # Predefined byte
 
-
 # Information Field
 informationField_in_hex = bytearray(informationField, 'ascii')
 axlayer.extend(informationField_in_hex)
@@ -122,7 +120,7 @@ crc16_function=crcmod.predefined.mkPredefinedCrcFun('x-25')
 crc_value = crc16_function(axlayer)
 
 # However we need to swap the order of the bytes
-crc_value_full = bytearray.fromhex(str(hex(crc_value))[4:6]+str(hex(crc_value))[2:4])
+crc_value_full = bytearray.fromhex(str(hex(crc_value))[4:6].zfill(2)+str(hex(crc_value))[2:4].zfill(2))
 axlayer.extend(crc_value_full)
 
 # Yay! The whole ax.25 part is done now!
@@ -130,10 +128,8 @@ axlayer.extend(crc_value_full)
 # Next up is the HDLC step. The first thing we need to to is reverse the order of the bits in each byte.
 
 axstring=return_bytearray_as_hex(axlayer)
-print(axstring)
 #axbits=''.join(format(ord(x), '08b') for x in axstring)
 axbits=bin(int(axstring, 16))[2:].zfill(8)
-print(axbits)
 
 axbytes = [axbits[i:i+8] for i in range(0, len(axbits), 8)]
 reversedbits=""
@@ -173,9 +169,108 @@ withPreambleAndPostamble = sevenE+sevenE+sevenE+sevenE+sevenE+sevenE+sevenE+seve
 
 
 
+# Okay so we were going to do scrambling in GNU but I'm having issues as the GNU scrambled adds 17 bytes to the beginning
+# Scrambling is a mathematical process that basically randomizes the data
+# In this case, the current bit is the EXOR of the current bit plus the bits transmitted 12 and 17 bits earlier
+# This scrambling thing self synchronizes somehow so the exact seed doesn't matter
+# I will first try removing the seventeen seed bits, the way the UHF gave it to me, but I might have to add them back in like how GNU Radio does it
+
+scrambledBits="00000000000000000"
+scrambledBits="00111010000000000" # Switching it to this one for maybe better debugging but it didn't work, but its working now so im not gonna touch it
+# It can probably be any sequence if I understand it right but I don't want to chance it
+
+
+# The whole scrambler
+for i in range (0, len(withPreambleAndPostamble)):
+    scrambledBits=scrambledBits+str((int(scrambledBits[i+17-12])^int(scrambledBits[i+17-17]))^int(withPreambleAndPostamble[i]))
+
+reduced_scrambledBits = scrambledBits[17:] # Remove the first seventeen "seed" bits
+
+
+
 # Convert back to bytes
 
-payloadBytes=bitstring_to_bytes_but_left_justified(withPreambleAndPostamble)
-display_bytearray_as_hex_no_spaces(payloadBytes)
+# payloadBytes=bitstring_to_bytes_but_left_justified(reduced_scrambledBits)
+# display_bytearray_as_hex_no_spaces(payloadBytes)
+
+
+# We might have to remove the very last byte I'm not sure
+# I won't do that for now but I will probably do that later
+# But if we just arbitrarily chop off the last byte then if it was already only 8 long then we chopped off a good byte, make sue to check if it is a whole number of bytes first
+# I prbably don't have to remove it
+# But I might
+# This project I swear
+
+# NRZI Encoding
+
+# For HDLC, a zero is encoded as a transition from radio high to radio low or radio low to radio high.
+# A one is encoded as staying at the same state
+# I think we start at low but I'm not sure
+
+currentstate="0" # Start off at low state. A 1 is a high state
+NRZIstring=""
+
+for i in range (0, len(reduced_scrambledBits)):
+    if reduced_scrambledBits[i] == "0": # Current data is 0 so we should change
+        if currentstate == "0":
+            currentstate = "1"
+        elif currentstate == "1":
+            currentstate = "0"
+    elif reduced_scrambledBits[i] == "1": # Current data is 1 so we should not change
+        dave=1 # Gotta fill in something for clarity, I don't need this whole elif but it makes it easier to mentally keep track of
+    NRZIstring=NRZIstring+currentstate
+
+
+
+
+# Convert back to bytes
+
+Data_Field_2_Bytes=bitstring_to_bytes_but_left_justified(NRZIstring)
+#display_bytearray_as_hex_no_spaces(payloadBytes)
+
 
 # Note to future self this comes out offset. You might need to manually implement scrambling and NZRI.
+
+
+# This *should* be the proper ax.25 stuff. Now to wrap it in an endurosat packet.
+
+# Message content (Data Field 2)
+
+
+# Header and footer
+
+overall=bytearray()
+bothdatafields=bytearray()
+
+# Preamble and Sync Word
+overall.extend(bytearray.fromhex("AAAAAAAAAA7E"))
+
+# Length of Data Field 2
+
+Data_Field_2_Bytes_Length = str(hex(len(Data_Field_2_Bytes)))[2:]
+bothdatafields.extend(bytearray.fromhex(Data_Field_2_Bytes_Length))
+
+# Data Field 2
+
+bothdatafields.extend(Data_Field_2_Bytes)
+
+# CRC16
+
+crc16_function=crcmod.mkCrcFun(0x11021,initCrc=0xFFFF,rev=False,xorOut=0x0000)
+
+crc_value = crc16_function(bothdatafields)
+
+
+
+# Assemble it into one packet called overall
+
+overall.extend(bothdatafields)
+print(crc_value)
+
+crc_value_converted = str(hex(crc_value))[2:].zfill(4)
+overall.extend(bytearray.fromhex(crc_value_converted))
+
+
+print("CRC value: "+hex(crc_value)[2:].zfill(4))
+print("Hex bytes: ", end="")
+display_bytearray_as_hex(overall)
