@@ -135,7 +135,7 @@ for i in Measurment_IDs:
     
     fileList.append(Set)
 
-print("Measurment IDs: ", Measurment_IDs)
+print("Measurment IDs: ", Measurment_IDs, "\n")
 
 #---- Step 3: Make Files -----
 count_file = 0
@@ -146,7 +146,7 @@ for i in fileList:
     filename = "Measurement_ID_"
     filename += Measurment_IDs[count_file]
     filename += ".txt"
-    print("\nfilename: ", filename)
+    print("filename: ", filename)
 
     # create file
     f= open(filename,"wb+")
