@@ -8,7 +8,7 @@ print("\nComposer Running...\n")
 
 # Find file: this the filename and directory
 # TODO: File name will need to be changed
-filename = '/Users/v1/Documents/GitHub/CySat-1-Main/MiddlemanSDR/packetsthursday.txt'
+filename = '/Users/v1/Documents/GitHub/CySat-1-Main/MiddlemanSDR/packetswednesday726.txt'
 
 # Possible change: Buffer size!
 SIZE_OF_BUFFER = 24 # is the size of FF + 10 digit Measurement ID + 10 digit packet ID
@@ -102,6 +102,7 @@ def takeSecondInt(elem):
 
 
 # Sort by Packet ID
+packet_data = [*set(packet_data)] # gets rid of duplicate packet data
 packet_data.sort(key=takeSecondInt)
 
 # ---- Test PASSED: Convert to Normal String to making sure sort() works  --- 
@@ -154,6 +155,8 @@ for i in fileList:
     # num of packets
     MAXPACKETNUM = takeSecondInt(i[-1])
     MINPACKETNUM = takeSecondInt(i[0])
+
+    #packet length
     PACKETLEN = len(i[0]) - SIZE_OF_BUFFER
 
     count = 0
@@ -161,13 +164,17 @@ for i in fileList:
     missing_int = []
 
     for j in range(0, MAXPACKETNUM+1): 
+
+        #if there's a packet missing, F will fill in for that space
         if takeSecondInt(i[count]) != j :
-            str += "F" * PACKETLEN
+            str += "F" * (PACKETLEN-2)
             missing_int.append(j)
 
+        # Otherwise, if the packet number matches, it will be added
         elif takeSecondInt(i[count]) == j:
             newstr = i[count]
-            str += newstr[SIZE_OF_BUFFER:]
+            str += newstr[SIZE_OF_BUFFER:-2]
+            print(newstr[SIZE_OF_BUFFER:-2])
             count += 1
 
     
