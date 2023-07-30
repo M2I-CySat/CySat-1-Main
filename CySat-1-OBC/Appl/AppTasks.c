@@ -152,11 +152,25 @@ void Main_Task(void const *argument) {
     // Start Test
     SET_PIPE_TIMEOUT(5);
     mainStatus = START_BEACON();
-    SET_BEACON_PERIOD(3);
     debug_printf("Beaconing");
     osDelay(4000);
     END_BEACON();
+    osDelay(1000);
+    END_BEACON();
+    osDelay(1000);
 
+    // Uncomment for testing callbacks
+
+    //SET_PIPE_TIMEOUT(60);
+    //osDelay(1000);
+    //START_PIPE();
+    //debug_printf("Go for transmit");
+    //osDelay(150000);
+    //SET_PIPE_TIMEOUT(2);
+    //osDelay(2000);
+
+
+    //osDelay
     // Stop Test - Tested and works
     //mainStatus = END_BEACON();
     // osDelay(1000);
@@ -314,24 +328,24 @@ void Main_Task(void const *argument) {
 	* ADCS TESTING
 	*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
-
-    //osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
-
-
-    //int16_t test1;
-    // test2;
-    //int16_t testz;
-    //mainStatus=TLM_140(&test1,&test2);
-    //debug_printf("%d %d ",test1,test2);
-
-
-	//debug_printf("testing TLM_140");
-
-    //if (mainStatus != HAL_OK) {
-	//    debug_printf("[Main Thread/ERROR]: Failed to test TLM_140");
-     //} else {
-    //	  debug_printf("[Main Thread/SUCCESS]: TLM_140 Worked correctly");
-     //}
+//
+//    osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
+//
+//
+//    int16_t test1;
+//    int16_t test2;
+//    int16_t testz;
+//    mainStatus=TLM_140(&test1,&test2);
+//    debug_printf("%d %d ",test1,test2);
+//
+//
+//	debug_printf("testing TLM_140");
+//
+//    if (mainStatus != HAL_OK) {
+//	    debug_printf("[Main Thread/ERROR]: Failed to test TLM_140");
+//    } else {
+//    	debug_printf("[Main Thread/SUCCESS]: TLM_140 Worked correctly");
+//    }
 
 //
 //          float testx;
@@ -418,37 +432,37 @@ void Main_Task(void const *argument) {
 //        	   debug_printf("[Main Thread/SUCCESS]: TLM_147 Worked correctly");
 //           }
 
-
 //
+////
 //    mainStatus = TC_10(1);
 //    osDelay(1500);
-//
-//
+////
+////
 //    mainStatus = TC_11(10, 20, 30, 40, 50, 60, 70, 80, 90);
 //    osDelay(1500);
-//
+////
 //           debug_printf("testing Tc_11");
-//
+////
 //           if (mainStatus != HAL_OK) {
 //               debug_printf("[Main Thread/ERROR]: Failed to set ADCS power control mode");
 //           } else {
 //               debug_printf("[Main Thread/SUCCESS]: ADCS power mode set");
 //           }
-//
-//
+////
+////
 //           debug_printf("Before testing Tc_15");
 //           mainStatus = TC_15(25.5, 11.1, 5);
 //           osDelay(1500);
-//
-//
-//                  debug_printf("testing Tc_15");
-//
-//                  if (mainStatus != HAL_OK) {
-//                      debug_printf("[Main Thread/ERROR]: Failed to set ADCS attitude angle control");
-//                  } else {
-//                      debug_printf("[Main Thread/SUCCESS]: ADCS  attitude control mode set");
-//                  }
-//
+////
+////
+//		  debug_printf("testing Tc_15");
+////
+//		  if (mainStatus != HAL_OK) {
+//			  debug_printf("[Main Thread/ERROR]: Failed to set ADCS attitude angle control");
+//		  } else {
+//			  debug_printf("[Main Thread/SUCCESS]: ADCS  attitude control mode set");
+//		  }
+////
 //
 //
 //                  mainStatus = TC_36(50.5, 50.5, 60.5, 1);
@@ -532,13 +546,14 @@ void Main_Task(void const *argument) {
 
 
     //START_PIPE();
-    debug_printf("Before separator");
+
+
+
     //DELETE_DATA_FILE(3);
     //PACKET_SEPARATOR(8, 0, 0, 84, ".DAT");
-    PACKET_SEPARATOR(8,0,0,84,".DAT");
-    PACKET_SEPARATOR(29,0,0,40, ".DAT");
-    PACKET_SEPARATOR(8,0,0,85,".DAT");
-	PACKET_SEPARATOR(29,0,0,40, ".DAT");
+    //PACKET_SEPARATOR(8,0,0,80,".DAT");
+    //PACKET_SEPARATOR(29,0,0,31, ".DAT");
+
     //FILE_TRANSFER(0,1);
     //FILE_TRANSFER(1,0);
     //PACKET_PRINT();
@@ -546,7 +561,7 @@ void Main_Task(void const *argument) {
     //debug_printf("Payload Packet Seperator: %s", status);
 
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
-
+    HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 7);
     while (1) {
         GREEN_LED_ON();
         osDelay(150);

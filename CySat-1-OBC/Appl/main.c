@@ -186,7 +186,7 @@ int main(void) {
      * CALLBACKS INITIALIZATION - Callbacks from STM Drivers
      *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-    HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 7);
+    //HAL_UART_RegisterCallback(&huart1, HAL_UART_RX_COMPLETE_CB_ID, HAL_UART_RxCpltCallback);
 
     /* FINAL TASK: Start scheduler */
     osKernelStart();
@@ -220,10 +220,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
     // UART for OBC
     if (huart == &huart1) {
-        if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
-            debug_printf("Reception Callback Called (Error)");
-            sendErrorPacket();
-        }
+        //if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
+        //    debug_printf("Reception Callback Called (Error)");
+        //    sendErrorPacket();
+        //}
+    	debug_printf("Huart1");
+    	debug_printf(GroundStationRxBuffer);
+    	debug_printf(GroundStationRxBuffer[1]);
 
         HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 7);
     }

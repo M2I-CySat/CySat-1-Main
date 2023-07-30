@@ -815,6 +815,7 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
 
         int counter=0;
         while((data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F)&&counter<=200){
+        	counter=counter+1; //If this breaks telemetry request it is probably breaking telecommand too
             if(data[2] == 0x1F){
                 data[0] = 0x1F;
                 status = HAL_UART_Receive(&huart4, data+1, 2, ADCS_UART_TIMEOUT);
@@ -876,7 +877,7 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
         uint8_t data[6];
         int counter=0;
         status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
-        while((data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F)&&counter<=200){
+        while((data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F)&&counter<=200){ //If the documentation is wrong this might fail on command number 0x1F but shouldn't
         	counter=counter+1;
             if(data[2] == 0x1F){
                 data[0] = 0x1F;

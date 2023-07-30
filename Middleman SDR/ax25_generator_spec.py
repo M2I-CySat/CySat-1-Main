@@ -29,7 +29,7 @@ def bitstring_to_bytes_but_left_justified(bits): # CRITICAL BUG: Hex byte 0x03 0
     exitstring=""
     for i in range(len(bytes)):
         exitstring=exitstring+(hex(int(bytes[i].ljust(8,"0"), 2))[2:].zfill(2)) # This is somehow uglier than my face, I didn't know that was possible
-    print(exitstring)
+    #print(exitstring)
     return(bytearray.fromhex(exitstring))
 
 
@@ -265,12 +265,11 @@ crc_value = crc16_function(bothdatafields)
 # Assemble it into one packet called overall
 
 overall.extend(bothdatafields)
-print(crc_value)
 
 crc_value_converted = str(hex(crc_value))[2:].zfill(4)
 overall.extend(bytearray.fromhex(crc_value_converted))
 
 
-print("CRC value: "+hex(crc_value)[2:].zfill(4))
+#print("CRC value: "+hex(crc_value)[2:].zfill(4))
 print("Hex bytes: ", end="")
 display_bytearray_as_hex(overall)

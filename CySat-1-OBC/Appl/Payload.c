@@ -571,7 +571,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 
     for (unsigned short int i = startPacket; i <= endPacket; i++)
     {
-    	char packet[129]={"\0"}; //129 so the last byte doesn't get cut off by end of char character
+    	char packet[129]={0xFE}; //129 so the last byte doesn't get cut off by end of char character
         // Byte 0 lets us know the packet is getting started
         packet[0] = 0xFF;
 
@@ -594,11 +594,11 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 
         //PSEUDOCODE FOR: Check to see if packet requested is greater than the length of a file (if so break out of the loop)
 
-        char data[117] = {'\0'};
+        char data[117] = {"A"};
         UINT bytesRead=0;
 		//size_t read  = fread(&data, 1, sizeFile - 118 * i, fp);
-		fres = f_read(&currfile, data, 116, &bytesRead);
-		debug_printf("Bytes read: %d",bytesRead);
+		fres = f_read(&currfile, data, 116, &bytesRead); // was 116
+		//debug_printf("Bytes read: %d",bytesRead);
 		if(fres != FR_OK)
 		{
 			f_close(&currfile);
@@ -608,10 +608,16 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 		}
 		//debug_printf("\nBytes read: %d\nData read: %s\nPacket: ",bytesRead,data);
 
-		for (int j = 0; j < bytesRead; j++) // Copy the data into the packet
+		for (int j = 0; j < bytesRead; j++) // Copy the data into the packet, was until lessthan bytesread but going to 116
 		{
 			packet[12+j] = data[j];
 			//debug_printf_no_newline("%c",packet[j+12]);
+		}
+
+		if (bytesRead<116){
+			for (int a = bytesRead; a<116; a++){
+				packet[12+a]=0xAA;
+			}
 		}
 
         //debug_printf("\nPacket %d: %s", i, packet); //crc32 is done by the antenna, unneeded. We can use the extra 8bytes for transmitting actual data.
@@ -622,11 +628,11 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
         //}
 
 
-        HAL_UART_Transmit(&huart1, &packet, bytesRead+12, bytesRead+15);
+        HAL_UART_Transmit(&huart1, &packet, 128, 132);
         osDelay(3); //It wants 3ms of delay to ensure no dropped data, not sure how much delay the above code will cause but just being safe in case it is below 3
     }
     f_close(&currfile);
-    osDelay(8000); //Let the pipe timeout so we don't get 0x80s in the wrong places
+    osDelay(5500); //Let the pipe timeout so we don't get 0x80s in the wrong places
     //END_PIPE();
 
     //TODO: Close file
