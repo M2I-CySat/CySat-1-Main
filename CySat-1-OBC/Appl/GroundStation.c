@@ -80,29 +80,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                 case 0x07: { //Main Operations Request
 
                 }
-                case 0x09: { //Set beacon period
-
-                }
-                case 0x0A: { //Set beacon text
-                    //This will have to wait for transmission of text this is gonna be hard
-                }
-                case 0x0C: { //Enable Beacon
-                    status=START_BEACON();
-                    if(status != HAL_OK){
-                        return -1;
-                    }
-
-                    uint16_t data1 = FloatToUnsigned16bits(status);
-
-                    outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
-                    outgoingPacket.Command = 0x0B; //Enable Beacon response
-                    outgoingPacket.Data_Length = 0x02;
-                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 2);
-                    outgoingPacket.Data[0] = (data1 & 0xFF00) >> 8;
-                    outgoingPacket.Data[1] = data1 & 0xFF;
-                    outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
-                    return sendCySatPacket(outgoingPacket); //send the response
-                }
+               
                 break;
 
             }
@@ -551,19 +529,237 @@ int handleCySatPacket(CySat_Packet_t packet){
                     free(outgoingPacket.Data);
                     return status; //send the response
                 }
+                
             }
             break;
 
         case PAYLOAD_SUBSYSTEM_TYPE: //SDR
 
+            switch(packet.Command){
+                case 0x01: { //Power Status Request
+                    
+                    // TODO: 
+                    break;
+                }
+                
+                case 0x10: { // Time Set Request
+
+                    //TODO
+
+                    break;
+                }
+
             break;
 
-        case EOL_SUBSYSTEM_TYPE: //End of Life
+        case EOL_SUBSYSTEM_TYPE: //End of Life (EOL)
+
+            switch(packet.Command){
+                case 0x01:{// EOL Response
+
+                    //TODO: 
+                }
+            }
+            break;
+
+        case UHF_SUBSYSTEM_TYPE: // UHF
+
+            switch(packet.Command){
+                case 0x01:{// Status Control: For Enabling features
+
+                    //TODO: START_BEACON/END_BEACON
+
+                    break;
+                }
+
+                case 0x03:{// Transparent (pipe) mode timeout period
+
+                    //TODO: SET_PIPE_TIMEOUT
+
+                    break;
+                }
+
+                case 0x05:{// Beacon Message Transmission Period
+
+                    //TODO: SET_BEACON_PERIOD
+
+                    break;
+                }
+
+                case 0x07:{// Restores Default Values
+
+                    //TODO: RESTORE_UHF_DEFAULTS
+
+                    break;
+                }
+
+                case 0x09:{// Generic WriteAnd/Or Read from an I2C device
+
+                    //TODO: 
+
+                    break;
+                }
+
+                case 0x0B:{// UHF Antenna Releases Configuration
+
+                    //TODO: DEPLOY_ANTENNA
+
+                    break;
+                }
+                
+                case 0x0D:{// UHF Antenna Read/Write
+
+                    //TODO: CONFIGURE_ANTENNA
+
+                    break;
+                }
+
+                case 0x0F:{// Destination Call Sign
+
+                    //TODO: SET_DESTINATION_CALLSIGN
+
+                    break;
+                }
+
+                case 0x11:{// Source Call Sign
+
+                    //TODO: SET_SOURCE_CALLSIGN
+
+                    break;
+                }
+
+                case 0x13:{// Destination Call Sign
+
+                    //TODO: SET_DESTINATION_CALLSIGN
+
+                    break;
+                }
+
+                case 0x15:{// Source Call Sign
+
+                    //TODO: SET_SOURCE_CALLSIGN
+
+                    break;
+                }
+
+                case 0x17:{// Beacon Message Content Configuration
+
+                    //TODO: SET_BEACON_TEXT
+
+                    break;
+                }
+
+
+                case 0x19:{// Status Control: For Enabling features - Could be wrong?
+
+                    //TODO: GET_UHF_STATUS
+
+                    break;
+                }
+
+                case 0x1B:{// Read Uptime: Time radio has been online
+
+                    //TODO: GET_UHF_UPTIME
+
+                    break;
+                }
+
+
+                case 0x1D:{// Read Number of Transmitted Packets
+
+                    //TODO: GET_UHF_NUM_TRANSMITTED_PACKETS
+
+                    break;
+                }
+
+                case 0x1F:{// Read Number of Received Packets
+
+                    //TODO: GET_UHF_NUM_RECEIVED_PACKETS
+
+                    break;
+                }
+
+                case 0x21:{// Read Number of Received Packets with CRC Error
+
+                    //TODO: GET_UHF_NUM_RECEIVED_PACKETS_WITH_ERRORS
+
+                    break;
+                }
+
+                case 0x23:{// Transparent (Pipe) mode timeout period
+
+                    //TODO: 
+
+                    break;
+                }
+
+                case 0x25:{// Beacon Message Trans. Period
+
+                    //TODO: 
+
+                    break;
+                }
+
+
+                case 0x27:{// Read the temperature of the UHF in Celsius
+
+                    //TODO: GET_UHF_TEMP
+
+                    break;
+                }
+
+
+                case 0x29:{// UHF Antenna Release Configuration
+
+                    //TODO: 
+
+                    break;
+                }
+
+                case 0x2B:{// UHF Antenna Read/Write
+
+                    //TODO: GET_ANTENNA_STATUS
+
+                    break;
+                }
+
+                case 0x2D:{// Destination Call Sign
+
+                    //TODO: 
+
+                    break;
+                }
+
+                case 0x2F:{// Source Call Sign
+
+                    //TODO: 
+
+                    break;
+                }
+
+                case 0x31:{//Beacon Message Content Configuration
+
+                    //TODO: 
+
+                    break;
+                }
+
+
+                case 0x33:{//
+
+                    //TODO: SET_UHF_LOW_POWER_MODE 
+
+                    break;
+                }
+                
+
+            }
+            
 
             break;
 
         default:
             return -1;
+            
     }
 
     return 0;

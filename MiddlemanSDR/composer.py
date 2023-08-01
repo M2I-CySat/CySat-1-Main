@@ -27,7 +27,9 @@ first = True        #ensures we don't create an empty packet
 
 for i in out_hex:  
 
-    if i == 'FF' or i == '96': # 'FF' is the delimiter
+    #TODO: use length to add a determined amount of hex
+
+    if i == 'FF' or i == '96': # 'FF' is the delimiter 
 
         if first == True : 
             first = False 
@@ -78,7 +80,7 @@ def takeFirst(elem):
 
     str = ""
 
-    str += bytes.fromhex(Measurment_ID_hex).decode('utf-8', errors='ignore') 
+    str += bytes.fromhex(Measurment_ID_hex).decode('utf-8', errors='ignore') # TODO: Might be causing an error
 
     return str
 
@@ -93,7 +95,7 @@ def takeSecond(elem):
 
     str = ""
 
-    str += bytes.fromhex(Packet_ID_hex).decode('utf-8', errors='ignore') 
+    str += bytes.fromhex(Packet_ID_hex).decode('utf-8', errors='ignore') # TODO: Might be causing an error
 
     return str
 
