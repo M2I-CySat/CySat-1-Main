@@ -1,3 +1,10 @@
+
+#   Created on: Jul 2023
+#   Last Updated on: Aug 2, 2023
+#       Author: Vanessa Whitehead
+
+
+
 import math
 import os
 import binascii
@@ -8,7 +15,7 @@ print("\nComposer Running...\n")
 
 # Find file: this the filename and directory
 # TODO: File name will need to be changed
-filename = '/Users/v1/Documents/GitHub/CySat-1-Main/MiddlemanSDR/packetswednesday726.txt'
+filename = '/Users/v1/Documents/GitHub/CySat-1-Main/MiddlemanSDR/packetswednesday82.txt'
 
 # Possible change: Buffer size!
 SIZE_OF_BUFFER = 24 # is the size of FF + 10 digit Measurement ID + 10 digit packet ID
@@ -76,13 +83,17 @@ def takeFirst(elem):
     # convert next 10 bytes into int
     # this is the Measurement ID
 
-    Measurment_ID_hex = elem[4:14]
+    Measurment_ID_hex = elem[5:11]
 
     str = ""
 
-    str += bytes.fromhex(Measurment_ID_hex).decode('utf-8', errors='ignore') # TODO: Might be causing an error
+    str += bytes.fromhex(Measurment_ID_hex).decode('utf-8', errors='ignore')
 
-    return str
+    reversed = str[6::-1]
+
+    decimal = int(reversed, 16)
+
+    return decimal
 
 
 def takeSecond(elem): 
@@ -91,21 +102,22 @@ def takeSecond(elem):
     # convert next 10 bytes into int
     # This is the Packet ID
 
-    Packet_ID_hex = elem[14:24]
+    Packet_ID_hex = elem[11:17]
 
     str = ""
 
-    str += bytes.fromhex(Packet_ID_hex).decode('utf-8', errors='ignore') # TODO: Might be causing an error
+    str += bytes.fromhex(Packet_ID_hex).decode('utf-8', errors='ignore')
 
-    return str
+    reversed = str[6::-1]
 
-def takeSecondInt(elem):
-    return int(takeSecond(elem))
+    decimal = int(reversed, 16)
+
+    return decimal
 
 
 # Sort by Packet ID
 packet_data = [*set(packet_data)] # gets rid of duplicate packet data
-packet_data.sort(key=takeSecondInt)
+packet_data.sort(key=takeSecond)
 
 # ---- Test PASSED: Convert to Normal String to making sure sort() works  --- 
 # str1 = ""
