@@ -220,10 +220,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
     // UART for OBC
     if (huart == &huart1) {
-        //if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
-        //    debug_printf("Reception Callback Called (Error)");
-        //    sendErrorPacket();
-        //}
+        if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
+            debug_printf("Reception Callback Called (Error)");
+            sendErrorPacket();
+        }
     	debug_printf("Huart1");
     	debug_printf(GroundStationRxBuffer);
     	//debug_printf(GroundStationRxBuffer[1]);
