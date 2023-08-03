@@ -50,12 +50,13 @@ int handleCySatPacket(CySat_Packet_t packet){
                     char message[58] = "Alive and well, Ames! Congratulations to the CySat-1 Team!";
                     outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
                     outgoingPacket.Command = 0x00; //Ping response
-                    outgoingPacket.Data_Length = 0x3A;
-                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(char) * 58);
-                    memcpy(outgoingPacket.Data,message,58); //This too IDK seriously this might not work
-                    //outgoingPacket.Data[57]=message[57]; //I don't know what I'm doing please check this
+                    outgoingPacket.Data_Length = 0x39;
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(char) * 57);
+                    memcpy(outgoingPacket.Data, message, 57);
                     outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
-                    return sendCySatPacket(outgoingPacket); //send the response
+                    status = sendCySatPacket(outgoingPacket); //send the response
+                    free(outgoingPacket.Data);
+                    return status;
                 }
                 case 0x03: { //Shutoff Beacon Request
                     status=END_BEACON();
@@ -577,7 +578,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     //TODO: SET_PIPE_TIMEOUT
 
                     outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
-                    outgoingPacket.Command = 0x01; // outgoing (0x03 -1)
+                    outgoingPacket.Command = 0x02; // outgoing (0x03 -1)
                     outgoingPacket.Data_Length = 0x0F; // how much is being sent back
                     outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 0); // multiplied by the data length
                     
