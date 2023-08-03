@@ -113,7 +113,9 @@ int handleCySatPacket(CySat_Packet_t packet){
                     outgoingPacket.Data[2] = (data2 & 0xFF00) >> 8;
                     outgoingPacket.Data[3] = data2 & 0xFF;
                     outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
-                    return sendCySatPacket(outgoingPacket); //send the response
+                    status = sendCySatPacket(outgoingPacket); //send the response
+                    free(outgoingPacket.Data);
+                    return status;
                 }
                 case 0x03: { //Solar Panel X Status Request
                     float x_voltage, x_neg_current, x_pos_current;
@@ -549,6 +551,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     break;
                 }
 
+            }
             break;
 
         case EOL_SUBSYSTEM_TYPE: //End of Life (EOL)
@@ -737,7 +740,6 @@ int handleCySatPacket(CySat_Packet_t packet){
                     break;
                 }
                 
-
             }
             
 
