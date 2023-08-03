@@ -569,7 +569,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
     	debug_printf("Transparent mode start error");
     }
 
-    for (unsigned short int i = startPacket; i <= endPacket; i++)
+    for (unsigned int i = startPacket; i <= endPacket; i++)
     {
     	char packet[129]={0xFE}; //129 so the last byte doesn't get cut off by end of char character
         // Byte 0 lets us know the packet is getting started
@@ -579,25 +579,30 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
         packet[1]=dataType;
 
         // Setting up char arrays that contain measurement id and packet id
-        char id[6]="00000"; //If it stops working change it back to 5, null terminator might be weird
-        sprintf(id, "%05d", measurementID);
+        //char id[4]="000"; //If it stops working change it back to 5, null terminator might be weird
+        //sprintf(id, "%03X", measurementID);
 
-        char id2[6]="00000";
-		sprintf(id2, "%05d", i);
+        //char id2[4]="000";
+		//sprintf(id2, "%03X", i);
 		// Write measurement id and packet id to the packet array, there has to be a better way to do this
 		// Each gets 5 bytes supporting files up to ~7.6 Megabytes
 		// This can be done in hex instead of decimal to save some space in the packets but I don't know how and that would make my life harder
-		for(int i=0; i<=4; i++){
-			packet[i+2]=id[i];
-			packet[i+7]=id2[i];
-		}
+		//for(int i=0; i<=2; i++){
+		//	packet[i+2]=id[i];
+		//	packet[i+5]=id2[i];
+		//}
+
+		memcpy(&packet[2], &measurementID, 3);
+		memcpy(&packet[5], &i, 3);
+
+
 
         //PSEUDOCODE FOR: Check to see if packet requested is greater than the length of a file (if so break out of the loop)
 
-        char data[117] = {"A"};
+        char data[120] = {"A"};
         UINT bytesRead=0;
 		//size_t read  = fread(&data, 1, sizeFile - 118 * i, fp);
-		fres = f_read(&currfile, data, 116, &bytesRead); // was 116
+		fres = f_read(&currfile, data, 119, &bytesRead); // was 116
 		//debug_printf("Bytes read: %d",bytesRead);
 		if(fres != FR_OK)
 		{
@@ -610,15 +615,20 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 
 		for (int j = 0; j < bytesRead; j++) // Copy the data into the packet, was until lessthan bytesread but going to 116
 		{
-			packet[12+j] = data[j];
+			packet[9+j] = data[j];
 			//debug_printf_no_newline("%c",packet[j+12]);
 		}
 
-		if (bytesRead<116){
-			for (int a = bytesRead; a<116; a++){
-				packet[12+a]=0xAA;
+		if (bytesRead<119){
+			for (int a = bytesRead; a<118; a++){
+				packet[9+a]=0xAA;
 			}
 		}
+
+		//char id3[2]="0";
+		//sprintf(id3, "%01X", bytesRead);
+		packet[8] = bytesRead;
+
 
         //debug_printf("\nPacket %d: %s", i, packet); //crc32 is done by the antenna, unneeded. We can use the extra 8bytes for transmitting actual data.
 

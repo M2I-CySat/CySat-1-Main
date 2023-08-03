@@ -64,7 +64,7 @@
 */
 Sat_Flags_t SatFlags;
 
-uint8_t GroundStationRxBuffer[7];
+uint8_t GroundStationRxBuffer[129];
 
 uint32_t calendar_format;
 
@@ -213,7 +213,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
             debug_printf("Reception Callback Called (Error)");
             sendErrorPacket();
         }
-
+        AMBER_LED_OFF()
         HAL_UART_Receive_IT(&huart6, GroundStationRxBuffer, 7);
 
     }
@@ -226,12 +226,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
         //}
     	debug_printf("Huart1");
     	debug_printf(GroundStationRxBuffer);
-    	debug_printf(GroundStationRxBuffer[1]);
-
-        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 7);
+    	//debug_printf(GroundStationRxBuffer[1]);
+    	AMBER_LED_OFF()
+        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
     }
 
-    AMBER_LED_OFF();
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
+	 if (huart == &huart1) {
+	    	debug_printf("UART error, restarting and padding out the debug printf because delays grr");
+	        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
+	    }
 }
 
 /**

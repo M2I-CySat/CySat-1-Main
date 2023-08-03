@@ -553,6 +553,11 @@ void Main_Task(void const *argument) {
     //PACKET_SEPARATOR(8, 0, 0, 84, ".DAT");
     //PACKET_SEPARATOR(8,0,0,80,".DAT");
     //PACKET_SEPARATOR(29,0,0,31, ".DAT");
+    //PACKET_SEPARATOR(8,0,0,80,".DAT");
+	//PACKET_SEPARATOR(29,0,0,31, ".DAT");
+	//PACKET_SEPARATOR(8,0,0,80,".DAT");
+	//PACKET_SEPARATOR(29,0,0,31, ".DAT");
+
 
     //FILE_TRANSFER(0,1);
     //FILE_TRANSFER(1,0);
@@ -561,7 +566,7 @@ void Main_Task(void const *argument) {
     //debug_printf("Payload Packet Seperator: %s", status);
 
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
-    HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 7);
+    HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
     while (1) {
         GREEN_LED_ON();
         osDelay(150);
