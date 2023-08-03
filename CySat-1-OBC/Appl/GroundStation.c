@@ -567,25 +567,33 @@ int handleCySatPacket(CySat_Packet_t packet){
             switch(packet.Command){
                 case 0x01:{// Status Control: For Enabling features
 
-                    //TODO: 
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = NULL; // outgoing response
+                    outgoingPacket.Data_Length = NULL; // how much is being sent back
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * NULL); // multiplied by the data length
 
                     break;
                 }
 
                 case 0x03:{// Transparent (pipe) mode timeout period
 
-                    //TODO: SET_PIPE_TIMEOUT
+                    status = SET_PIPE_TIMEOUT(packet.Data[0]);
+
+                    if (status != HAL_OK){
+                        return -1;
+                    }
 
                     outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
-                    outgoingPacket.Command = 0x01; // outgoing (0x03 -1)
-                    outgoingPacket.Data_Length = 0x0F; // how much is being sent back
-                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 0); // multiplied by the data length
+                    outgoingPacket.Command = 0x02; // outgoing response
+                    outgoingPacket.Data_Length = 0x01; // OUTPUT: HAL_OK NOT OK
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1); // multiplied by the data length
+                    outgoingPacket.Data[0] = status;
                     
                     // bit shifting for the data in return
                     // if more than 8, let steven know (bit shifting)
-                    
-
-                    break;
+                    status = sendCySatPacket(outgoingPacket);
+                    free(outgoingPacket.Data);
+                    return status; //send the response
                 }
 
                 case 0x05:{// Beacon Message Transmission Period
