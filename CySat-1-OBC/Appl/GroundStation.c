@@ -3,7 +3,7 @@
  *
  *  Created on: Feb 7, 2020
  *  Last Updated on: Feb 26, 2021
- *      Author: Bryan Friestad and Alexis Aurandt
+ *      Author: Bryan Friestad, Alexis Aurandt, Vanessa Whitehead
  */
 
 #include <GroundStation.h>
@@ -627,21 +627,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     break;
                 }
 
-                case 0x13:{// Destination Call Sign
-
-                    //TODO: SET_DESTINATION_CALLSIGN
-
-                    break;
-                }
-
-                case 0x15:{// Source Call Sign
-
-                    //TODO: SET_SOURCE_CALLSIGN
-
-                    break;
-                }
-
-                case 0x17:{// Beacon Message Content Configuration
+                case 0x13:{// Beacon Message Content Configuration
 
                     //TODO: SET_BEACON_TEXT
 
@@ -649,14 +635,14 @@ int handleCySatPacket(CySat_Packet_t packet){
                 }
 
 
-                case 0x19:{// Status Control: For Enabling features - Could be wrong?
+                case 0x15:{// Status Control: For Enabling features - Could be wrong?
 
                     //TODO: GET_UHF_STATUS
 
                     break;
                 }
 
-                case 0x1B:{// Read Uptime: Time radio has been online
+                case 0x17:{// Read Uptime: Time radio has been online
 
                     //TODO: GET_UHF_UPTIME
 
@@ -664,35 +650,35 @@ int handleCySatPacket(CySat_Packet_t packet){
                 }
 
 
-                case 0x1D:{// Read Number of Transmitted Packets
+                case 0x19:{// Read Number of Transmitted Packets
 
                     //TODO: GET_UHF_NUM_TRANSMITTED_PACKETS
 
                     break;
                 }
 
-                case 0x1F:{// Read Number of Received Packets
+                case 0x1B:{// Read Number of Received Packets
 
                     //TODO: GET_UHF_NUM_RECEIVED_PACKETS
 
                     break;
                 }
 
-                case 0x21:{// Read Number of Received Packets with CRC Error
+                case 0x1D:{// Read Number of Received Packets with CRC Error
 
                     //TODO: GET_UHF_NUM_RECEIVED_PACKETS_WITH_ERRORS
 
                     break;
                 }
 
-                case 0x23:{// Transparent (Pipe) mode timeout period
+                case 0x1F:{// Transparent (Pipe) mode timeout period
 
                     //TODO: 
 
                     break;
                 }
 
-                case 0x25:{// Beacon Message Trans. Period
+                case 0x21:{// Beacon Message Trans. Period
 
                     //TODO: 
 
@@ -700,7 +686,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                 }
 
 
-                case 0x27:{// Read the temperature of the UHF in Celsius
+                case 0x23:{// Read the temperature of the UHF in Celsius
 
                     //TODO: GET_UHF_TEMP
 
@@ -708,35 +694,35 @@ int handleCySatPacket(CySat_Packet_t packet){
                 }
 
 
-                case 0x29:{// UHF Antenna Release Configuration
+                case 0x25:{// UHF Antenna Release Configuration
 
                     //TODO: 
 
                     break;
                 }
 
-                case 0x2B:{// UHF Antenna Read/Write
+                case 0x27:{// UHF Antenna Read/Write
 
                     //TODO: GET_ANTENNA_STATUS
 
                     break;
                 }
 
-                case 0x2D:{// Destination Call Sign
+                case 0x29:{// Destination Call Sign
 
                     //TODO: 
 
                     break;
                 }
 
-                case 0x2F:{// Source Call Sign
+                case 0x2B:{// Source Call Sign
 
                     //TODO: 
 
                     break;
                 }
 
-                case 0x31:{//Beacon Message Content Configuration
+                case 0x2D:{//Beacon Message Content Configuration
 
                     //TODO: 
 
@@ -744,7 +730,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                 }
 
 
-                case 0x33:{//
+                case 0x2F:{//
 
                     //TODO: SET_UHF_LOW_POWER_MODE 
 

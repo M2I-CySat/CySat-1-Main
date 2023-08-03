@@ -17,7 +17,7 @@
 #define EPS_SUBSYSTEM_TYPE 0x1E
 #define PAYLOAD_SUBSYSTEM_TYPE 0x28
 #define EOL_SUBSYSTEM_TYPE 0x5A
-#define UHF_SUBSYSTEM_TYPE 0x14
+#define UHF_SUBSYSTEM_TYPE 0x0E
 
 typedef struct CySat_Packet{
     uint8_t Subsystem_Type;
