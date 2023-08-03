@@ -343,6 +343,7 @@ HAL_StatusTypeDef SET_PIPE_TIMEOUT(uint8_t timeout) {
     crc32(command, 16, &command[17]);
     command[25] = 0x0D;
     return UHF_WRITE(command, 26);
+    
 }
 
 /***************************************** STATUS COMMANDS **********************************************************************/

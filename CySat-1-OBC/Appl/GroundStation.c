@@ -3,7 +3,7 @@
  *
  *  Created on: Feb 7, 2020
  *  Last Updated on: Feb 26, 2021
- *      Author: Bryan Friestad, Alexis Aurandt, Vanessa Whitehead
+ *      Author: Bryan Friestad, Alexis Aurandt, Vanessa
  */
 
 #include <GroundStation.h>
@@ -75,10 +75,10 @@ int handleCySatPacket(CySat_Packet_t packet){
                     return sendCySatPacket(outgoingPacket); //send the response
                 }
                 case 0x05: { //Basic Health Check Request
-
+                    //TODO
                 }
                 case 0x07: { //Main Operations Request
-
+                    //TODO
                 }
                
                 break;
@@ -113,9 +113,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     outgoingPacket.Data[2] = (data2 & 0xFF00) >> 8;
                     outgoingPacket.Data[3] = data2 & 0xFF;
                     outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
-                    status = sendCySatPacket(outgoingPacket); //send the response
-                    free(outgoingPacket.Data);
-                    return status;
+                    return sendCySatPacket(outgoingPacket); //send the response
                 }
                 case 0x03: { //Solar Panel X Status Request
                     float x_voltage, x_neg_current, x_pos_current;
@@ -569,7 +567,7 @@ int handleCySatPacket(CySat_Packet_t packet){
             switch(packet.Command){
                 case 0x01:{// Status Control: For Enabling features
 
-                    //TODO: START_BEACON/END_BEACON
+                    //TODO: 
 
                     break;
                 }
@@ -577,6 +575,15 @@ int handleCySatPacket(CySat_Packet_t packet){
                 case 0x03:{// Transparent (pipe) mode timeout period
 
                     //TODO: SET_PIPE_TIMEOUT
+
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x01; // outgoing (0x03 -1)
+                    outgoingPacket.Data_Length = 0x0F; // how much is being sent back
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 0); // multiplied by the data length
+                    
+                    // bit shifting for the data in return
+                    // if more than 8, let steven know (bit shifting)
+                    
 
                     break;
                 }
@@ -733,13 +740,14 @@ int handleCySatPacket(CySat_Packet_t packet){
                 }
 
 
-                case 0x2F:{//
+                case 0x2F:{// not sure if we include this
 
                     //TODO: SET_UHF_LOW_POWER_MODE 
 
                     break;
                 }
                 
+
             }
             
 
