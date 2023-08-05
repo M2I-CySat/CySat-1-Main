@@ -18,12 +18,12 @@
  */
 CySat_Packet_t parseCySatPacket(uint8_t* packet){
     CySat_Packet_t cySatPacket;
-    cySatPacket.Subsystem_Type = packet[1];
-    cySatPacket.Command = packet[2];
-    cySatPacket.Data_Length = packet[3];
+    cySatPacket.Subsystem_Type = packet[16];
+    cySatPacket.Command = packet[17];
+    cySatPacket.Data_Length = packet[18];
     cySatPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * cySatPacket.Data_Length);
-    memcpy(cySatPacket.Data, packet+4, cySatPacket.Data_Length);
-    cySatPacket.Checksum = packet[cySatPacket.Data_Length+4];
+    memcpy(cySatPacket.Data, packet+19, cySatPacket.Data_Length);
+    cySatPacket.Checksum = packet[cySatPacket.Data_Length+19];
     return cySatPacket;
 }
 
