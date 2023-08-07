@@ -83,17 +83,15 @@ def takeFirst(elem):
     # convert next 10 bytes into int
     # this is the Measurement ID
 
-    Measurment_ID_hex = elem[5:11]
+    Measurment_ID_hex = elem[4:7]
 
     str = ""
 
-    str += bytes.fromhex(Measurment_ID_hex).decode('utf-8', errors='ignore')
+    str += bytes.fromhex(Measurment_ID_hex).decode('utf-8', errors='ignore') # TODO: Might be causing an error
 
-    reversed = str[6::-1]
+    print("Measurement Length: ", len(str))
 
-    decimal = int(reversed, 16)
-
-    return decimal
+    return str
 
 
 def takeSecond(elem): 
@@ -102,22 +100,22 @@ def takeSecond(elem):
     # convert next 10 bytes into int
     # This is the Packet ID
 
-    Packet_ID_hex = elem[11:17]
+    Packet_ID_hex = elem[7:10]
 
     str = ""
 
-    str += bytes.fromhex(Packet_ID_hex).decode('utf-8', errors='ignore')
+    str += bytes.fromhex(Packet_ID_hex).decode('utf-8', errors='ignore') # TODO: Might be causing an error
 
-    reversed = str[6::-1]
+    return str
 
-    decimal = int(reversed, 16)
-
-    return decimal
+def takeSecondInt(elem):
+    #
+    return int(takeSecond(elem))
 
 
 # Sort by Packet ID
 packet_data = [*set(packet_data)] # gets rid of duplicate packet data
-packet_data.sort(key=takeSecond)
+packet_data.sort(key=takeSecondInt)
 
 # ---- Test PASSED: Convert to Normal String to making sure sort() works  --- 
 # str1 = ""

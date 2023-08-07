@@ -50,13 +50,12 @@ int handleCySatPacket(CySat_Packet_t packet){
                     char message[58] = "Alive and well, Ames! Congratulations to the CySat-1 Team!";
                     outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
                     outgoingPacket.Command = 0x00; //Ping response
-                    outgoingPacket.Data_Length = 0x39;
-                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(char) * 57);
-                    memcpy(outgoingPacket.Data, message, 57);
+                    outgoingPacket.Data_Length = 0x3A;
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(char) * 58);
+                    memcpy(outgoingPacket.Data,message,58); //This too IDK seriously this might not work
+                    //outgoingPacket.Data[57]=message[57]; //I don't know what I'm doing please check this
                     outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
-                    status = sendCySatPacket(outgoingPacket); //send the response
-                    free(outgoingPacket.Data);
-                    return status;
+                    return sendCySatPacket(outgoingPacket); //send the response
                 }
                 case 0x03: { //Shutoff Beacon Request
                     status=END_BEACON();
@@ -568,30 +567,37 @@ int handleCySatPacket(CySat_Packet_t packet){
             switch(packet.Command){
                 case 0x01:{// Status Control: For Enabling features
 
-                    //TODO: 
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = NULL; // outgoing response
+                    outgoingPacket.Data_Length = NULL; // how much is being sent back
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * NULL); // multiplied by the data length
 
                     break;
                 }
 
                 case 0x03:{// Transparent (pipe) mode timeout period
+                
+                    status = SET_PIPE_TIMEOUT(packet.Data[0]);
 
-                    //TODO: SET_PIPE_TIMEOUT
+                    if (status != HAL_OK){
+                        return -1;
+                    }
 
                     outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
-                    outgoingPacket.Command = 0x02; // outgoing (0x03 -1)
-                    outgoingPacket.Data_Length = 0x0F; // how much is being sent back
-                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 0); // multiplied by the data length
+                    outgoingPacket.Command = 0x02; // outgoing response
+                    outgoingPacket.Data_Length = 0x01; // OUTPUT: HAL_OK NOT OK
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1); // multiplied by the data length
+                    outgoingPacket.Data[0] = status;
                     
                     // bit shifting for the data in return
                     // if more than 8, let steven know (bit shifting)
-                    
-
-                    break;
+                    status = sendCySatPacket(outgoingPacket);
+                    free(outgoingPacket.Data);
+                    return status; //send the response
                 }
 
                 case 0x05:{// Beacon Message Transmission Period
 
-                    //TODO: SET_BEACON_PERIOD
 
                     break;
                 }
@@ -599,8 +605,24 @@ int handleCySatPacket(CySat_Packet_t packet){
                 case 0x07:{// Restores Default Values
 
                     //TODO: RESTORE_UHF_DEFAULTS
+                    status = RESTORE_UHF_DEFAULTS();
 
-                    break;
+                    if (status != HAL_OK){
+                        return -1;
+                    }
+
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x00; // outgoing response
+                    outgoingPacket.Data_Length = 0x01; // OUTPUT: HAL_OK NOT OK
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1); // multiplied by the data length
+                    outgoingPacket.Data[0] = status;
+                    
+                    // bit shifting for the data in return
+                    // if more than 8, let steven know (bit shifting)
+                    status = sendCySatPacket(outgoingPacket);
+                    free(outgoingPacket.Data);
+                    
+                    return status; //send the response
                 }
 
                 case 0x09:{// Generic WriteAnd/Or Read from an I2C device
