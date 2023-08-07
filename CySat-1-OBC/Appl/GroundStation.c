@@ -567,12 +567,23 @@ int handleCySatPacket(CySat_Packet_t packet){
             switch(packet.Command){
                 case 0x01:{// Status Control: For Enabling features
 
-                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
-                    outgoingPacket.Command = NULL; // outgoing response
-                    outgoingPacket.Data_Length = NULL; // how much is being sent back
-                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * NULL); // multiplied by the data length
+                    //TODO: GET_UHF_STATUS(uint8_t *data)
 
-                    break;
+                    status = GET_UHF_STATUS(&packet.Data[0]); //TODO: not sure if this is right
+
+                    if (status != HAL_OK){
+                        return -1;
+                    }
+
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x00; 
+                    outgoingPacket.Data_Length = 0x01; 
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1); 
+                    outgoingPacket.Data[0] = status;
+                    status = sendCySatPacket(outgoingPacket);
+                    free(outgoingPacket.Data);
+
+                    return status; //send the response
                 }
 
                 case 0x03:{// Transparent (pipe) mode timeout period
@@ -597,14 +608,18 @@ int handleCySatPacket(CySat_Packet_t packet){
                 }
 
                 case 0x05:{// Beacon Message Transmission Period
+                    //TODO: 
 
+                    // SET_BEACON_PERIOD(uint16_t period)
+
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x04; // outgoing response
 
                     break;
                 }
 
                 case 0x07:{// Restores Default Values
 
-                    //TODO: RESTORE_UHF_DEFAULTS
                     status = RESTORE_UHF_DEFAULTS();
 
                     if (status != HAL_OK){
@@ -612,22 +627,22 @@ int handleCySatPacket(CySat_Packet_t packet){
                     }
 
                     outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
-                    outgoingPacket.Command = 0x00; // outgoing response
+                    outgoingPacket.Command = 0x06; // outgoing response
                     outgoingPacket.Data_Length = 0x01; // OUTPUT: HAL_OK NOT OK
                     outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1); // multiplied by the data length
                     outgoingPacket.Data[0] = status;
                     
-                    // bit shifting for the data in return
-                    // if more than 8, let steven know (bit shifting)
                     status = sendCySatPacket(outgoingPacket);
                     free(outgoingPacket.Data);
-                    
+
                     return status; //send the response
                 }
 
                 case 0x09:{// Generic WriteAnd/Or Read from an I2C device
 
                     //TODO: 
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x08; // outgoing response
 
                     break;
                 }
@@ -635,139 +650,223 @@ int handleCySatPacket(CySat_Packet_t packet){
                 case 0x0B:{// UHF Antenna Releases Configuration
 
                     //TODO: DEPLOY_ANTENNA
+                    status = DEPLOY_ANTENNA(packet.Data[0]); // time 
 
-                    break;
+                    if (status != HAL_OK){
+                        return -1;
+                    }
+
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x0A; // outgoing response
+                    outgoingPacket.Data_Length = 0x01; 
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1); 
+                    outgoingPacket.Data[0] = status;
+                    
+                    status = sendCySatPacket(outgoingPacket);
+                    free(outgoingPacket.Data);
+
+                    return status; //send the response
                 }
                 
                 case 0x0D:{// UHF Antenna Read/Write
 
-                    //TODO: CONFIGURE_ANTENNA
+                    status = CONFIGURE_ANTENNA();
 
-                    break;
+                    if (status != HAL_OK){
+                        return -1;
+                    }
+
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x0C; // outgoing response
+                    outgoingPacket.Data_Length = 0x01; 
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1); 
+                    outgoingPacket.Data[0] = status;
+
+                    status = sendCySatPacket(outgoingPacket);
+                    free(outgoingPacket.Data);
+
+                    return status; //send the response
                 }
 
                 case 0x0F:{// Destination Call Sign
 
-                    //TODO: SET_DESTINATION_CALLSIGN
+                    // TODO: '&' To be tested
+                    status = SET_DESTINATION_CALLSIGN(&packet.Data[0]); 
 
+                    if (status != HAL_OK){
+                        return -1;
+                    }
+
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x0E; // outgoing response
+                    outgoingPacket.Data_Length = 0x01; 
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1); 
+                    outgoingPacket.Data[0] = status;
+
+                    status = sendCySatPacket(outgoingPacket);
+                    free(outgoingPacket.Data);
+
+                    return status;
                     break;
                 }
 
                 case 0x11:{// Source Call Sign
 
-                    //TODO: SET_SOURCE_CALLSIGN
+                    // SET_SOURCE_CALLSIGN(uint8_t *call_sign) 
+                    // TODO: not sure if this '&' is right 
+                    status = SET_BEACON_TEXT(&packet.Data[0]); 
 
+                    if (status != HAL_OK){
+                        return -1;
+                    }
+
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x10; // outgoing response
+                    outgoingPacket.Data_Length = 0x01; // OUTPUT: HAL_OK NOT OK
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1); // multiplied by the data length
+                    outgoingPacket.Data[0] = status;
+                    status = sendCySatPacket(outgoingPacket);
+                    free(outgoingPacket.Data);
+                    return status; //send the response
                     break;
                 }
 
                 case 0x13:{// Beacon Message Content Configuration
 
-                    //TODO: SET_BEACON_TEXT
+                    // SET_BEACON_TEXT(uint8_t *text, uint8_t size)
+
+                    status = SET_BEACON_TEXT(&packet.Data[0], packet.Data[1]); //TODO: not sure if this is right
+
+                    if (status != HAL_OK){
+                        return -1;
+                    }
+
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x12; 
+                    outgoingPacket.Data_Length = 0x01; 
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1); 
+                    outgoingPacket.Data[0] = status;
+                    status = sendCySatPacket(outgoingPacket);
+                    free(outgoingPacket.Data);
+                    return status; 
+                }
+
+
+                case 0x15:{// Read Uptime: Time radio has been online
+
+                    uint32_t uptime
+
+                    status = GET_UHF_UPTIME(&uptime);
+                    
+                    if (status != HAL_OK){
+                        return -1;
+                    }
+
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x12; 
+                    outgoingPacket.Data_Length = 0x01; 
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1); 
+                    outgoingPacket.Data[0] = status;
+                    status = sendCySatPacket(outgoingPacket);
+                    free(outgoingPacket.Data);
+                    return status; 
 
                     break;
                 }
 
 
-                case 0x15:{// Status Control: For Enabling features - Could be wrong?
+                case 0x17:{// Read Number of Transmitted Packets
 
-                    //TODO: GET_UHF_STATUS
+                    //TODO: GET_UHF_NUM_TRANSMITTED_PACKETS(uint32_t *num_packets)
 
-                    break;
-                }
-
-                case 0x17:{// Read Uptime: Time radio has been online
-
-                    //TODO: GET_UHF_UPTIME
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x16; // outgoing response
 
                     break;
                 }
 
+                case 0x19:{// Read Number of Received Packets
 
-                case 0x19:{// Read Number of Transmitted Packets
+                    //TODO: GET_UHF_NUM_RECEIVED_PACKETS(uint32_t *num_packets)
 
-                    //TODO: GET_UHF_NUM_TRANSMITTED_PACKETS
-
-                    break;
-                }
-
-                case 0x1B:{// Read Number of Received Packets
-
-                    //TODO: GET_UHF_NUM_RECEIVED_PACKETS
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x18; // outgoing response
 
                     break;
                 }
 
-                case 0x1D:{// Read Number of Received Packets with CRC Error
+                case 0x1B:{// Read Number of Received Packets with CRC Error
 
-                    //TODO: GET_UHF_NUM_RECEIVED_PACKETS_WITH_ERRORS
-
-                    break;
-                }
-
-                case 0x1F:{// Transparent (Pipe) mode timeout period
-
-                    //TODO: 
-
-                    break;
-                }
-
-                case 0x21:{// Beacon Message Trans. Period
-
-                    //TODO: 
-
+                    //TODO: GET_UHF_NUM_RECEIVED_PACKETS_WITH_ERRORS(uint32_t *num_packets)
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x1A; // outgoing response
                     break;
                 }
 
 
-                case 0x23:{// Read the temperature of the UHF in Celsius
+                case 0x1D:{// Read the temperature of the UHF in Celsius
 
-                    //TODO: GET_UHF_TEMP
+                    //GET_UHF_TEMP(float *temp)
+                    float temp;
+
+                    status = GET_UHF_TEMP(&temp);
+
+                    if (status != HAL_OK){
+                        return -1;
+                    }
+
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x1C; // outgoing response
+                    outgoingPacket.Data_Length = 0x01; 
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1); 
+                    outgoingPacket.Data[0] = status;
+                    status = sendCySatPacket(outgoingPacket);
+                    free(outgoingPacket.Data);
+
+                    return status; //send the response
 
                     break;
                 }
 
 
-                case 0x25:{// UHF Antenna Release Configuration
+                case 0x1F:{// UHF Antenna Read/Write
 
-                    //TODO: 
+                    uint8_t read;
 
-                    break;
+                    status = GET_ANTENNA_STATUS(&read);
+
+                    if (status != HAL_OK){
+                        return -1;
+                    }
+
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x1E; 
+                    outgoingPacket.Data_Length = 0x01; 
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1); 
+                    outgoingPacket.Data[0] = status;
+                    status = sendCySatPacket(outgoingPacket);
+                    free(outgoingPacket.Data);
+
+                    return status; //send the response
                 }
 
-                case 0x27:{// UHF Antenna Read/Write
+                case 0x1B:{// Set UHF Low Power Mode
 
-                    //TODO: GET_ANTENNA_STATUS
+                    status = SET_UHF_LOW_POWER_MODE(); 
 
-                    break;
-                }
+                    if (status != HAL_OK){
+                        return -1;
+                    }
 
-                case 0x29:{// Destination Call Sign
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x1A; 
+                    outgoingPacket.Data_Length = 0x01; 
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1); 
+                    outgoingPacket.Data[0] = status;
+                    status = sendCySatPacket(outgoingPacket);
+                    free(outgoingPacket.Data);
 
-                    //TODO: 
-
-                    break;
-                }
-
-                case 0x2B:{// Source Call Sign
-
-                    //TODO: 
-
-                    break;
-                }
-
-                case 0x2D:{//Beacon Message Content Configuration
-
-                    //TODO: 
-
-                    break;
-                }
-
-
-                case 0x2F:{// not sure if we include this
-
-                    //TODO: SET_UHF_LOW_POWER_MODE 
-
-                    break;
+                    return status; 
                 }
                 
 
