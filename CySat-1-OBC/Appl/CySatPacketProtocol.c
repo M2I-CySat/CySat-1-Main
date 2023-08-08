@@ -10,6 +10,8 @@
 #include "MCU_init.h"
 #include <stdlib.h>
 #include <string.h>
+#include <UHF.h>
+#include <helper_functions.h>
 
 /**
  * @brief Takes in an array containing the cysat packet in byte form and builds a struct from it
@@ -17,6 +19,7 @@
  * @retval The struct representing this CySat packet
  */
 CySat_Packet_t parseCySatPacket(uint8_t* packet){
+	debug_printf("Parsing cysat packet");
     CySat_Packet_t cySatPacket;
     cySatPacket.Subsystem_Type = packet[16];
     cySatPacket.Command = packet[17];
@@ -34,6 +37,7 @@ CySat_Packet_t parseCySatPacket(uint8_t* packet){
  * This function will return a 0 if there was no issue, otherwise, there was an error.
  */
 HAL_StatusTypeDef sendCySatPacket(CySat_Packet_t packet){
+	debug_printf("Sending packet");
     uint8_t message[packet.Data_Length + 5];
 
     //build byte array
@@ -46,10 +50,19 @@ HAL_StatusTypeDef sendCySatPacket(CySat_Packet_t packet){
         message[i + 4] = packet.Data[i];
     }
     message[4 + packet.Data_Length] = packet.Checksum;
+    debug_printf("DelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelay");
+    debug_printf("Packet assembled. Packet:");
+    debug_printf(message);
 
     HAL_StatusTypeDef status = HAL_ERROR;
     if(packet.Subsystem_Type == OBC_SUBSYSTEM_TYPE){
-        status = HAL_UART_Transmit(&huart1, message, packet.Data_Length + 5, 1000); //send the message over uart, but timeout after 1s
+        status = START_PIPE();
+        if(status!=HAL_OK){
+        	debug_printf("Transparent mode start error");
+        }
+    	debug_printf("Pipe Enable");
+        status = HAL_UART_Transmit(&huart1, &message, packet.Data_Length + 5, 1000); //send the message over uart, but timeout after 1s
+        debug_printf("Post UART Transmit");
     }
     else if(packet.Subsystem_Type == PAYLOAD_SUBSYSTEM_TYPE){
         status = HAL_UART_Transmit(&huart6, message, packet.Data_Length + 5, 1000); //send the message over uart, but timeout after 1s

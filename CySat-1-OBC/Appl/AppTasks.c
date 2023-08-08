@@ -566,12 +566,15 @@ void Main_Task(void const *argument) {
     //debug_printf("Payload Packet Seperator: %s", status);
 
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
-    HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
+    //HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);  //Callback call is commented out for now for testing sendErrorPacket
+    //Callback probably interfering with the UHF receive stuff
     while (1) {
         GREEN_LED_ON();
         osDelay(150);
         GREEN_LED_OFF();
         osDelay(150);
+        //osDelay(6000);
+        //sendErrorPacket();
     }
 }
 

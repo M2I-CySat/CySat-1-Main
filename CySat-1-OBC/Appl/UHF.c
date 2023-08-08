@@ -35,7 +35,7 @@ HAL_StatusTypeDef START_BEACON() {
     bits[0] = data[9];
     bits[1] = data[10];
     bits[2] = ((data[11] - 0x30) | 0x04) + 0x30; //set bit 6(BCN) to 1
-    bits[3] = data[13];
+    bits[3] = data[12]; //IF this causes issues change it to 13
 
     uint8_t command[22];
     command[0] = 'E';
@@ -75,7 +75,7 @@ HAL_StatusTypeDef END_BEACON() {
     bits[0] = data[9];
     bits[1] = data[10];
     bits[2] = ((data[11] - 0x30) & 0xFB) + 0x30; //set bit 6(BCN) to 0
-    bits[3] = data[13];
+    bits[3] = data[12];
 
     uint8_t command[22];
     command[0] = 'E';
@@ -238,6 +238,7 @@ HAL_StatusTypeDef SET_SOURCE_CALLSIGN(uint8_t *call_sign) {
  * @brief Turns on the  pipe.
  */
 HAL_StatusTypeDef START_PIPE() {
+	debug_printf("Inside start pipe");
     uint8_t data[23]={'/0'};
     uint8_t bits[4];
     HAL_StatusTypeDef status = GET_UHF_STATUS(data);
@@ -245,16 +246,17 @@ HAL_StatusTypeDef START_PIPE() {
     	debug_printf("Start Pipe: UHF Status not OK");
         return status;
     }
-    //debug_printf("Start Pipe UHF Status: %s",data);
+    debug_printf("Past status");
+    debug_printf("Start Pipe UHF Status: %s",data);
 
     //Perserve other settings and only enable beacon
 
-    //debug_printf("Start pipe bits before: %x %x %x %x",data[9], data[10], data[11], data[12]);
+    debug_printf("Start pipe bits before: %x %x %x %x",data[9], data[10], data[11], data[12]);
     bits[0] = data[9];
     bits[1] = data[10];
     bits[2] = ((data[11] - 0x30) | 0x02) + 0x30; //set bit 5(Pipe) to 1
     bits[3] = data[12];
-    //debug_printf("Start pipe bits after: %x %x %x %x",bits[0], bits[1], bits[2], bits[3]);
+    debug_printf("Start pipe bits after: %x %x %x %x",bits[0], bits[1], bits[2], bits[3]);
 
 
     uint8_t command[22];
@@ -273,6 +275,10 @@ HAL_StatusTypeDef START_PIPE() {
     command[12] = ' ';
     crc32(command, 12, &command[13]);
     command[21] = 0x0D;
+    debug_printf("UHF Write Command:");
+    debug_printf(command);
+    debug_printf("Before UHF Write");
+    debug_printf("Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2Delay2");
     return UHF_WRITE(command, 22);
 }
 
@@ -354,11 +360,13 @@ HAL_StatusTypeDef SET_PIPE_TIMEOUT(uint8_t timeout) {
  */
 HAL_StatusTypeDef GET_UHF_STATUS(uint8_t *data) {
     uint8_t read_command[] = "ES+R2200 BD888E1F\r";
+    debug_printf("Before UHF read in status");
     HAL_StatusTypeDef status = UHF_READ(read_command, data, 18, 23);
+    debug_printf("After UHF read in status");
     if (status != HAL_OK){
     	debug_printf("UHF Status status variable is not HAL_ok");
     }
-
+    debug_printf("UHF Status: %s",data);
     if (data[0] != 'O' || data[1] != 'K') {
     	debug_printf("Get UHF Status Read Error");
     	debug_printf("UHF Status: %s",data);
@@ -639,14 +647,20 @@ HAL_StatusTypeDef GET_ANTENNA_STATUS(uint8_t *read) {
  * @param out_byte : The size of the expected return./How long to listen for.
  */
 HAL_StatusTypeDef UHF_READ(uint8_t command[], uint8_t *data_ptr, uint8_t in_byte, uint8_t out_byte) {
-    osMutexWait(UART_Mutex, 2500);
+    //osMutexWait(UART_Mutex, 2500);
+	HAL_UART_AbortReceive(&huart1);
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, command, in_byte, UHF_UART_TIMEOUT);
     if (status != HAL_OK) {
-        osMutexRelease(UART_Mutex);
+        //osMutexRelease(UART_Mutex);
+    	debug_printf("UHF Read Status Not OK");
+    	HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
         return status;
     }
     status = HAL_UART_Receive(&huart1, data_ptr, out_byte, UHF_UART_TIMEOUT);
-    osMutexRelease(UART_Mutex);
+    //osMutexRelease(UART_Mutex);
+    debug_printf("UHF Read got: ");
+    debug_printf(data_ptr);
+    HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
     return status;
 }
 
@@ -656,27 +670,34 @@ HAL_StatusTypeDef UHF_READ(uint8_t command[], uint8_t *data_ptr, uint8_t in_byte
  * @param in_byte  :The size of the command that is being sent
  */
 HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
-    osMutexWait(UART_Mutex, 2500);
+	HAL_UART_AbortReceive(&huart1);
+
+    //osMutexWait(UART_Mutex, 2500);
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, command, in_byte, UHF_UART_TIMEOUT);
 
     if (status != HAL_OK) {
         debug_printf("[UHF_WRITE/ERROR]: UART Tx FAIL. Command: %s", command);
-        osMutexRelease(UART_Mutex);
+        //osMutexRelease(UART_Mutex);
+        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
         return status;
     }
 
-    uint8_t data[25];
+    uint8_t data[25]={"\0"};
     status = HAL_UART_Receive(&huart1, data, 25, UHF_UART_TIMEOUT);
-    osMutexRelease(UART_Mutex);
+    //osMutexRelease(UART_Mutex);
     //Gets rid of the new line character messing up all of my print statements
     //data[sizeof(data)/sizeof(uint8_t)-1] = '\0';
     //command[in_byte-1] = '\0';
+   	debug_printf("UHF Write received data: ");
+	debug_printf(data);
     if (data[0] != 'O' || data[1] != 'K') {
 
-        debug_printf("[UHF_WRITE/ERROR]: UART Rx FAIL. Command: %s Data: %s",command,data);
+        debug_printf("[UHF_WRITE/ERROR]: UART Rx FAIL.");
+        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
         return HAL_ERROR;
     }
 
     debug_printf("[UHF_WRITE/SUCCESS]: Command succeeded. Command: %s Data: %s",command,data);
+    HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
     return status;
 }

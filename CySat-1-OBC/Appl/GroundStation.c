@@ -47,6 +47,7 @@ int handleCySatPacket(CySat_Packet_t packet){
         case OBC_SUBSYSTEM_TYPE: // OBC
             switch(packet.Command){
                 case 0x01: { // Ping Request
+                	debug_printf("Showing up as correct command");
                     char message[58] = "Alive and well, Ames! Congratulations to the CySat-1 Team!";
                     outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
                     outgoingPacket.Command = 0x00; //Ping response
