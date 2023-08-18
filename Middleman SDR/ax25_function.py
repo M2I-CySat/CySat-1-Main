@@ -279,9 +279,9 @@ def makeAx25(srcCall, destCall, informationField, encoding):
     overall.extend(bytearray.fromhex(crc_value_converted))
 
     withzeros=bytearray()
-    withzeros.extend(bytearray.fromhex("00000000000000000000000000000000"))
+    withzeros.extend(bytearray.fromhex("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"))
     withzeros.extend(overall)
-    withzeros.extend(bytearray.fromhex("00000000000000000000000000000000"))
+    withzeros.extend(bytearray.fromhex("00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"))
 
     #print("CRC value: "+hex(crc_value)[2:].zfill(4))
     print("Hex bytes: ", end="")

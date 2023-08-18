@@ -49,7 +49,7 @@
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 #define INITIAL_WAIT (30 * 60 * 1000) // waits 30 minutes
-
+uint8_t GroundStationPacketLength = 20+15;
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * INTERNAL TYPES DEFINITION
@@ -206,6 +206,8 @@ int main(void) {
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     debug_printf("WE GOT A PACKET!");
     AMBER_LED_ON();
+    HAL_Delay(1500); //1.5 second delay for UHF to exit talk to OBC mode
+    debug_printf("Post UHF delay");
 
     // UART for Payload
     if (huart == &huart6) {
@@ -220,16 +222,16 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
     // UART for OBC
     if (huart == &huart1) {
-        //if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
-        //    debug_printf("Reception Callback Called (Error)");
-        //    sendErrorPacket();
-        //}
+        if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
+            debug_printf("Reception Callback Called (Error)");
+            sendErrorPacket();
+        }
     	debug_printf("Huart1");
     	debug_printf(GroundStationRxBuffer);
     	sendErrorPacket();
     	//debug_printf(GroundStationRxBuffer[1]);
     	AMBER_LED_OFF()
-        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 40);
+        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
     }
 
 }
@@ -237,7 +239,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 	 if (huart == &huart1) {
 	    	debug_printf("UART error, restarting and padding out the debug printf because delays grr");
-	        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
+	        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
 	    }
 }
 

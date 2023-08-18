@@ -715,7 +715,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 
                     // SET_SOURCE_CALLSIGN(uint8_t *call_sign) 
                     // TODO: not sure if this '&' is right 
-                    status = SET_BEACON_TEXT(&packet.Data[0]); 
+                    status = SET_BEACON_TEXT(&packet.Data[0], packet.Data_Length);
 
                     if (status != HAL_OK){
                         return -1;
@@ -755,7 +755,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 
                 case 0x15:{// Read Uptime: Time radio has been online
 
-                    uint32_t uptime
+                    uint32_t uptime;
 
                     status = GET_UHF_UPTIME(&uptime);
                     
@@ -851,7 +851,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     return status; //send the response
                 }
 
-                case 0x1B:{// Set UHF Low Power Mode
+                case 0x21:{// Set UHF Low Power Mode //TODO: Check case ID Vanessa, it was 1B before
 
                     status = SET_UHF_LOW_POWER_MODE(); 
 

@@ -50,8 +50,7 @@ HAL_StatusTypeDef sendCySatPacket(CySat_Packet_t packet){
         message[i + 4] = packet.Data[i];
     }
     message[4 + packet.Data_Length] = packet.Checksum;
-    debug_printf("DelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelayDelay");
-    debug_printf("Packet assembled. Packet:");
+
     debug_printf(message);
 
     HAL_StatusTypeDef status = HAL_ERROR;

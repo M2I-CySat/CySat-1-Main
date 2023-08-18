@@ -653,14 +653,14 @@ HAL_StatusTypeDef UHF_READ(uint8_t command[], uint8_t *data_ptr, uint8_t in_byte
     if (status != HAL_OK) {
         //osMutexRelease(UART_Mutex);
     	debug_printf("UHF Read Status Not OK");
-    	HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
+    	HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
         return status;
     }
     status = HAL_UART_Receive(&huart1, data_ptr, out_byte, UHF_UART_TIMEOUT);
     //osMutexRelease(UART_Mutex);
     debug_printf("UHF Read got: ");
     debug_printf(data_ptr);
-    HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
+    HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
     return status;
 }
 
@@ -678,7 +678,7 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
     if (status != HAL_OK) {
         debug_printf("[UHF_WRITE/ERROR]: UART Tx FAIL. Command: %s", command);
         //osMutexRelease(UART_Mutex);
-        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
+        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
         return status;
     }
 
@@ -693,11 +693,11 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
     if (data[0] != 'O' || data[1] != 'K') {
 
         debug_printf("[UHF_WRITE/ERROR]: UART Rx FAIL.");
-        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
+        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
         return HAL_ERROR;
     }
 
     debug_printf("[UHF_WRITE/SUCCESS]: Command succeeded. Command: %s Data: %s",command,data);
-    HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
+    HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
     return status;
 }
