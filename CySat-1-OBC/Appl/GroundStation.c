@@ -82,6 +82,19 @@ int handleCySatPacket(CySat_Packet_t packet){
                     //TODO
                 }
                
+                case 0x09: {
+					status = PACKET_SEPARATOR(29,0,0,31, ".DAT");
+                    if(status != HAL_OK){
+                        return -1;
+                    }
+                    outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x08;
+                    outgoingPacket.Data_Length = 0x00;
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 2);
+                    outgoingPacket.Data[0] = 0x02;
+                    outgoingPacket.Data[1] = 0x03;
+                    outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
+                }
                 break;
 
             }

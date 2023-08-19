@@ -33,6 +33,7 @@ void ADCS_Task(void const * argument);
 void R2U2_Task(void const * argument);
 void UHF_TxRx_Task(void const * argument);
 void BatteryCapacity_Task(void const * argument);
+//uint8_t actionFlag;
 
 void Fault_Recovery(int, int);
 

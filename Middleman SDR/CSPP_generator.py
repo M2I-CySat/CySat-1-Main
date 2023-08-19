@@ -79,4 +79,4 @@ def makeCySatPacket(subsystem, command, data, srcCall = "KB0MGQ", destCall = "W0
     f.write(finalpacket)
 
 
-makeCySatPacket("OBC","01",[["str", "Hello"],["int", 23],["hex", "FFFFFAFA00FE"]])
+makeCySatPacket("OBC","01",[])

@@ -187,7 +187,7 @@ int main(void) {
      *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
     //HAL_UART_RegisterCallback(&huart1, HAL_UART_RX_COMPLETE_CB_ID, HAL_UART_RxCpltCallback);
-
+    //actionFlag = 0;
     /* FINAL TASK: Start scheduler */
     osKernelStart();
 }
@@ -206,39 +206,28 @@ int main(void) {
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     debug_printf("WE GOT A PACKET!");
     AMBER_LED_ON();
-    HAL_Delay(1500); //1.5 second delay for UHF to exit talk to OBC mode
-    debug_printf("Post UHF delay");
+    //HAL_Delay2(1500); //1.5 second delay for UHF to exit talk to OBC mode
+    //debug_printf("Post UHF delay");
 
     // UART for Payload
-    if (huart == &huart6) {
-        if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
-            debug_printf("Reception Callback Called (Error)");
-            sendErrorPacket();
-        }
-        AMBER_LED_OFF()
-        HAL_UART_Receive_IT(&huart6, GroundStationRxBuffer, 7);
-
-    }
+//    if (huart == &huart6) {
+//        if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
+//            debug_printf("Reception Callback Called (Error)");
+//            sendErrorPacket();
+//        }
+//        AMBER_LED_OFF()
+//        HAL_UART_Receive_IT(&huart6, GroundStationRxBuffer, 7);
+//
+//    }
 
     // UART for OBC
-    if (huart == &huart1) {
-        if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
-            debug_printf("Reception Callback Called (Error)");
-            sendErrorPacket();
-        }
-    	debug_printf("Huart1");
-    	debug_printf(GroundStationRxBuffer);
-    	sendErrorPacket();
-    	//debug_printf(GroundStationRxBuffer[1]);
-    	AMBER_LED_OFF()
-        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
-    }
 
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 	 if (huart == &huart1) {
-	    	debug_printf("UART error, restarting and padding out the debug printf because delays grr");
+	    	debug_printf("UART error. Data: %s", GroundStationRxBuffer);
+	    	GroundStationRxBuffer[0] = '\0';
 	        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
 	    }
 }

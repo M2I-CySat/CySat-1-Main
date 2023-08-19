@@ -635,7 +635,6 @@ HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, u
 
         /* Init tickstart for timeout managment */
         tickstart = HAL_GetTick();
-
         huart->TxXferSize = Size;
         huart->TxXferCount = Size;
         while (huart->TxXferCount > 0U) {

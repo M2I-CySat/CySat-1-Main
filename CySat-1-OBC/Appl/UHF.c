@@ -673,16 +673,15 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
 	HAL_UART_AbortReceive(&huart1);
 
     //osMutexWait(UART_Mutex, 2500);
+	uint8_t data[25]={"\0"};
+	debug_printf("Before transmit");
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, command, in_byte, UHF_UART_TIMEOUT);
-
     if (status != HAL_OK) {
         debug_printf("[UHF_WRITE/ERROR]: UART Tx FAIL. Command: %s", command);
         //osMutexRelease(UART_Mutex);
         HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
         return status;
     }
-
-    uint8_t data[25]={"\0"};
     status = HAL_UART_Receive(&huart1, data, 25, UHF_UART_TIMEOUT);
     //osMutexRelease(UART_Mutex);
     //Gets rid of the new line character messing up all of my print statements

@@ -325,16 +325,16 @@ __weak void HAL_IncTick(void)
   *       implementations in user file.
   * @retval tick value
   */
-//__weak uint32_t HAL_GetTick(void)
-//{
-//  return uwTick;
-//}
+__weak uint32_t HAL_GetTick(void)
+{
+  return uwTick;
+}
 /**
   * @brief Provides a tick value in millisecond.
   * @note This function was rewritten by Steven Scheuermann of CySat to use a timer instead of an interrupt so we could put delays in callbacks
   * @retval tick value
   */
-__weak uint32_t HAL_GetTick(void)
+__weak uint32_t HAL_GetTick2(void)
 {
   return TIM2->CNT;
 }
@@ -366,6 +366,41 @@ __weak void HAL_Delay(__IO uint32_t Delay)
   {
   }
 }
+
+
+
+__weak void HAL_Delay2(__IO uint32_t Delay)
+{
+	debug_printf("Hal delay 2");
+  uint32_t tickstart = HAL_GetTick2();
+  debug_printf("%d",tickstart);
+  uint32_t wait = Delay;
+  debug_printf("%d",wait);
+
+  /* Add a period to guarantee minimum wait */
+//  if (wait < HAL_MAX_DELAY)
+//  {
+//     wait++;
+//  }
+
+//  while((HAL_GetTick2() - tickstart) < wait)
+//  {
+//	  debug_printf("In loop");
+//	  debug_printf("%d",tickstart);
+//
+//  }
+  int i = 0;
+    while(i < wait)
+    {
+      i=i+1;
+  	  debug_printf("In loop");
+  	  debug_printf("%d",i);
+
+    }
+}
+
+
+
 
 /**
   * @brief Suspend Tick increment.
