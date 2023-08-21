@@ -329,15 +329,6 @@ __weak uint32_t HAL_GetTick(void)
 {
   return uwTick;
 }
-/**
-  * @brief Provides a tick value in millisecond.
-  * @note This function was rewritten by Steven Scheuermann of CySat to use a timer instead of an interrupt so we could put delays in callbacks
-  * @retval tick value
-  */
-__weak uint32_t HAL_GetTick2(void)
-{
-  return TIM2->CNT;
-}
 
 
 /**

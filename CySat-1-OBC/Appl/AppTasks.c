@@ -3,7 +3,7 @@
  *
  *  Created on: Nov 12, 2021
  *  Updated on: Nov 15, 2021
- *      Author: aaurandt
+ *      Author: Alexis Aurandt and Steven Scheuermann
  */
 
 #include "AppTasks.h"
@@ -86,9 +86,9 @@ void Main_Task(void const *argument) {
     if(f_mount(&FatFs, "", 0) != FR_OK) //Checks to make sure drive mounted successfully
     {
     	debug_printf("Failed to mount SD drive");
+    }else{
+    	debug_printf("SD Card Successfully mounted");
     }
-    debug_printf("Mounted SD card");
-    debug_printf("Before UHF Enable");
 
     /*
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -96,24 +96,24 @@ void Main_Task(void const *argument) {
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
 
-    // Enable
-    osDelay(2000);
+    debug_printf("Starting EPS Configuration");
     mainStatus = enable_UHF();
-
     if (mainStatus != HAL_OK) {
         debug_printf("[Main Thread/ERROR]: EPS UHF Enable Error: %s", mainStatus);
     } else {
         debug_printf("[Main Thread/SUCCESS]: Power to UHF Enabled");
     }
-    osDelay(2000); // Optional delay
+
+    osDelay(500);
 
     // Turn on SDR/Payload
     //mainStatus = enable_Payload();
-    if (mainStatus != HAL_OK) {
-        debug_printf("[Main Thread/ERROR]: EPS Payload Enable Error: %s", mainStatus);
-    } else {
-        debug_printf("[Main Thread/SUCCESS]: Payload Enabled");
-    }
+    //if (mainStatus != HAL_OK) {
+    //    debug_printf("[Main Thread/ERROR]: EPS Payload Enable Error: %s", mainStatus);
+    //} else {
+    //    debug_printf("[Main Thread/SUCCESS]: Payload Enabled");
+    //}
+    //osDelay(500);
 
     // Turn on Boost Board
     enable_Boost_Board();
@@ -122,71 +122,54 @@ void Main_Task(void const *argument) {
     } else {
         debug_printf("[Main Thread/SUCCESS]: Power to Boost Board Enabled");
     }
-    debug_printf("After boost board enable");
+    debug_printf("EPS Configuration complete");
+    osDelay(500);
 
+
+    debug_printf("Starting UHF Configuration");
     // Deploy the Antenna
     // TODO: Antenna Deployment Function Goes Here (DO NOT RUN WITH ACTUAL ANTENNA UNTIL FLIGHT, IT IS SINGLE USE)
     // DEPLOY_ANTENNA(30); // DON'T TOUCH UNLESS YOU KNOW WHAT YOU'RE DOING
     //debug_printf("Sending 0x1F to I2C slave address 0x33");
 
-    //// Beacon Config ////
-    // Period
-    debug_printf("Before set beacon period");
-    mainStatus = SET_BEACON_PERIOD(3);
+    mainStatus = SET_BEACON_PERIOD(20);
     if (mainStatus != HAL_OK) {
         debug_printf("[Main Thread/ERROR]: Beacon period failed to set");
     } else {
         debug_printf("[Main Thread/SUCCESS]: Beacon period set successfully");
     }
+    osDelay(500);
 
-    // Beacon Text
-    uint8_t initial_beacon_text[] = "Hello I Am Space Core";
-    // uint8_t initial_beacon_text[] = "Hello Earth! This is CySat-1 from Iowa State University.";
-    // uint8_t funny_beacon_text[] = "Wow...Ames is really small from up here...";
-    mainStatus = SET_BEACON_TEXT(initial_beacon_text, 21);
-
+    // If these don't work increase text allowance in set text by 1?
+    // uint8_t initial_beacon_text[22] = "Hello I Am Space Core";
+    // uint8_t initial_beacon_text[57] = "Hello Earth! This is CySat-1 from Iowa State University.";
+    uint8_t initial_beacon_text[42] = "Wow...Ames is really small from up here...";
+    mainStatus = SET_BEACON_TEXT(initial_beacon_text, 42);
     if (mainStatus != HAL_OK) {
         debug_printf("[Main Thread/ERROR]: Beacon text failed to set");
     } else {
         debug_printf("[Main Thread/SUCCESS]: Beacon text successfully set to:");
         debug_printf("> %s", initial_beacon_text);
     }
-    osDelay(1000);
-    // Start Test
-    SET_PIPE_TIMEOUT(5);
-    mainStatus = START_BEACON();
-    debug_printf("Beaconing");
-    osDelay(4000);
-    END_BEACON();
-    osDelay(1000);
-    END_BEACON();
-    osDelay(1000);
-
-    // Uncomment for testing callbacks
-
-    //SET_PIPE_TIMEOUT(60);
-    //osDelay(1000);
-    //START_PIPE();
-    //debug_printf("Go for transmit");
-    //osDelay(150000);
-    //SET_PIPE_TIMEOUT(2);
-    //osDelay(2000);
+    osDelay(500);
 
 
-    //osDelay
-    // Stop Test - Tested and works
-    //mainStatus = END_BEACON();
-    // osDelay(1000);
-    /*
-    // Set Pipe Timeout
-    mainStatus = SET_PIPE_TIMEOUT(18);
+    mainStatus = SET_PIPE_TIMEOUT(5);
     if (mainStatus != HAL_OK) {
-        debug_printf("[SET_PIPE_TIMEOUT/ERROR]: Pipe timeout FAIL");
+        debug_printf("[Main Thread/ERROR]: Transparent mode timeout failed to set");
     } else {
-        debug_printf("[SET_PIPE_TIMEOUT/SUCCESS]: Pipe timeout set");
+        debug_printf("[Main Thread/SUCCESS]: Transparent mode timeout set successfully");
     }
-    osDelay(1000);
-    */
+    osDelay(500);
+
+
+    mainStatus = START_BEACON();
+    if (mainStatus != HAL_OK) {
+        debug_printf("[Main Thread/ERROR]: Beacon failed to start");
+    } else {
+        debug_printf("[Main Thread/SUCCESS]: Beacon successfully started");
+    }
+    osDelay(500);
 
     /* Temperature sensor test */
     float uhfTemperature;
@@ -196,18 +179,11 @@ void Main_Task(void const *argument) {
     } else {
         debug_printf("[Main Thread/SUCCESS]: UHF temperature: %lf", uhfTemperature);
     }
-
-
-    // Enable Transparent Mode
-    // TODO: Send command to UHF transceiver to enable transparent mode
+    osDelay(500);
 
     // De-tumbling Sequence
     // TODO: De-tumbling functions (ADCS) go here
     // debug_printf("Beginning de-tumbling sequence (unfinished)");
-
-    // Ground station will receive beacon, send "Beacon Shut Off" request
-    // TODO: OBC will shut off beacon when it receives ground station command
-    // TODO: OBC will confirm shut-off
 
     /** Ground station will send "Initial Health Check Request" command
     * TODO: Create health checks:
@@ -219,7 +195,7 @@ void Main_Task(void const *argument) {
 	* ADCS TESTING
 	*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
-
+// Reaction wheel spinup tests
 //    osDelay(7000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
 //    TC_10(1);
 //    osDelay(1000);
@@ -233,18 +209,9 @@ void Main_Task(void const *argument) {
 
 
 
-    // Main startup complete, begin loop checks
 
-    // Testing Code Separator
-
-    //f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks
-
-
-
+    // Tests of PACKET_SEPARATOR
     //START_PIPE();
-
-
-
     //DELETE_DATA_FILE(3);
     //PACKET_SEPARATOR(8, 0, 0, 84, ".DAT");
     //PACKET_SEPARATOR(8,0,0,80,".DAT");
@@ -257,37 +224,31 @@ void Main_Task(void const *argument) {
 
     //FILE_TRANSFER(0,1);
     //FILE_TRANSFER(1,0);
-    //PACKET_PRINT();
 
-    //debug_printf("Payload Packet Seperator: %s", status);
-
+    // Loop for handling communications
+    GroundStationRxBuffer[0] = '\0';
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
-    //HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength;);  //Callback call is commented out for now for testing sendErrorPacket
-    //Callback probably interfering with the UHF receive stuff
     while (1) {
-    	for (int i=1; i<=100; i++){
+    	for (int i=1; i<=0; i++){
             GREEN_LED_ON();
             osDelay(150);
             GREEN_LED_OFF();
             osDelay(150);
     	}
-    	debug_printf("Checking buffer");
-    	debug_printf("Buffer contents:");
-		debug_printf(GroundStationRxBuffer);
-		if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
-			debug_printf("Reception Callback Called (Error)");
-			sendErrorPacket();
-		}else{
-			sendErrorPacket();
+    	// Every 6 seconds check if a message has been received
+		if (GroundStationRxBuffer[0] != '\0'){ // TODO: Test this
+	    	debug_printf("Comms buffer contents: %s", GroundStationRxBuffer);
+	    	// Handle the packet and send response
+			if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
+				debug_printf("Reception Callback Called (Error)");
+				sendErrorPacket();
+			}else{
+				sendErrorPacket();
+			}
 			GroundStationRxBuffer[0] = '\0';
 			AMBER_LED_OFF()
 			HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
 		}
-
-
-
-        //osDelay(6000);
-        //sendErrorPacket();
     }
 }
 
@@ -295,26 +256,13 @@ void Main_Task(void const *argument) {
  * @brief main UHF Task/Thread
  */
 void UHF_TxRx_Task(void const *argument) {
-	osDelay(10000000000000000); // Delay 10 seconds
+	osDelay(100000); // Delay 100 seconds
 	debug_printf("######## UHF TX/RX TASK ########\r\n");
 
     HAL_StatusTypeDef txRxStatus = HAL_OK;
-
-    END_BEACON();
-    debug_printf("Ending beacon and starting pipe");
-//    SET_PIPE_TIMEOUT(25);
-//    START_PIPE();
-
-    // Rx listens until a packet is received and then deals with it, executing commands (outputs command outputs possibly to reception buffer)
-    // Tx checks the transmission buffer every so often and assembles packets from that data, transmitting them
-
-    // Start listening for transmissions from CloneComm
-    AMBER_LED_OFF();
+    debug_printf("UHF Task currently unused");
 
     while (1) {
-    	// FOR TESTING ONLY // HAL_UART_Transmit(&huart1, GroundStationRxBuffer, 7, 1000);
-    	// FOR TESTING ONLY // HAL_UART_Receive(&huart1, GroundStationRxBuffer, 7, 1000);
-    	// debug_printf("%d Rx: %s\n\r", txRxStatus, GroundStationRxBuffer);
         osDelay(3000);
     }
 }
@@ -353,10 +301,7 @@ void ADCS_Task(void const *argument) {
 
     /* ADCS Test */
     while (1) {
-        GREEN_LED_ON();
-        osDelay(1000);
-        GREEN_LED_OFF();
-        osDelay(1000);
+        osDelay(5000);
     }
 }
 
@@ -364,7 +309,7 @@ void ADCS_Task(void const *argument) {
  * @brief Task/Thread responsible for calculating battery capacity
  */
 void BatteryCapacity_Task(void const *argument) {
-    //osDelay(100000); //TODO: Remove, this is for testing
+    osDelay(100000); //TODO: Remove, this is for testing
     debug_printf("######## BATTERY CHECK TASK ########\r\n");
 
     float Five_Bus_Current, Three_Bus_Current;
@@ -417,9 +362,9 @@ void BatteryCapacity_Task(void const *argument) {
         osMutexWait(Battery_Capacity_Mutex, 500);
         osMutexWait(Low_Power_Mode_Mutex, 500);
         if (BATTERY_CAPACITY < 3) {
-            //LOW_POWER_MODE = 1; //TODO: Uncomment this, I commented it for testing
+            LOW_POWER_MODE = 1;
         } else if ((LOW_POWER_MODE == 1) & (BATTERY_CAPACITY > 8)) {
-            //LOW_POWER_MODE = 0;
+            LOW_POWER_MODE = 0;
         }
         osMutexRelease(Low_Power_Mode_Mutex);
         osMutexRelease(Battery_Capacity_Mutex);

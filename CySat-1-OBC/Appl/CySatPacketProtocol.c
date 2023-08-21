@@ -19,14 +19,13 @@
  * @retval The struct representing this CySat packet
  */
 CySat_Packet_t parseCySatPacket(uint8_t* packet){
-	debug_printf("Parsing cysat packet");
     CySat_Packet_t cySatPacket;
     cySatPacket.Subsystem_Type = packet[17];
-    debug_printf("Subsystem type: %d",cySatPacket.Subsystem_Type);
+    debug_printf("Subsystem type: %02x",cySatPacket.Subsystem_Type);
     cySatPacket.Command = packet[18];
-    debug_printf("Command: %d",cySatPacket.Command);
+    debug_printf("Command: %02x",cySatPacket.Command);
     cySatPacket.Data_Length = packet[19];
-    debug_printf("Data length: %d",cySatPacket.Data_Length);
+    debug_printf("Data length (dec): %d (hex): %02x", cySatPacket.Data_Length ,cySatPacket.Data_Length);
     cySatPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * cySatPacket.Data_Length);
     memcpy(cySatPacket.Data, packet+20, cySatPacket.Data_Length);
     cySatPacket.Checksum = packet[cySatPacket.Data_Length+20];
@@ -40,7 +39,7 @@ CySat_Packet_t parseCySatPacket(uint8_t* packet){
  * This function will return a 0 if there was no issue, otherwise, there was an error.
  */
 HAL_StatusTypeDef sendCySatPacket(CySat_Packet_t packet){
-	debug_printf("Sending packet");
+	debug_printf("SENDING PACKET:");
     uint8_t message[packet.Data_Length + 5];
 
     //build byte array
@@ -54,7 +53,10 @@ HAL_StatusTypeDef sendCySatPacket(CySat_Packet_t packet){
     }
     message[4 + packet.Data_Length] = packet.Checksum;
 
-    debug_printf(message);
+    debug_printf("Subsystem type: %02x", packet.Subsystem_Type);
+    debug_printf("Command: %02x", packet.Command);
+    debug_printf("Data length (dec): %d (hex): %02x", cySatPacket.Data_Length ,cySatPacket.Data_Length);
+    debug_printf("Full message: %s", message);
 
     HAL_StatusTypeDef status = HAL_ERROR;
     if(packet.Subsystem_Type == OBC_SUBSYSTEM_TYPE){

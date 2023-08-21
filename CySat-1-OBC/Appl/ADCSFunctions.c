@@ -369,7 +369,7 @@ void Sun_And_Nadir_Commissioning(){
             &cubeWheel2_power, &cubeWheel3_power, &motor_power, &GPS_power);
     // Enable CubeSense power and all others are defaults
     TC_11(cubeControl_signal, cubeControl_motor, 1, cubeStar_power, cubeWheel1_power, cubeWheel2_power, cubeWheel3_power, motor_power, GPS_power);
-    // Set Estimation Paramters 2 (To-Do: must find defaults for other parameters that currently equal 1)
+    // Set Estimation Paramters 2 (TODO: must find defaults for other parameters that currently equal 1)
     TC_44(1.0, 1.0, 1.0, 0, 0, 1,1,1,1);
     // Set Estimation Mode to Full-State EKF
     TC_14(5);

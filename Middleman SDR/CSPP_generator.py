@@ -78,5 +78,9 @@ def makeCySatPacket(subsystem, command, data, srcCall = "KB0MGQ", destCall = "W0
     f = open("Newly_Generated_CySat_Packet_For_Uplink", "wb")
     f.write(finalpacket)
 
+# int, str, hex, then value, then byte count if int
 
-makeCySatPacket("OBC","01",[])
+#makeCySatPacket("OBC","01",[])
+
+
+makeCySatPacket("ADCS", "0d", [["int", 64, 2], ["str", "Hello"]])
