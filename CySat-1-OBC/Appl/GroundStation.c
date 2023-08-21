@@ -11,6 +11,7 @@
 #include "MCU_init.h"
 #include "EPS.h"
 #include "UHF.h"
+#include "payload.h"
 #include "helper_functions.h"
 #include <stdlib.h>
 #include <string.h>
@@ -56,7 +57,6 @@ int handleCySatPacket(CySat_Packet_t packet){
                     //outgoingPacket.Data[57]=message[57]; //I don't know what I'm doing please check this
                     outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
                     status = sendCySatPacket(outgoingPacket); //send the response
-                    free(outgoingPacket);
                     return status;
                 }
                 case 0x03: { //Shutoff Beacon Request

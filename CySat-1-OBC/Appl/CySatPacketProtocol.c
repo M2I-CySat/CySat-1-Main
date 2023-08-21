@@ -55,7 +55,7 @@ HAL_StatusTypeDef sendCySatPacket(CySat_Packet_t packet){
 
     debug_printf("Subsystem type: %02x", packet.Subsystem_Type);
     debug_printf("Command: %02x", packet.Command);
-    debug_printf("Data length (dec): %d (hex): %02x", cySatPacket.Data_Length ,cySatPacket.Data_Length);
+    debug_printf("Data length (dec): %d (hex): %02x", packet.Data_Length ,packet.Data_Length);
     debug_printf("Full message: %s", message);
 
     HAL_StatusTypeDef status = HAL_ERROR;
