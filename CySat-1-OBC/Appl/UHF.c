@@ -630,19 +630,21 @@ HAL_StatusTypeDef GET_ANTENNA_STATUS(uint8_t *read) {
  * @param out_byte : The size of the expected return./How long to listen for.
  */
 HAL_StatusTypeDef UHF_READ(uint8_t command[], uint8_t *data_ptr, uint8_t in_byte, uint8_t out_byte) {
-    osMutexWait(UART_Mutex, 2500);
+    //osMutexWait(UART_Mutex, 2500);
 	HAL_UART_AbortReceive(&huart1);
 	debug_printf("UHF Read sending command: %s", command);
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, command, in_byte, UHF_UART_TIMEOUT);
     if (status != HAL_OK) {
         osMutexRelease(UART_Mutex);
     	debug_printf("UHF Read Status Not OK");
+    	osDelay(500);
     	HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
         return status;
     }
     status = HAL_UART_Receive(&huart1, data_ptr, out_byte, UHF_UART_TIMEOUT);
-    osMutexRelease(UART_Mutex);
+    //osMutexRelease(UART_Mutex);
     debug_printf("UHF Write received data: %s", data_ptr);
+    osDelay(500);
     HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
     return status;
 }
@@ -654,26 +656,28 @@ HAL_StatusTypeDef UHF_READ(uint8_t command[], uint8_t *data_ptr, uint8_t in_byte
  */
 HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
 	HAL_UART_AbortReceive(&huart1);
-    osMutexWait(UART_Mutex, 2500);
+    //osMutexWait(UART_Mutex, 2500);
 	uint8_t data[25]={"\0"};
 	debug_printf("UHF Write sending command: %s", command);
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, command, in_byte, UHF_UART_TIMEOUT);
     if (status != HAL_OK) {
         debug_printf("[UHF_WRITE/ERROR]: UART Tx FAIL.");
         osMutexRelease(UART_Mutex);
+        osDelay(500);
         HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
         return status;
     }
     status = HAL_UART_Receive(&huart1, data, 25, UHF_UART_TIMEOUT);
-    osMutexRelease(UART_Mutex);
+    //osMutexRelease(UART_Mutex);
    	debug_printf("UHF Write received data: %s", data);
     if (data[0] != 'O' || data[1] != 'K') {
 
         debug_printf("[UHF_WRITE/ERROR]: UART Rx FAIL.");
+        osDelay(500);
         HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
         return HAL_ERROR;
     }
-
+    osDelay(500);
     HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
     return status;
 }

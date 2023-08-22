@@ -229,25 +229,29 @@ void Main_Task(void const *argument) {
     GroundStationRxBuffer[0] = '\0';
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
     while (1) {
-    	for (int i=1; i<=0; i++){
+    	for (int i=1; i<=20; i++){
             GREEN_LED_ON();
             osDelay(150);
             GREEN_LED_OFF();
             osDelay(150);
     	}
     	// Every 6 seconds check if a message has been received
-		if (GroundStationRxBuffer[0] != '\0'){ // TODO: Test this
+		if (GroundStationRxBuffer[16]==0xFF){ // TODO: Test this
 	    	debug_printf("Comms buffer contents: %s", GroundStationRxBuffer);
+
 	    	// Handle the packet and send response
 			if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
 				debug_printf("Reception Callback Called (Error)");
 				sendErrorPacket();
-			}else{
-				sendErrorPacket();
 			}
-			GroundStationRxBuffer[0] = '\0';
-			AMBER_LED_OFF()
-			HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
+
+			osDelay(6000);
+			for (int i = 0; i <= GroundStationPacketLength; i++){
+				GroundStationRxBuffer[i] = '\0';
+			}
+
+			AMBER_LED_OFF();
+			//HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
 		}
     }
 }

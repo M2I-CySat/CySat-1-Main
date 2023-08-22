@@ -899,7 +899,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     return status; 
                 }
 
-                case 0x1B:{// Set UHF Low Power Mode //TODO: Check case ID Vanessa, it was 1B before
+                //case 0x1B:{// Set UHF Low Power Mode //TODO: Check case ID Vanessa, it was 1B before
 
                 case 0x21:{// Generic WriteAnd/Or Read from an I2C device
                     
