@@ -11,6 +11,7 @@
 #include "MCU_init.h"
 #include "EPS.h"
 #include "UHF.h"
+#include "payload.h"
 #include "helper_functions.h"
 #include <stdlib.h>
 #include <string.h>
@@ -56,7 +57,8 @@ int handleCySatPacket(CySat_Packet_t packet){
                     memcpy(outgoingPacket.Data,message,58); //This too IDK seriously this might not work
                     //outgoingPacket.Data[57]=message[57]; //I don't know what I'm doing please check this
                     outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
-                    return sendCySatPacket(outgoingPacket); //send the response
+                    status = sendCySatPacket(outgoingPacket); //send the response
+                    return status;
                 }
                 case 0x03: { //Shutoff Beacon Request
                     status=END_BEACON();
@@ -82,6 +84,19 @@ int handleCySatPacket(CySat_Packet_t packet){
                     //TODO
                 }
                
+                case 0x09: {
+					status = PACKET_SEPARATOR(29,0,0,31, ".DAT");
+                    if(status != HAL_OK){
+                        return -1;
+                    }
+                    outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x08;
+                    outgoingPacket.Data_Length = 0x00;
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 2);
+                    outgoingPacket.Data[0] = 0x02;
+                    outgoingPacket.Data[1] = 0x03;
+                    outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
+                }
                 break;
 
             }
@@ -719,8 +734,8 @@ int handleCySatPacket(CySat_Packet_t packet){
                 case 0x11:{// Source Call Sign
 
                     // SET_SOURCE_CALLSIGN(uint8_t *call_sign) 
-                    // TODO: not sure if this is right, could be &packet.Data[0]
-                    status = SET_BEACON_TEXT(packet.Data[0]); 
+                    // TODO: not sure if this '&' is right, could be &packet.Data[0]
+                    status = SET_BEACON_TEXT(&packet.Data[0], packet.Data_Length);
 
                     if (status != HAL_OK){
                         return -1;
@@ -884,6 +899,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     return status; 
                 }
 
+                case 0x1B:{// Set UHF Low Power Mode //TODO: Check case ID Vanessa, it was 1B before
 
                 case 0x21:{// Generic WriteAnd/Or Read from an I2C device
                     

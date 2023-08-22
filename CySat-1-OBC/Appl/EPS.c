@@ -621,7 +621,7 @@ HAL_StatusTypeDef disable_EPS_Fast_Charge2(){
 }
 
 HAL_StatusTypeDef enable_Boost_Board(){
-    return EPS_WRITE(10, 1); //turn command 10 to the ON state
+    return EPS_WRITE(10, 3); //turn command 10 to the FORCE ON state
 }
 
 HAL_StatusTypeDef disable_Boost_Board(){

@@ -523,29 +523,10 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 		return HAL_ERROR;
     }
 
-    //char* dataTypeStr0 = ".dat";
-    //char* dataTypeStr1 = ".kelvin";
-    //char* dataTypeStr2 = ".meta";
-    //char* dataTypeStr3 = ".list";
+
     char fileName[15] = {"\0"}; // Changed to null, if this doesn't work, try passing in file extension instead of dynamically generating it
 
-    //switch(dataType) {
-    //   case 0:
-    	   //sprintf(fileName,"%d%s", measurementID, dataTypeStr0);
-    //	   break;
-    //   case 1:
-    	   //sprintf(fileName,"%d%s", measurementID, dataTypeStr1);
-    //	   break;
-    //   case 2:
-    //	   //sprintf(fileName,"%d%s", measurementID, dataTypeStr2);
-    //	   break;
-    //   case 3:
-    	   //sprintf(fileName,"list.%s",dataTypeStr3);
-    //	   break;
-	//   default:
-	//	   debug_printf("[PACKET_SEPARATOR/ERROR]: Invalid data type");
-	//	   return HAL_ERROR;
-    //}
+
     sprintf(fileName,"%d%s", measurementID, extension);
 
 
@@ -558,10 +539,6 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
     }
     debug_printf("[PACKET_SEPARATOR]: Successfully opened measurement file %s",fileName);
 
-    //long unsigned int sizeFile = f_size(&currfile);
-    //debug_printf("before lseek");
-    //f_lseek(&currfile, -1);
-    //debug_printf("File size is %lu bytes, %4.2d kilobytes, or %4.2d megabytes",sizeFile,sizeFile/1000,sizeFile/1000000);
 
     HAL_StatusTypeDef status;
     status = START_PIPE();

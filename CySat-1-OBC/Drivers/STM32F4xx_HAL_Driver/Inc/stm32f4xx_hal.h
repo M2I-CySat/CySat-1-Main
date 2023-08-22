@@ -207,6 +207,11 @@ HAL_StatusTypeDef HAL_InitTick (uint32_t TickPriority);
 void HAL_IncTick(void);
 void HAL_Delay(__IO uint32_t Delay);
 uint32_t HAL_GetTick(void);
+
+void HAL_Delay2(__IO uint32_t Delay);
+uint32_t HAL_GetTick2(void);
+
+
 void HAL_SuspendTick(void);
 void HAL_ResumeTick(void);
 uint32_t HAL_GetHalVersion(void);

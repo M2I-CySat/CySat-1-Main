@@ -49,7 +49,8 @@
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 #define INITIAL_WAIT (30 * 60 * 1000) // waits 30 minutes
-
+#define DEBUG_WAIT (1 * 2 * 1000) // waits 2 seconds
+uint8_t GroundStationPacketLength = 20+15;
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * INTERNAL TYPES DEFINITION
@@ -142,8 +143,6 @@ void init_satellite(void) {
  * CySat 1 Mission Execution
  */
 int main(void) {
-    /* Awake message */
-    debug_printf("This is Cy-Sat 1 from Iowa State University\nBEEP BEEP BOOP BOOP Systems Starting!\n");
     //SCB->VTOR = APPL_ADDRESS;
 
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -152,7 +151,11 @@ int main(void) {
     /* Configure the system clock */
     SystemClock_Config();
 
+    /* Awake message */
+	debug_printf("This is Cy-Sat 1 from Iowa State University\nBEEP BEEP BOOP BOOP Systems Starting!\nWait period starting");
+
     /* TODO: Uncomment before launch: Delay for the specified 30 minutes required by NASA */
+	HAL_Delay(DEBUG_WAIT);
     // HAL_Delay(INITIAL_WAIT);
 
     /* Initialize all configured peripherals */
@@ -186,8 +189,6 @@ int main(void) {
      * CALLBACKS INITIALIZATION - Callbacks from STM Drivers
      *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-    //HAL_UART_RegisterCallback(&huart1, HAL_UART_RX_COMPLETE_CB_ID, HAL_UART_RxCpltCallback);
-
     /* FINAL TASK: Start scheduler */
     osKernelStart();
 }
@@ -199,46 +200,29 @@ int main(void) {
 */
 
 /**
- * On receive of UART data from specified UART module, handle the information
+ * On receive of UART data from specified UART module. No longer handles the information as I can't get it to work.
  * Called when a packet is received from a UART device
  * @param huart - the specified UART module
  */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-    debug_printf("WE GOT A PACKET!");
+	// Amber LED is being used to indicate packet handling, green is being used to indicate activity in the main loop
+	// Due to a long series of issues, only reception is handled by the callback. Handling is handled in main loop.
+	// Issues include delay functions not working inside the callback and UHF returning junk upon transparent mode enable, but only in the callback
     AMBER_LED_ON();
-
-    // UART for Payload
-    if (huart == &huart6) {
-        if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
-            debug_printf("Reception Callback Called (Error)");
-            sendErrorPacket();
-        }
-        AMBER_LED_OFF()
-        HAL_UART_Receive_IT(&huart6, GroundStationRxBuffer, 7);
-
-    }
-
-    // UART for OBC
     if (huart == &huart1) {
-        //if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
-        //    debug_printf("Reception Callback Called (Error)");
-        //    sendErrorPacket();
-        //}
-    	debug_printf("Huart1");
-    	debug_printf(GroundStationRxBuffer);
-    	sendErrorPacket();
-    	//debug_printf(GroundStationRxBuffer[1]);
-    	AMBER_LED_OFF()
-        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 40);
+    	debug_printf("Packet received on UART 1 (UHF)");
+    	HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
+    }else if (huart == &huart6) {
+    	debug_printf("Packet received on UART 6 (Payload)");
     }
-
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
-	 if (huart == &huart1) {
-	    	debug_printf("UART error, restarting and padding out the debug printf because delays grr");
-	        HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, 128);
-	    }
+	if (huart == &huart1) {
+		debug_printf("UART error. Data: %s", GroundStationRxBuffer);
+		GroundStationRxBuffer[0] = '\0';
+		HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
+	}
 }
 
 /**

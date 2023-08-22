@@ -13,10 +13,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-/**
-  * @brief Formats and prints data out on to the debug UART line. Formatting works in standard printf fashion
-  * @retval Returns the status of the HAL UART transmission
-  */
+
 
 long ConvertCharToLong(char *pSrc) {
     int i=1;
@@ -28,8 +25,10 @@ long ConvertCharToLong(char *pSrc) {
     return result;
 }
 
-
-
+/**
+  * @brief Formats and prints data out on to the debug UART line. Formatting works in standard printf fashion
+  * @retval Returns the status of the HAL UART transmission
+  */
 HAL_StatusTypeDef debug_printf(char* format, ...){
 
     uint32_t bufferSize = 512;
