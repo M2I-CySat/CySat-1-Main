@@ -1,6 +1,3 @@
-[submodule "CloneCommGNU"]
-	path = CloneCommGNU
-	url = https://github.com/M2I-CySat/CloneCommGNU.git
 [submodule "CySat-1-Payload"]
 	path = CySat-1-Payload
 	url = https://github.com/M2I-CySat/CySat-1-Payload
