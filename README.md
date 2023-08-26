@@ -2,93 +2,27 @@
 
 **Onboard Computer (OBC) firmware, Satellite Systems, and Ground Station Software** - [CySat M2I](https://m2i.aere.iastate.edu/cysat/)
 
-## Overview
+## Instructions
+1. Navigate to the CySat-1 CyBox folder and read the documents under `/About CySat-1: README!` to gain a basic understanding of the CySat-1 mission, objectives, and project structure 
+2. Continue reading this README to know basic files, instructions, and applications for each subsystem
+3. Reference subsystem-specific setup instructions, guides, and data sheets to gain an understanding of your specific tasks found in the [CySat 1 box folder](https://iastate.app.box.com/folder/174137892065) under Subsystems -> [Subsystem]
 
-The EnduroSat Onboard Computer Type II (Indicated as Type I on the OBC in the lab) includes the STM32F4x Microcontroller, various communication interfaces, peripheral I/O devices, a prototyping area, and a PC-104 stack connector. EnduroSat provides an Open Software SDK which is included in this repository in addition to the main CySat 1 mission program.
+## ADCS - Attitude Determination and Control System
 
-## Environment Setup
+**ADCS Testing Spreadsheets now in Box: Subsystems/ADCS/Tests**
 
-1. Dowloand [GitHub Desktop](https://desktop.github.com/) from the web and clone the CySat-1-Main repository within the app
-2. Download and install STM32CubeIDE:
+- `CubeADCS - Commissioning Manual [V3.06]` - This document describes the activities related to the commissioning of a CubeSpace ADCS module in flight.
+- `CubeADCS - Health Check [V3.15]` - This document will provide the instructions and results of the health check of the CubeADCS unit. The instructions provided must be followed exactly and the observed results must be indicated as is.
+- `CubeADCS - ICD [V3.08]` - This document describes the characteristics of the CubeADCS unit as well as the mechanical and electrical interfaces to the bundle. CubeADCS units can be configured with different sensor and actuators for different mission requirements. This document covers all ADCS configurations and readers are to use their discretion in determining which parts are relevant to their various bundle configurations.
+- `CubeADCS - Option Sheet (Y-Momentum) [V3.02]\_TGT` - This document include the complete ADCS solution for Y-momentum control. A momentum wheel (in various sizes) is included in the solution and can be mounted either on the bundle or separately from the bundle, depending on the size of the wheel. CubeSpace’s fine sun and nadir sensor module, CubeSense, can also be added to the solution if more accurate attitude control is required.
+- `CubeADCS - Reference Manual [V3.10]` - This document serves as source of information to refer to when using the User Manual, Commissioning Manual, and other CubeADCS documentation. The document contains complete listings of TCs and TLMs, communications examples, and other reference examples to assist in designing a system which will interface with the ADCS.
+- `CubeADCS - User Manual [V3.07]` - This document provide the user with instructions of completing the initial setup of the CubeADCS unit for the health check, instructions for connecting the unit to an OBC, a guide to mounting sensors inside a satellite and calculating mounting transforms, a functional description of the control modes that the CubeADCS unit is capable of executing, general usage instructions for all major functionality, and an overview of the hardware included in this bundle and their performance.
 
-- Go to: [https://www.st.com/en/development-tools/stm32cubeide.html](https://www.st.com/en/development-tools/stm32cubeide.html)
-- Select "Get Software" for the version that corresponds to your computer’s operating system
-- Accept license agreement
-- Enter first and last name, email, and check "I have read and understood the Sales Terms & Conditions, Terms of Use and Privacy Policy"
-- Click "Download"
-- Check email and click "Download now" on email, redirecting you to the website
-- It might automatically start downloading. If it doesn’t, select "Get Software" again and it should start downloading
+## CloneComm Ground Station
 
-3. Open the installer and follow the installation steps
-4. Launch STM32Cube and select a workspace folder that is NOT your GitHub repo location (the default location should be sufficient)
-5. Open the cloned repo: `File > Open Project from File System > Directory > *navigate to repo location* > Make sure all folders are selected > Finish`
-6. Update Software by going to `Help > Check for Updates`
-7. Build the project by clicking the "Hammer" icon on the toolbar at the top
-8. Happy Programming!
+- See here: https://github.com/M2I-CySat/CloneComm/
 
-## Debug/Run Code on the OBC
-
-### The following items are required to debug, run, and deploy a program on the OBC (see CySat inventory)
-
-1. Use the following:
-
-- Pumpkin Board (or equivalent test bed equipped with a PC-104 stack connector + interface)
-- Power Supply + barrell power cable for PSU (the OBC does NOT recieve power via its onboard USB interface, this is used for other purposes)
-- ST-LINK v2 In-circuit Debugger + SWD cable (OBC <-> ST-LINK) + Mini-USB cable (ST-LINK <-> Dev computer)
-
-2. Ensure the power supply is set to **7.8 V** and connected as shown in the image. Simply launch STM32Cube and debug away!
-
-![OBC-Pumpkin-Setup](https://user-images.githubusercontent.com/25646224/196340691-be1189e8-4458-4514-be5e-e68f9b84f2b4.jpg)
-
-### Then, in the STM IDE
-
-3. Ensure you have the OBC_SDK project selected and click the "Run" (play) button, that's it!
-4. For troubleshooting purposes, in debug/run configurations -> Debugger tab, make sure the ST-LINK S/N is filled in, the interface is set to SWD, and the reset behavior type is "Connect under reset"
-
-### Use PuTTY to debug OBC
-
-The UART module on the OBC allows debug messages to be received using Serial protocol from a PuTTY terminal via use of the following function
-
-```C
-debug_printf("Your message goes here", [variables]); // This function can be used exactly like printf(); from the C <stdio> library
-```
-
-Then, to receive messages, perform the following:
-
-1. Open and install [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
-2. Configure settings under `Session` according to the below image. _IMPORTANT_: Look in device manager to determine which COM port is in use by the OBC
-
-![image](https://user-images.githubusercontent.com/25646224/218338672-08a22f85-b6f5-4719-998c-793bbe90c26d.png)
-
-3. Configure settings under `Terminal` according to the below image:
-
-![image](https://user-images.githubusercontent.com/25646224/218338725-f243c868-910f-46ee-bcc1-2b58e4576401.png)
-
-4. Configure settings under `Serial` according to the below image:
-
-![image](https://user-images.githubusercontent.com/25646224/218338766-c0954e33-46f1-40d8-9cdc-1b5d0b57f214.png)
-
-5. Save and load a custom CySat configuration for later use and click `Open`
-6. Start the program and observe debug messages!
-
-### Use Onboard LEDs to debug OBC
-
-Set the green and amber LEDs to different states depending on the state of the program
-
-```C
-debug_led_green(count, period); // Green light: Set the number of times the LED should flash (count)
-                                // and the speed of the flash (period)
-```
-
-```C
-debug_led_amber(count, period); // Amber light
-```
-
-## Documentation
-
-The following documents and datasheets can be referenced in the [CySat 1 box folder](https://iastate.app.box.com/folder/174137892065) under Subsystems -> [Subsystem]
-
-## Command Manifest
+### Command Manifest
 
 See the full list of commands in CyBox
 
@@ -96,7 +30,7 @@ See the full list of commands in CyBox
 - "#" marks the beginning of a subtype
 - cmd_id:com_desc:data_payload(1=True,0=False):gs_sendable(1=True,0=False)
 
-### 10:OBC
+#### 10:OBC
 
 0:Ping Response:1:0
 1:Ping Request:0:1
@@ -107,12 +41,12 @@ See the full list of commands in CyBox
 6:Main Operating Response:0:0
 7:Main Operating Request:0:1
 
-### 30:EPS
+#### 30:EPS
 
 0:Voltage Response:1:0
 1:Voltage Request:0:1
 
-### 40:SDR
+#### 40:SDR
 
 0:Power Status Response:0:0
 1:Power Status Request:0:1
@@ -146,20 +80,100 @@ See the full list of commands in CyBox
 29:Start Transfer Request:1:1
 30:File Finished Response:1:0
 
-## Documentation (Deprecated)
+## EPS - Electrical Power System
 
-### ADCS - Attitude Determination and Control System
+- In this folder is all known versions of EnduroSat EPS documentation.
+- Some of the documents contain inaccuracies: discrepancies in the diagrams and tables, but the ones at the root level are mostly correct
+- The files in the Flash Drive folder are the ones that came directly from EnduroSat when the EPS was purchased, but there appear to be some inaccuracies here too, especially with the I2C manual
+- The folder labelled inaccurate documents is kept for the sake of posterity
 
-**ADCS Testing Spreadsheets now in Box: Subsystems/ADCS/Tests**
+## OBC - Onboard Computer
 
-- `CubeADCS - Commissioning Manual [V3.06]` - This document describes the activities related to the commissioning of a CubeSpace ADCS module in flight.
-- `CubeADCS - Health Check [V3.15]` - This document will provide the instructions and results of the health check of the CubeADCS unit. The instructions provided must be followed exactly and the observed results must be indicated as is.
-- `CubeADCS - ICD [V3.08]` - This document describes the characteristics of the CubeADCS unit as well as the mechanical and electrical interfaces to the bundle. CubeADCS units can be configured with different sensor and actuators for different mission requirements. This document covers all ADCS configurations and readers are to use their discretion in determining which parts are relevant to their various bundle configurations.
-- `CubeADCS - Option Sheet (Y-Momentum) [V3.02]\_TGT` - This document include the complete ADCS solution for Y-momentum control. A momentum wheel (in various sizes) is included in the solution and can be mounted either on the bundle or separately from the bundle, depending on the size of the wheel. CubeSpace’s fine sun and nadir sensor module, CubeSense, can also be added to the solution if more accurate attitude control is required.
-- `CubeADCS - Reference Manual [V3.10]` - This document serves as source of information to refer to when using the User Manual, Commissioning Manual, and other CubeADCS documentation. The document contains complete listings of TCs and TLMs, communications examples, and other reference examples to assist in designing a system which will interface with the ADCS.
-- `CubeADCS - User Manual [V3.07]` - This document provide the user with instructions of completing the initial setup of the CubeADCS unit for the health check, instructions for connecting the unit to an OBC, a guide to mounting sensors inside a satellite and calculating mounting transforms, a functional description of the control modes that the CubeADCS unit is capable of executing, general usage instructions for all major functionality, and an overview of the hardware included in this bundle and their performance.
+The EnduroSat Onboard Computer Type II (Indicated as Type I on the OBC in the lab) includes the STM32F4x Microcontroller, various communication interfaces, peripheral I/O devices, a prototyping area, and a PC-104 stack connector. EnduroSat provides an Open Software SDK which is included in this repository in addition to the main CySat 1 mission program.
 
-### COMMS/Antenna
+### Environment Setup
+
+1. Dowloand [GitHub Desktop](https://desktop.github.com/) from the web and clone the CySat-1-Main repository within the app
+2. Download and install STM32CubeIDE:
+
+- Go to: [https://www.st.com/en/development-tools/stm32cubeide.html](https://www.st.com/en/development-tools/stm32cubeide.html)
+- Select "Get Software" for the version that corresponds to your computer’s operating system
+- Accept license agreement
+- Enter first and last name, email, and check "I have read and understood the Sales Terms & Conditions, Terms of Use and Privacy Policy"
+- Click "Download"
+- Check email and click "Download now" on email, redirecting you to the website
+- It might automatically start downloading. If it doesn’t, select "Get Software" again and it should start downloading
+
+3. Open the installer and follow the installation steps
+4. Launch STM32Cube and select a workspace folder that is NOT your GitHub repo location (the default location should be sufficient)
+5. Open the cloned repo: `File > Open Project from File System > Directory > *navigate to repo location* > Make sure all folders are selected > Finish`
+6. Update Software by going to `Help > Check for Updates`
+7. Build the project by clicking the "Hammer" icon on the toolbar at the top
+8. Happy Programming!
+
+### Debug/Run Code on the OBC
+
+#### The following items are required to debug, run, and deploy a program on the OBC (see CySat inventory)
+
+1. Use the following:
+
+- Pumpkin Board (or equivalent test bed equipped with a PC-104 stack connector + interface)
+- Power Supply + barrell power cable for PSU (the OBC does NOT recieve power via its onboard USB interface, this is used for other purposes)
+- ST-LINK v2 In-circuit Debugger + SWD cable (OBC <-> ST-LINK) + Mini-USB cable (ST-LINK <-> Dev computer)
+
+2. Ensure the power supply is set to **7.8 V** and connected as shown in the image. Simply launch STM32Cube and debug away!
+
+![OBC-Pumpkin-Setup](https://user-images.githubusercontent.com/25646224/196340691-be1189e8-4458-4514-be5e-e68f9b84f2b4.jpg)
+
+#### Then, in the STM IDE
+
+3. Ensure you have the OBC_SDK project selected and click the "Run" (play) button, that's it!
+4. For troubleshooting purposes, in debug/run configurations -> Debugger tab, make sure the ST-LINK S/N is filled in, the interface is set to SWD, and the reset behavior type is "Connect under reset"
+
+#### Use PuTTY to debug OBC
+
+The UART module on the OBC allows debug messages to be received using Serial protocol from a PuTTY terminal via use of the following function
+
+```C
+debug_printf("Your message goes here", [variables]); // This function can be used exactly like printf(); from the C <stdio> library
+```
+
+Then, to receive messages, perform the following:
+
+1. Open and install [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
+2. Configure settings under `Session` according to the below image. _IMPORTANT_: Look in device manager to determine which COM port is in use by the OBC
+
+![image](https://user-images.githubusercontent.com/25646224/218338672-08a22f85-b6f5-4719-998c-793bbe90c26d.png)
+
+3. Configure settings under `Terminal` according to the below image:
+
+![image](https://user-images.githubusercontent.com/25646224/218338725-f243c868-910f-46ee-bcc1-2b58e4576401.png)
+
+4. Configure settings under `Serial` according to the below image:
+
+![image](https://user-images.githubusercontent.com/25646224/218338766-c0954e33-46f1-40d8-9cdc-1b5d0b57f214.png)
+
+5. Save and load a custom CySat configuration for later use and click `Open`
+6. Start the program and observe debug messages!
+
+#### Use Onboard LEDs to debug OBC
+
+Set the green and amber LEDs to different states depending on the state of the program
+
+```C
+debug_led_green(count, period); // Green light: Set the number of times the LED should flash (count)
+                                // and the speed of the flash (period)
+```
+
+```C
+debug_led_amber(count, period); // Amber light
+```
+
+## Payload SDR - Scientific Instrument + Radiometer Communication Device
+
+- See here: https://github.com/M2I-CySat/CySat-1-Payload
+
+## UHF/Antenna
 
 - `Antenna deployment tester Rev 1.2pdf` - User manual designed to detail the antenna deployment tester. Can be useful for developing and testing I2C communications for the UHF antenna.
 - `ES_UHF_Module_TestReport_0318TU211104.docx` - Shows the tested values at certain temperature, humidity and power supply voltage.
@@ -171,21 +185,8 @@ See the full list of commands in CyBox
 - `UHF_type_II_UserManual_Rev_1.5_21112018.pdf` - Explains the connections and the features exactly like the previous document. This may just be an older copy of the datasheet above.
 - `PuttyLogs` - This is the folder I have listed tests for. Working commands displayed in log files.
 
-### EPS - Electrical Power System
+## Documentation Discrepancies
 
-- In this folder is all known versions of EnduroSat EPS documentation.
-- Some of the documents contain inaccuracies: discrepancies in the diagrams and tables, but the ones at the root level are mostly correct
-- The files in the Flash Drive folder are the ones that came directly from EnduroSat when the EPS was purchased, but there appear to be some inaccuracies here too, especially with the I2C manual
-- The folder labelled inaccurate documents is kept for the sake of posterity
-
-#### Testing Folders
-
-- Kept in these folders are various screenshots and logs taken during the testing phases of development
-- They are named as best as we could describe them
-
-#### Root Level Files
-
-- These files are assumed to be mostly accurate, although some issues are known
-- For example, in the EPS Datasheet, there are some extra pins such as the V_RTC and EPS_Reset which we do not believe we have for our hardware
+- In the EPS Datasheet, there are some extra pins such as the V_RTC and EPS_Reset which we do not believe we have for our hardware
 - In the Manual version 1.1, the LUP 5v says it is on pin H1-48, but we have measured it as swapped with LUP 3.3v. To clarify, LUP 5v is on pin H1-51 and LUP 3.3v is on H1-48
 - In the I2C manual version 2, there are diagrams showing hardware we do not have on our device.
