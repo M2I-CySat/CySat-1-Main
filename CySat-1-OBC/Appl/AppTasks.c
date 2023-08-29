@@ -143,7 +143,7 @@ void Main_Task(void const *argument) {
     // If these don't work increase text allowance in set text by 1?
     // uint8_t initial_beacon_text[22] = "Hello I Am Space Core";
     // uint8_t initial_beacon_text[57] = "Hello Earth! This is CySat-1 from Iowa State University.";
-    uint8_t initial_beacon_text[42] = "Wow...Ames is really small from up here...";
+    uint8_t initial_beacon_text[43] = "Wow...Ames is really small from up here...";
     mainStatus = SET_BEACON_TEXT(initial_beacon_text, 42);
     if (mainStatus != HAL_OK) {
         debug_printf("[Main Thread/ERROR]: Beacon text failed to set");
@@ -229,29 +229,28 @@ void Main_Task(void const *argument) {
     GroundStationRxBuffer[0] = '\0';
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
     while (1) {
-    	for (int i=1; i<=20; i++){
-            GREEN_LED_ON();
-            osDelay(150);
-            GREEN_LED_OFF();
-            osDelay(150);
-    	}
+    	HAL_UART_AbortReceive(&huart1);
+    	HAL_UART_Receive_IT(&huart1, start_of_rx_buffer, GroundStationPacketLength);
+		GREEN_LED_ON();
+		osDelay(150);
+		GREEN_LED_OFF();
+		osDelay(150);
+    	debug_printf("Comms buffer contents: ");
+    	for(int i = 0; i < 54; i++)
+    	    debug_printf_no_newline("%c", GroundStationRxBuffer[i]);
     	// Every 6 seconds check if a message has been received
 		if (GroundStationRxBuffer[16]==0xFF){ // TODO: Test this
-	    	debug_printf("Comms buffer contents: %s", GroundStationRxBuffer);
-
+			AMBER_LED_ON();
 	    	// Handle the packet and send response
 			if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
 				debug_printf("Reception Callback Called (Error)");
 				sendErrorPacket();
 			}
-
 			osDelay(6000);
-			for (int i = 0; i <= GroundStationPacketLength; i++){
-				GroundStationRxBuffer[i] = '\0';
-			}
-
 			AMBER_LED_OFF();
-			//HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
+		}
+		for (int i = 0; i <= GroundStationPacketLength; i++){
+			GroundStationRxBuffer[i] = '\0';
 		}
     }
 }

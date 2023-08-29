@@ -14,6 +14,7 @@
 #include "stm32f4xx_hal_def.h"
 
 HAL_StatusTypeDef debug_printf(char* format, ...);
+HAL_StatusTypeDef debug_printf_no_newline(char* format, ...);
 
 /**
  * Flash the Green LED located on the OBC

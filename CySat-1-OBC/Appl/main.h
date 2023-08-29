@@ -95,7 +95,8 @@ extern uint32_t calendar_format;
 extern Sat_Flags_t SatFlags;
 
 extern uint8_t GroundStationPacketLength;
-extern uint8_t GroundStationRxBuffer[129];
+extern uint8_t GroundStationRxBuffer[129]; //Was 46
+extern uint8_t* start_of_rx_buffer;
 
 
 /*

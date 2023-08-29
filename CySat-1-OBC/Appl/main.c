@@ -50,7 +50,14 @@
 */
 #define INITIAL_WAIT (30 * 60 * 1000) // waits 30 minutes
 #define DEBUG_WAIT (1 * 2 * 1000) // waits 2 seconds
-uint8_t GroundStationPacketLength = 20+15;
+uint8_t GroundStationPacketLength = 80;
+
+
+
+uint8_t* start_of_rx_buffer;
+uint8_t GroundStationRxBuffer[129];
+uint8_t* start_of_rx_buffer = &GroundStationRxBuffer;
+
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * INTERNAL TYPES DEFINITION
@@ -151,9 +158,6 @@ int main(void) {
     /* Configure the system clock */
     SystemClock_Config();
 
-    /* Awake message */
-	debug_printf("This is Cy-Sat 1 from Iowa State University\nBEEP BEEP BOOP BOOP Systems Starting!\nWait period starting");
-
     /* TODO: Uncomment before launch: Delay for the specified 30 minutes required by NASA */
 	HAL_Delay(DEBUG_WAIT);
     // HAL_Delay(INITIAL_WAIT);
@@ -166,6 +170,10 @@ int main(void) {
     MX_USART6_UART_Init();
     MX_SDIO_SD_Init();
     MX_FATFS_Init();
+
+    /* Awake message */
+	debug_printf("This is Cy-Sat 1 from Iowa State University\nBEEP BEEP BOOP BOOP Systems Starting!\nWait period starting");
+
 
     /*
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -211,7 +219,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     AMBER_LED_ON();
     if (huart == &huart1) {
     	debug_printf("Packet received on UART 1 (UHF)");
-    	HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
+    	//HAL_UART_Receive_IT(&huart1, start_of_rx_buffer, GroundStationPacketLength);
     }else if (huart == &huart6) {
     	debug_printf("Packet received on UART 6 (Payload)");
     }
@@ -220,8 +228,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 	if (huart == &huart1) {
 		debug_printf("UART error. Data: %s", GroundStationRxBuffer);
-		GroundStationRxBuffer[0] = '\0';
-		HAL_UART_Receive_IT(&huart1, GroundStationRxBuffer, GroundStationPacketLength);
+		//HAL_UART_Receive_IT(&huart1, start_of_rx_buffer, GroundStationPacketLength);
 	}
 }
 
