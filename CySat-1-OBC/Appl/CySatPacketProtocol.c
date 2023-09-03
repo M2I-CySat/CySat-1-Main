@@ -29,6 +29,7 @@ CySat_Packet_t parseCySatPacket(uint8_t* packet){
     cySatPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * cySatPacket.Data_Length);
     memcpy(cySatPacket.Data, packet+20, cySatPacket.Data_Length);
     cySatPacket.Checksum = packet[cySatPacket.Data_Length+20];
+    debug_printf("Checksum (hex): %02x", cySatPacket.Checksum);
     return cySatPacket;
 }
 

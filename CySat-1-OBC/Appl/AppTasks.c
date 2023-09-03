@@ -83,7 +83,7 @@ void Main_Task(void const *argument) {
 
 
 
-    if(f_mount(&FatFs, "", 0) != FR_OK) //Checks to make sure drive mounted successfully
+    if(f_mount(&FatFs, "", 1) != FR_OK) //Checks to make sure drive mounted successfully
     {
     	debug_printf("Failed to mount SD drive");
     }else{
@@ -209,11 +209,11 @@ void Main_Task(void const *argument) {
 
 
 
-
+    f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks
     // Tests of PACKET_SEPARATOR
     //START_PIPE();
     //DELETE_DATA_FILE(3);
-    //PACKET_SEPARATOR(8, 0, 0, 84, ".DAT");
+    PACKET_SEPARATOR(8, 0, 0, 84, ".DAT");
     //PACKET_SEPARATOR(8,0,0,80,".DAT");
     //PACKET_SEPARATOR(29,0,0,31, ".DAT");
     //PACKET_SEPARATOR(8,0,0,80,".DAT");
@@ -226,32 +226,48 @@ void Main_Task(void const *argument) {
     //FILE_TRANSFER(1,0);
 
     // Loop for handling communications
+    uint8_t tempbuffer[128] = {'\0'};
     GroundStationRxBuffer[0] = '\0';
+
+
     debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
     while (1) {
-    	HAL_UART_AbortReceive(&huart1);
+    	HAL_UART_AbortReceive(&huart1); //Aborts then restarts the comms rx attempt
     	HAL_UART_Receive_IT(&huart1, start_of_rx_buffer, GroundStationPacketLength);
+		GREEN_LED_OFF(); //Flashes LEDs
+		osDelay(150);
 		GREEN_LED_ON();
 		osDelay(150);
-		GREEN_LED_OFF();
-		osDelay(150);
-    	debug_printf("Comms buffer contents: ");
-    	for(int i = 0; i < 54; i++)
-    	    debug_printf_no_newline("%c", GroundStationRxBuffer[i]);
+
     	// Every 6 seconds check if a message has been received
-		if (GroundStationRxBuffer[16]==0xFF){ // TODO: Test this
+		if (GroundStationRxBuffer[16]==0xFF){
 			AMBER_LED_ON();
+			//Undo the conversion of an 0x00 to 5 0xAA
+			uint8_t offset = 0;
+			for(int i = 0; i<120; i++){
+				if(GroundStationRxBuffer[i+offset] == 0xAA && GroundStationRxBuffer[i+1+offset] == 0xAA && GroundStationRxBuffer[i+2+offset] == 0xAA && GroundStationRxBuffer[i+3+offset] == 0xAA && GroundStationRxBuffer[i+4+offset] == 0xAA){
+					tempbuffer[i] = 0x00;
+					offset=offset+4;
+				}else{
+					tempbuffer[i] = GroundStationRxBuffer[i+offset];
+				}
+			}
+	    	debug_printf_no_newline("Comms buffer contents: "); //Display received packet
+	    	for(int i = 0; i < 54; i++){
+	    	    debug_printf_no_newline("%c", tempbuffer[i]);
+	    	}
+	    	debug_printf(""); //gives newline
+
 	    	// Handle the packet and send response
-			if (handleCySatPacket(parseCySatPacket(GroundStationRxBuffer)) == -1) { //error occurred
+			if (handleCySatPacket(parseCySatPacket(tempbuffer)) == -1) { //error occurred
 				debug_printf("Reception Callback Called (Error)");
 				sendErrorPacket();
 			}
-			osDelay(6000);
+			memset(tempbuffer, '\0', sizeof(tempbuffer)); //Reset tempbuffer
+			osDelay(5100); //Delay for pipe mode to shut off, can probably work around this if needed
 			AMBER_LED_OFF();
 		}
-		for (int i = 0; i <= GroundStationPacketLength; i++){
-			GroundStationRxBuffer[i] = '\0';
-		}
+		memset(GroundStationRxBuffer, '\0', sizeof(GroundStationRxBuffer)); //Reset GroundStationRxBuffer
     }
 }
 

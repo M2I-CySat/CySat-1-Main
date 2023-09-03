@@ -414,6 +414,44 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int increment){
 }
 
 
+
+/**
+ * @brief Private function to list all files in a directory.
+ *
+ *
+ */
+
+FRESULT list_dir (){
+	TCHAR path = "0";
+    FRESULT res;
+    DIR dir;
+    FILINFO fno;
+    int nfile, ndir;
+
+
+    res = f_opendir(&dir, path);                       /* Open the directory */
+    if (res == FR_OK) {
+        nfile = ndir = 0;
+        for (;;) {
+            res = f_readdir(&dir, &fno);                   /* Read a directory item */
+            if (res != FR_OK || fno.fname[0] == 0) break;  /* Error or end of dir */
+            if (fno.fattrib & AM_DIR) {            /* Directory */
+                debug_printf("   <DIR>   %s\n", fno.fname);
+                ndir++;
+            } else {                               /* File */
+                debug_printf("%10u %s\n", fno.fsize, fno.fname);
+                nfile++;
+            }
+        }
+        closedir(&dir);
+        debug_printf("%d dirs, %d files.\n", ndir, nfile);
+    } else {
+        debug_printf("Failed to open \"%s\". (%u)\n", path, res);
+    }
+    return res;
+}
+
+
 /**
  * @brief Commands the payload to transfer the DAT file
  * @param whether or not to increment the measurement number (jank but it works)
@@ -524,6 +562,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
     }
 
 
+
     char fileName[15] = {"\0"}; // Changed to null, if this doesn't work, try passing in file extension instead of dynamically generating it
 
 
@@ -532,7 +571,8 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 
     debug_printf("File name: %s",fileName);
 
-    fres = f_open(&currfile, fileName, FA_READ);
+    //fres = f_open(&currfile, fileName, FA_READ);
+    fres = f_open(&currfile, "8.DAT", FA_READ);
     if(fres != FR_OK){
     	debug_printf("[PACKET_SEPARATOR/ERROR]: Failed to open measurement file");
     	return HAL_ERROR;

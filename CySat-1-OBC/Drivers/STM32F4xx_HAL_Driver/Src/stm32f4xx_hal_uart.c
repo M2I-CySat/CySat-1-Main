@@ -794,7 +794,6 @@ HAL_StatusTypeDef HAL_UART_Transmit_IT(UART_HandleTypeDef *huart, uint8_t *pData
 HAL_StatusTypeDef HAL_UART_Receive_IT(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size) {
     /* Check that a Rx process is not already ongoing */
     if (huart->RxState == HAL_UART_STATE_READY) {
-    	debug_printf("UART Rx Ready");
         if ((pData == NULL) || (Size == 0)) {
             return HAL_ERROR;
         }
@@ -1165,7 +1164,6 @@ HAL_StatusTypeDef HAL_UART_AbortTransmit(UART_HandleTypeDef *huart) {
   * @retval HAL status
 */
 HAL_StatusTypeDef HAL_UART_AbortReceive(UART_HandleTypeDef *huart) {
-	debug_printf("Aborting UART Receive");
     /* Disable RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts */
     CLEAR_BIT(huart->Instance->CR1, (USART_CR1_RXNEIE | USART_CR1_PEIE));
     CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
@@ -1189,7 +1187,6 @@ HAL_StatusTypeDef HAL_UART_AbortReceive(UART_HandleTypeDef *huart) {
 
     /* Restore huart->RxState to Ready */
     huart->RxState = HAL_UART_STATE_READY;
-    debug_printf("End of abort, status ok");
     return HAL_OK;
 }
 

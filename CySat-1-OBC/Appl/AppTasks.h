@@ -35,7 +35,6 @@ void UHF_TxRx_Task(void const * argument);
 void BatteryCapacity_Task(void const * argument);
 void HandleRxBuffer();
 //uint8_t actionFlag;
-
 void Fault_Recovery(int, int);
 
 #endif /* APPTASKS_H_ */
