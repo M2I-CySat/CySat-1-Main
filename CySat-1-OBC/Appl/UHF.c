@@ -353,7 +353,7 @@ HAL_StatusTypeDef GET_UHF_STATUS(uint8_t *data) {
     }
     debug_printf("UHF Status: %s",data);
     if (data[0] != 'O' || data[1] != 'K') {
-    	debug_printf("Get UHF Status Read Error. Sometimes the status is shifted one byte, trying that.");
+    	//debug_printf("Get UHF Status Read Error. Sometimes the status is shifted one byte, trying that.");
     	for (int k = 0; k < 22; k++){
     	    data[k]=data[k+1];
     	}
@@ -632,7 +632,7 @@ HAL_StatusTypeDef GET_ANTENNA_STATUS(uint8_t *read) {
 HAL_StatusTypeDef UHF_READ(uint8_t command[], uint8_t *data_ptr, uint8_t in_byte, uint8_t out_byte) {
     //osMutexWait(UART_Mutex, 2500);
 	HAL_UART_AbortReceive(&huart1);
-	debug_printf("UHF Read sending command: %s", command);
+	//debug_printf("UHF Read sending command: %s", command);
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, command, in_byte, UHF_UART_TIMEOUT);
     if (status != HAL_OK) {
         osMutexRelease(UART_Mutex);
@@ -643,7 +643,7 @@ HAL_StatusTypeDef UHF_READ(uint8_t command[], uint8_t *data_ptr, uint8_t in_byte
     }
     status = HAL_UART_Receive(&huart1, data_ptr, out_byte, UHF_UART_TIMEOUT);
     //osMutexRelease(UART_Mutex);
-    debug_printf("UHF Write received data: %s", data_ptr);
+    //debug_printf("UHF Write received data: %s", data_ptr);
     osDelay(500);
     //HAL_UART_Receive_IT(&huart1, start_of_rx_buffer, GroundStationPacketLength);
     return status;
@@ -658,7 +658,7 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
 	HAL_UART_AbortReceive(&huart1);
     //osMutexWait(UART_Mutex, 2500);
 	uint8_t data[25]={"\0"};
-	debug_printf("UHF Write sending command: %s", command);
+	//debug_printf("UHF Write sending command: %s", command);
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, command, in_byte, UHF_UART_TIMEOUT);
     if (status != HAL_OK) {
         debug_printf("[UHF_WRITE/ERROR]: UART Tx FAIL.");
@@ -669,7 +669,7 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
     }
     status = HAL_UART_Receive(&huart1, data, 25, UHF_UART_TIMEOUT);
     //osMutexRelease(UART_Mutex);
-   	debug_printf("UHF Write received data: %s", data);
+   	//debug_printf("UHF Write received data: %s", data);
     if (data[0] != 'O' || data[1] != 'K') {
 
         debug_printf("[UHF_WRITE/ERROR]: UART Rx FAIL.");

@@ -34,6 +34,7 @@ UINT byteswritten, bytesread; /* File write/read counts */
 TCHAR const* SDPath = "0";
 uint8_t rtext[_MAX_SS];/* File read buffer */
 uint8_t actionFlag = 0;
+uint8_t tempbuffer[128] = {'\0'};
 
 
 /**
@@ -83,7 +84,7 @@ void Main_Task(void const *argument) {
 
 
 
-    if(f_mount(&FatFs, "", 1) != FR_OK) //Checks to make sure drive mounted successfully
+    if(f_mount(&FatFs, "", 0) != FR_OK) //Checks to make sure drive mounted successfully
     {
     	debug_printf("Failed to mount SD drive");
     }else{
@@ -142,9 +143,9 @@ void Main_Task(void const *argument) {
 
     // If these don't work increase text allowance in set text by 1?
     // uint8_t initial_beacon_text[22] = "Hello I Am Space Core";
-    // uint8_t initial_beacon_text[57] = "Hello Earth! This is CySat-1 from Iowa State University.";
-    uint8_t initial_beacon_text[43] = "Wow...Ames is really small from up here...";
-    mainStatus = SET_BEACON_TEXT(initial_beacon_text, 42);
+    uint8_t initial_beacon_text[57] = "Hello Earth! This is CySat 1 from Iowa State University!";
+    //uint8_t initial_beacon_text[43] = "Wow...Ames is really small from up here...";
+    mainStatus = SET_BEACON_TEXT(initial_beacon_text, 56);
     if (mainStatus != HAL_OK) {
         debug_printf("[Main Thread/ERROR]: Beacon text failed to set");
     } else {
@@ -214,7 +215,7 @@ void Main_Task(void const *argument) {
     //START_PIPE();
     //DELETE_DATA_FILE(3);
     PACKET_SEPARATOR(8, 0, 0, 84, ".DAT");
-    //PACKET_SEPARATOR(8,0,0,80,".DAT");
+    PACKET_SEPARATOR(8,0,0,80,".DAT");
     //PACKET_SEPARATOR(29,0,0,31, ".DAT");
     //PACKET_SEPARATOR(8,0,0,80,".DAT");
 	//PACKET_SEPARATOR(29,0,0,31, ".DAT");
@@ -226,7 +227,6 @@ void Main_Task(void const *argument) {
     //FILE_TRANSFER(1,0);
 
     // Loop for handling communications
-    uint8_t tempbuffer[128] = {'\0'};
     GroundStationRxBuffer[0] = '\0';
 
 
