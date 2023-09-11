@@ -180,7 +180,7 @@ int main(void) {
     * TRHEADS INITIALIZATION - Tasks specified in AppTasks.c
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
-    osThreadDef(myMainTask, Main_Task, osPriorityRealtime, 0, 512); // System initialization
+    osThreadDef(myMainTask, Main_Task, osPriorityRealtime, 0, 4096); // System initialization
     osThreadCreate(osThread(myMainTask), NULL);
 
     osThreadDef(myUHFTxRxTask, UHF_TxRx_Task, osPriorityNormal, 0, 512); // UHF Receive/Transmit

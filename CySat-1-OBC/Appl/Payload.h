@@ -12,6 +12,7 @@
 #include "stm32f4xx_hal.h"
 #include "MCU_Init.h"
 #include <stdbool.h>
+#include <fatfs.h>
 
 #define PAYLOAD_UART_TIMEOUT 10000
 
@@ -39,6 +40,7 @@ HAL_StatusTypeDef KELVIN_FILE_TRANSFER(int);
 /*************************** TRANSMISSION FUNCTIONS *****************************/
 HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int dataType, unsigned int startPacket, unsigned int endPacket, char* extension);
 HAL_StatusTypeDef PACKET_PRINT();
+FRESULT list_dir();
 /*************************** HELPER FUNCTIONS **********************************/
 HAL_StatusTypeDef PAYLOAD_WRITE(uint8_t command, uint8_t* in_data_ptr, uint8_t in_byte);
 HAL_StatusTypeDef PAYLOAD_READ(uint8_t command, uint8_t* out_data_ptr, uint8_t out_byte);

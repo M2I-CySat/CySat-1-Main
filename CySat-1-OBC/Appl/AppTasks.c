@@ -209,20 +209,19 @@ void Main_Task(void const *argument) {
 //    TC_17(0);
 
 
-
-    f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks
+    //f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks
     // Tests of PACKET_SEPARATOR
     //START_PIPE();
     //DELETE_DATA_FILE(3);
-    PACKET_SEPARATOR(8, 0, 0, 84, ".DAT");
-    PACKET_SEPARATOR(8,0,0,80,".DAT");
+    //PACKET_SEPARATOR(8, 0, 0, 84, ".DAT");
+    //PACKET_SEPARATOR(8,0,0,80,".DAT");
     //PACKET_SEPARATOR(29,0,0,31, ".DAT");
     //PACKET_SEPARATOR(8,0,0,80,".DAT");
 	//PACKET_SEPARATOR(29,0,0,31, ".DAT");
 	//PACKET_SEPARATOR(8,0,0,80,".DAT");
 	//PACKET_SEPARATOR(29,0,0,31, ".DAT");
 
-
+    list_dir();
     //FILE_TRANSFER(0,1);
     //FILE_TRANSFER(1,0);
 

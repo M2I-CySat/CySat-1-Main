@@ -17,6 +17,7 @@
 #include <CySatPacketProtocol.h>
 #include <helper_functions.h>
 #include <UHF.h>
+#include <stdlib.h>
 
 
 
@@ -422,13 +423,23 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int increment){
  */
 
 FRESULT list_dir (){
-	TCHAR path = "0";
+	const char* path = "";
     FRESULT res;
     DIR dir;
     FILINFO fno;
+    FIL fil;
     int nfile, ndir;
+    UINT byteswritten;
+    char writearray[21];
 
+    if(f_open(&fil, "filelist.txt", FA_READ | FA_CREATE_ALWAYS | FA_OPEN_ALWAYS | FA_WRITE)!=FR_OK) {
+    	debug_printf("Error creating file");
+		return HAL_ERROR;
+    }
+    f_write(&fil, "Test", 4, &byteswritten);
+    debug_printf("Byteswritten: %d",byteswritten);
 
+    debug_printf("3");
     res = f_opendir(&dir, path);                       /* Open the directory */
     if (res == FR_OK) {
         nfile = ndir = 0;
@@ -439,15 +450,24 @@ FRESULT list_dir (){
                 debug_printf("   <DIR>   %s\n", fno.fname);
                 ndir++;
             } else {                               /* File */
+            	sprintf(&writearray, "{%s %u}",fno.fname,fno.fsize);
                 debug_printf("%10u %s\n", fno.fsize, fno.fname);
+                debug_printf("%s",writearray);
+                f_write(&fil, writearray, strlen(writearray), &byteswritten);
+                debug_printf("Byteswritten: %d",byteswritten);
+                writearray[0]="\0";
                 nfile++;
             }
         }
-        closedir(&dir);
+        f_close(&fil);
+        f_closedir(&dir);
         debug_printf("%d dirs, %d files.\n", ndir, nfile);
+        //debug_printf("%s",arr);
     } else {
         debug_printf("Failed to open \"%s\". (%u)\n", path, res);
     }
+    f_close(&fil);
+
     return res;
 }
 
