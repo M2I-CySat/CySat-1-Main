@@ -214,6 +214,12 @@ void Main_Task(void const *argument) {
 
 
     	// Every 6 seconds check if a message has been received
+		debug_printf("\rPacket: ");
+		for (int i = 0; i<100; i++){
+			debug_printf_no_newline("%x ",GroundStationRxBuffer[i]);
+		}
+		debug_printf("\r\r\r");
+		//debug_printf("Buffer: %x %x %x %x %x %x",GroundStationRxBuffer[15],GroundStationRxBuffer[16],GroundStationRxBuffer[17],GroundStationRxBuffer[18],GroundStationRxBuffer[19],GroundStationRxBuffer[20]);
 		if (GroundStationRxBuffer[16]==0xFF){
 			AMBER_LED_ON();
 			//Undo the conversion of an 0x00 to 5 0xAA
@@ -228,7 +234,7 @@ void Main_Task(void const *argument) {
 			}
 	    	debug_printf_no_newline("Comms buffer contents: "); //Display received packet
 	    	for(int i = 0; i < 255; i++){
-	    	    debug_printf_no_newline("%c", tempbuffer[i]);
+	    	    debug_printf_no_newline("%x ", tempbuffer[i]);
 	    	}
 	    	debug_printf(""); //gives newline
 

@@ -85,18 +85,19 @@ int handleCySatPacket(CySat_Packet_t packet){
                     //TODO
                 	return 0;
                 }
-                case 0x02: { //Send large file home
+                case 0x11: { //Send large file home
                 	unsigned int measurementID = 0;
 					unsigned int dataType = 0;
 					unsigned int startPacket = 0;
 					unsigned int endPacket = 0;
 
-					debug_printf("Packet separator called.\rID: %u\ndataType: %u\rstartPacket: %u\rendPacket: %u\r");
 
 					memcpy(&measurementID, &packet.Data[0], 4);
 					memcpy(&dataType, &packet.Data[4], 4);
 					memcpy(&startPacket, &packet.Data[8], 4);
 					memcpy(&endPacket, &packet.Data[12], 4);
+
+					debug_printf("Packet separator called.\r\nID: %u\r\ndataType: %u\r\nstartPacket: %u\r\nendPacket: %u\r\n",measurementID,dataType,startPacket,endPacket);
 
 					status = PACKET_SEPARATOR(measurementID, dataType, startPacket, endPacket, 0x01, "");
                     if(status != HAL_OK){
