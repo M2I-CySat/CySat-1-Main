@@ -15,6 +15,7 @@
 extern int NUM_I2C_ERRORS;
 extern float BATTERY_CAPACITY;
 extern bool ADCS_ACTIVE;
+
 extern bool LOW_POWER_MODE;
 extern osMutexId EPS_I2C_Mutex;
 extern osMutexId UART_Mutex;
@@ -34,7 +35,6 @@ void R2U2_Task(void const * argument);
 void UHF_TxRx_Task(void const * argument);
 void BatteryCapacity_Task(void const * argument);
 void HandleRxBuffer();
-//uint8_t actionFlag;
 void Fault_Recovery(int, int);
 
 #endif /* APPTASKS_H_ */

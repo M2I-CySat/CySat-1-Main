@@ -436,10 +436,8 @@ FRESULT list_dir (){
     	debug_printf("Error creating file");
 		return HAL_ERROR;
     }
-    f_write(&fil, "Test", 4, &byteswritten);
-    debug_printf("Byteswritten: %d",byteswritten);
 
-    debug_printf("3");
+
     res = f_opendir(&dir, path);                       /* Open the directory */
     if (res == FR_OK) {
         nfile = ndir = 0;
@@ -572,27 +570,46 @@ HAL_StatusTypeDef PACKET_PRINT(){
 }
 
 
-HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int dataType, unsigned int startPacket, unsigned int endPacket, char* extension){
+HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int dataType, unsigned int startPacket, unsigned int endPacket, unsigned int do_numbering, char* fullname){
 	FIL currfile; //File containing data entry number
 	FRESULT fres; //Result after operations
+	char extension[5];
 	if (startPacket > endPacket) //Checks to make sure packet ordering is valid
     {
         debug_printf("[PACKET_SEPARATOR/ERROR]: Start Packet is greater than End Packet");
 		return HAL_ERROR;
     }
 
+	switch(dataType){
+		case 0:
 
+			strcpy(extension, ".DAT");
+			break;
+		case 1:
+			strcpy(extension, ".KEL");
+			break;
+		case 2:
+			strcpy(extension, ".LIS");
+			break;
+		default:
+			debug_printf("Invalid data type");
+			return HAL_ERROR;
+	}
 
     char fileName[15] = {"\0"}; // Changed to null, if this doesn't work, try passing in file extension instead of dynamically generating it
 
+    if (do_numbering == 0x01){
+    	sprintf(fileName,"%d%s", measurementID, extension);
+    }else{
+    	strcpy(fileName, fullname);
+    }
 
-    sprintf(fileName,"%d%s", measurementID, extension);
+
 
 
     debug_printf("File name: %s",fileName);
 
-    //fres = f_open(&currfile, fileName, FA_READ);
-    fres = f_open(&currfile, "8.DAT", FA_READ);
+    fres = f_open(&currfile, fileName, FA_READ);
     if(fres != FR_OK){
     	debug_printf("[PACKET_SEPARATOR/ERROR]: Failed to open measurement file");
     	return HAL_ERROR;

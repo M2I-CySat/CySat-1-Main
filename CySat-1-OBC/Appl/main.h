@@ -55,6 +55,9 @@
 
 typedef void (*pFunction)(void);
 
+void shutdown_EPS(void);
+HAL_StatusTypeDef startup_EPS(void);
+
 typedef struct Sat_Flags{
   unsigned int Detumbling : 1;
   unsigned int Infinity_Detumbling : 1;
@@ -95,7 +98,7 @@ extern uint32_t calendar_format;
 extern Sat_Flags_t SatFlags;
 
 extern uint8_t GroundStationPacketLength;
-extern uint8_t GroundStationRxBuffer[129]; //Was 46
+extern uint8_t GroundStationRxBuffer[256]; //Was 46
 extern uint8_t* start_of_rx_buffer;
 
 

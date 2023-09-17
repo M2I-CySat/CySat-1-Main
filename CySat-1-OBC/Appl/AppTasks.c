@@ -34,7 +34,7 @@ UINT byteswritten, bytesread; /* File write/read counts */
 TCHAR const* SDPath = "0";
 uint8_t rtext[_MAX_SS];/* File read buffer */
 uint8_t actionFlag = 0;
-uint8_t tempbuffer[128] = {'\0'};
+uint8_t tempbuffer[255] = {'\0'};
 
 
 /**
@@ -93,40 +93,21 @@ void Main_Task(void const *argument) {
 
     /*
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    * EPS INITIALIZATION
+    *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+    debug_printf("Starting EPS Configuration");
+    if (startup_EPS() == HAL_OK){
+    	debug_printf("Successful EPS Configuration");
+    }
+
+    /*
+    *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     * UHF INITIALIZATION - BEACON FREQ 436.375 MHz @ 9600 UART BAUD
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
 
-    debug_printf("Starting EPS Configuration");
-    mainStatus = enable_UHF();
-    if (mainStatus != HAL_OK) {
-        debug_printf("[Main Thread/ERROR]: EPS UHF Enable Error: %s", mainStatus);
-    } else {
-        debug_printf("[Main Thread/SUCCESS]: Power to UHF Enabled");
-    }
-
     osDelay(500);
-
-    // Turn on SDR/Payload
-    //mainStatus = enable_Payload();
-    //if (mainStatus != HAL_OK) {
-    //    debug_printf("[Main Thread/ERROR]: EPS Payload Enable Error: %s", mainStatus);
-    //} else {
-    //    debug_printf("[Main Thread/SUCCESS]: Payload Enabled");
-    //}
-    //osDelay(500);
-
-    // Turn on Boost Board
-    enable_Boost_Board();
-    if (mainStatus != HAL_OK) {
-        debug_printf("[Main Thread/ERROR]: EPS Boost Board Enable Error: %s", mainStatus);
-    } else {
-        debug_printf("[Main Thread/SUCCESS]: Power to Boost Board Enabled");
-    }
-    debug_printf("EPS Configuration complete");
-    osDelay(500);
-
-
     debug_printf("Starting UHF Configuration");
     // Deploy the Antenna
     // TODO: Antenna Deployment Function Goes Here (DO NOT RUN WITH ACTUAL ANTENNA UNTIL FLIGHT, IT IS SINGLE USE)
@@ -172,7 +153,7 @@ void Main_Task(void const *argument) {
     }
     osDelay(500);
 
-    /* Temperature sensor test */
+    /* Temperature sensor test. This is not important but it is one of the first things I (Steven) got working on this project so I've left it here for nostalgia */
     float uhfTemperature;
     mainStatus = GET_UHF_TEMP(&uhfTemperature);
     if (mainStatus != HAL_OK) {
@@ -210,18 +191,11 @@ void Main_Task(void const *argument) {
 
 
     //f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks
-    // Tests of PACKET_SEPARATOR
-    //START_PIPE();
     //DELETE_DATA_FILE(3);
     //PACKET_SEPARATOR(8, 0, 0, 84, ".DAT");
     //PACKET_SEPARATOR(8,0,0,80,".DAT");
-    //PACKET_SEPARATOR(29,0,0,31, ".DAT");
-    //PACKET_SEPARATOR(8,0,0,80,".DAT");
-	//PACKET_SEPARATOR(29,0,0,31, ".DAT");
-	//PACKET_SEPARATOR(8,0,0,80,".DAT");
-	//PACKET_SEPARATOR(29,0,0,31, ".DAT");
 
-    list_dir();
+    //list_dir();
     //FILE_TRANSFER(0,1);
     //FILE_TRANSFER(1,0);
 
@@ -234,16 +208,17 @@ void Main_Task(void const *argument) {
     	HAL_UART_AbortReceive(&huart1); //Aborts then restarts the comms rx attempt
     	HAL_UART_Receive_IT(&huart1, start_of_rx_buffer, GroundStationPacketLength);
 		GREEN_LED_OFF(); //Flashes LEDs
-		osDelay(150);
+		osDelay(500);
 		GREEN_LED_ON();
-		osDelay(150);
+		osDelay(500);
+
 
     	// Every 6 seconds check if a message has been received
 		if (GroundStationRxBuffer[16]==0xFF){
 			AMBER_LED_ON();
 			//Undo the conversion of an 0x00 to 5 0xAA
 			uint8_t offset = 0;
-			for(int i = 0; i<120; i++){
+			for(int i = 0; i<255; i++){
 				if(GroundStationRxBuffer[i+offset] == 0xAA && GroundStationRxBuffer[i+1+offset] == 0xAA && GroundStationRxBuffer[i+2+offset] == 0xAA && GroundStationRxBuffer[i+3+offset] == 0xAA && GroundStationRxBuffer[i+4+offset] == 0xAA){
 					tempbuffer[i] = 0x00;
 					offset=offset+4;
@@ -252,7 +227,7 @@ void Main_Task(void const *argument) {
 				}
 			}
 	    	debug_printf_no_newline("Comms buffer contents: "); //Display received packet
-	    	for(int i = 0; i < 54; i++){
+	    	for(int i = 0; i < 255; i++){
 	    	    debug_printf_no_newline("%c", tempbuffer[i]);
 	    	}
 	    	debug_printf(""); //gives newline
@@ -291,9 +266,8 @@ void UHF_TxRx_Task(void const *argument) {
  */
 void ADCS_Task(void const *argument) {
     HAL_StatusTypeDef adcsStatus = HAL_OK;
+    osDelay(15000);
     debug_printf("######## ADCS TASK ########\r\n");
-
-    //status = enable_EPS_Output_1(); //Enabling the boost board is done in the main task
     adcsStatus = enable_EPS_5v_Bus();
     adcsStatus = enable_EPS_LUP_3v();
     adcsStatus = enable_EPS_LUP_5v();

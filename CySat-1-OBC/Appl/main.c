@@ -50,12 +50,12 @@
 */
 #define INITIAL_WAIT (30 * 60 * 1000) // waits 30 minutes
 #define DEBUG_WAIT (1 * 2 * 1000) // waits 2 seconds
-uint8_t GroundStationPacketLength = 80;
+uint8_t GroundStationPacketLength = 255;
 
 
 
 uint8_t* start_of_rx_buffer;
-uint8_t GroundStationRxBuffer[129];
+uint8_t GroundStationRxBuffer[256];
 uint8_t* start_of_rx_buffer = &GroundStationRxBuffer;
 
 /*
@@ -72,7 +72,7 @@ uint8_t* start_of_rx_buffer = &GroundStationRxBuffer;
 */
 Sat_Flags_t SatFlags;
 
-uint8_t GroundStationRxBuffer[129];
+uint8_t GroundStationRxBuffer[256];
 
 uint32_t calendar_format;
 
@@ -130,7 +130,7 @@ void I2C2_Reset(void) {
  * Initialize the satellite before launch
  * This function must be called once before launch to setup the EPS ready for launch
  */
-void init_satellite(void) {
+void shutdown_EPS(void) {
     disable_EPS_Vbatt_Bus();
     disable_EPS_BCR_Bus();
     disable_EPS_5v_Bus();
@@ -144,6 +144,31 @@ void init_satellite(void) {
     disable_EPS_Batt_Heater_1();
     disable_EPS_Batt_Heater_2();
     disable_EPS_Batt_Heater_3();
+}
+
+HAL_StatusTypeDef startup_EPS() {
+	debug_printf("Inside EPS Startup");
+	HAL_StatusTypeDef HalStatus = HAL_OK;
+	uint8_t status[10];
+	status[0] = enable_EPS_Vbatt_Bus();
+	status[1] = enable_EPS_BCR_Bus();
+	status[2] = enable_EPS_5v_Bus();
+	status[3] = enable_EPS_LUP_5v();
+	status[4] = enable_EPS_LUP_3v();
+	status[5] = enable_Boost_Board();
+	status[6] = enable_UHF();
+	status[7] = enable_EPS_Batt_Heater_1();
+	status[8] = enable_EPS_Batt_Heater_2();
+	status[9] = enable_EPS_Batt_Heater_3();
+	debug_printf("EPS STATUS: ");
+	for (int i = 0; i<10; i++){
+		debug_printf_no_newline("%d",status[i]);
+		if (status[i] != HAL_OK){
+			HalStatus = HAL_ERROR;
+			debug_printf("Startup EPS Error %d",i);
+		}
+	}
+	return HalStatus;
 }
 
 /**
@@ -187,7 +212,7 @@ int main(void) {
     osThreadCreate(osThread(myUHFTxRxTask), NULL);
 
     osThreadDef(myADCSTask, ADCS_Task, osPriorityNormal, 0, 1024); // ADCS
-    // TODO: Uncomment osThreadCreate(osThread(myADCSTask), NULL);
+    osThreadCreate(osThread(myADCSTask), NULL);
 
     osThreadDef(myBatteryCapacityTask, BatteryCapacity_Task, osPriorityNormal, 0, 256); // Batteries
     // TODO: Uncomment osThreadCreate(osThread(myBatteryCapacityTask), NULL);

@@ -79,23 +79,59 @@ int handleCySatPacket(CySat_Packet_t packet){
                 }
                 case 0x05: { //Basic Health Check Request
                     //TODO
+                	return 0;
                 }
                 case 0x07: { //Main Operations Request
                     //TODO
+                	return 0;
                 }
-               
-                case 0x09: {
-					status = PACKET_SEPARATOR(29,0,0,31, ".DAT");
+                case 0x02: { //Send large file home
+                	unsigned int measurementID = 0;
+					unsigned int dataType = 0;
+					unsigned int startPacket = 0;
+					unsigned int endPacket = 0;
+
+					debug_printf("Packet separator called.\rID: %u\ndataType: %u\rstartPacket: %u\rendPacket: %u\r");
+
+					memcpy(&measurementID, &packet.Data[0], 4);
+					memcpy(&dataType, &packet.Data[4], 4);
+					memcpy(&startPacket, &packet.Data[8], 4);
+					memcpy(&endPacket, &packet.Data[12], 4);
+
+					status = PACKET_SEPARATOR(measurementID, dataType, startPacket, endPacket, 0x01, "");
                     if(status != HAL_OK){
                         return -1;
                     }
                     outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
                     outgoingPacket.Command = 0x08;
                     outgoingPacket.Data_Length = 0x00;
-                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 2);
-                    outgoingPacket.Data[0] = 0x02;
-                    outgoingPacket.Data[1] = 0x03;
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
+                    outgoingPacket.Data[0] = 0x01;
                     outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
+                    return 0;
+                }
+                case 0x0B: { //Send file list home
+					status = list_dir();
+                    if(status != HAL_OK){
+                        return -1;
+                    }
+                    status = PACKET_SEPARATOR(0, 0, 0, 50, 0x00, "filelist.txt");
+                    if(status != HAL_OK){
+                        return -1;
+                    }
+                    outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x0A;
+                    outgoingPacket.Data_Length = 0x01;
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
+                    outgoingPacket.Data[0] = 0x01;
+                    outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
+                    return 0;
+                }
+                case 0x0D: { //Restart Satellite Request
+					debug_printf("Satellite restart requested");
+                	shutdown_EPS();
+					NVIC_SystemReset();
+					return 0;
                 }
                 break;
 
