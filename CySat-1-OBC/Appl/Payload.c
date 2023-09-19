@@ -582,7 +582,6 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 
 	switch(dataType){
 		case 0:
-
 			strcpy(extension, ".DAT");
 			break;
 		case 1:
@@ -626,70 +625,56 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
     for (unsigned int i = startPacket; i <= endPacket; i++)
     {
     	char packet[129]={0xFE}; //129 so the last byte doesn't get cut off by end of char character
-        // Byte 0 lets us know the packet is getting started
-        packet[0] = 0xFF;
+    	char toscramble[129]={0x00};
+    	// STRUCTURE:
+    	// 0xFF then 0xAA for packet start
+    	// START SCRAMBLING
+    	// 4 bytes for measurement id
+    	// 4 bytes for packet number
+    	// 1 byte for bytes read
+    	// That is 11 chars of header
+    	// Up to 117 bytes of data
+    	// End scrambling
+    	// Should be no remaining bytes
 
-        // Byte 1 is the data type, 0=dat, 1=kelvin, rest might be used for stuff later like meta files
-        packet[1]=dataType;
-
-        // Setting up char arrays that contain measurement id and packet id
-        //char id[4]="000"; //If it stops working change it back to 5, null terminator might be weird
-        //sprintf(id, "%03X", measurementID);
-
-        //char id2[4]="000";
-		//sprintf(id2, "%03X", i);
-		// Write measurement id and packet id to the packet array, there has to be a better way to do this
-		// Each gets 5 bytes supporting files up to ~7.6 Megabytes
-		// This can be done in hex instead of decimal to save some space in the packets but I don't know how and that would make my life harder
-		//for(int i=0; i<=2; i++){
-		//	packet[i+2]=id[i];
-		//	packet[i+5]=id2[i];
-		//}
-
-		memcpy(&packet[2], &measurementID, 3);
-		memcpy(&packet[5], &i, 3);
-
-
+    	packet[0] = 0xFF;
+    	packet[1] = 0xAA;
+		memcpy(&toscramble[0], &measurementID, 4);
+		memcpy(&toscramble[4], &i, 4);
 
         //PSEUDOCODE FOR: Check to see if packet requested is greater than the length of a file (if so break out of the loop)
 
         char data[120] = {"A"};
         UINT bytesRead=0;
-		//size_t read  = fread(&data, 1, sizeFile - 118 * i, fp);
-		fres = f_read(&currfile, data, 119, &bytesRead); // was 116
+		fres = f_read(&currfile, data, 117, &bytesRead);
 		//debug_printf("Bytes read: %d",bytesRead);
 		if(fres != FR_OK)
 		{
 			f_close(&currfile);
-			//fres = f_unmount ("");
 			debug_printf("[PACKET_SEPARATOR]: Error reading file");
 			return HAL_ERROR;
 		}
-		//debug_printf("\nBytes read: %d\nData read: %s\nPacket: ",bytesRead,data);
-
-		for (int j = 0; j < bytesRead; j++) // Copy the data into the packet, was until lessthan bytesread but going to 116
+		toscramble[8] = bytesRead;
+		for (int j = 0; j < bytesRead; j++) // Copy the data into the packet
 		{
-			packet[9+j] = data[j];
+			toscramble[9+j] = data[j];
 			//debug_printf_no_newline("%c",packet[j+12]);
 		}
 
-		if (bytesRead<119){
-			for (int a = bytesRead; a<118; a++){
-				packet[9+a]=0xAA;
+		if (bytesRead<117){
+			for (int a = bytesRead; a<116; a++){
+				toscramble[9+a]=0xAA;
 			}
 		}
 
-		//char id3[2]="0";
-		//sprintf(id3, "%01X", bytesRead);
-		packet[8] = bytesRead;
+		//Scrambles
+		//The scrambling polynomial is 1 + X^12 + X^17. This means the currently transmitted bit is the EXOR of the current data bit, plus the bits that were transmitted 12 and 17 bits earlier. Likewise the unscrambling operation simply EXORs the bit received now with those sent 12 and 17 bits earlier. The unscrambler perforce requires 17 bits to synchronise.
 
+		rand();
 
-        //debug_printf("\nPacket %d: %s", i, packet); //crc32 is done by the antenna, unneeded. We can use the extra 8bytes for transmitting actual data.
+		//Copies into packet
 
-        //for (int k=0; k<128; k++)
-        //{
-        	//debug_printf_no_newline("%c",packet[k]);
-        //}
+		memcpy(&packet[2], &toscramble[0], 126);
 
 
         HAL_UART_Transmit(&huart1, &packet, 128, 132);

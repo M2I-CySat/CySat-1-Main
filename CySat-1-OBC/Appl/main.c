@@ -199,6 +199,8 @@ int main(void) {
     /* Awake message */
 	debug_printf("This is Cy-Sat 1 from Iowa State University\nBEEP BEEP BOOP BOOP Systems Starting!\nWait period starting");
 
+	/* Initialize Random Number Generator */
+	srand(291843);
 
     /*
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
