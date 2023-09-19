@@ -214,11 +214,11 @@ void Main_Task(void const *argument) {
 
 
     	// Every 6 seconds check if a message has been received
-		debug_printf("\rPacket: ");
-		for (int i = 0; i<100; i++){
-			debug_printf_no_newline("%x ",GroundStationRxBuffer[i]);
-		}
-		debug_printf("\r\r\r");
+		//debug_printf("\rPacket: ");
+		//for (int i = 0; i<100; i++){
+		//	debug_printf_no_newline("%x ",GroundStationRxBuffer[i]);
+		//}
+		//debug_printf("\r\r\r");
 		//debug_printf("Buffer: %x %x %x %x %x %x",GroundStationRxBuffer[15],GroundStationRxBuffer[16],GroundStationRxBuffer[17],GroundStationRxBuffer[18],GroundStationRxBuffer[19],GroundStationRxBuffer[20]);
 		if (GroundStationRxBuffer[16]==0xFF){
 			AMBER_LED_ON();
@@ -274,12 +274,9 @@ void ADCS_Task(void const *argument) {
     HAL_StatusTypeDef adcsStatus = HAL_OK;
     osDelay(15000);
     debug_printf("######## ADCS TASK ########\r\n");
-    adcsStatus = enable_EPS_5v_Bus();
-    adcsStatus = enable_EPS_LUP_3v();
-    adcsStatus = enable_EPS_LUP_5v();
     //Magnetometer_Deployment(); //TODO: ENABLE FOR FLIGHT
 
-    /*
+
     Detumbling_To_Y_Thomson();
     y_ramp_result_t result;
     result = Y_Wheel_Ramp_Up_Test();
@@ -291,7 +288,7 @@ void ADCS_Task(void const *argument) {
         debug_printf("Pitch did not stay constant!\r\n");
     else if(result == FAULT_Y_RATE)
         debug_printf("Did not go to 0 y-rate and then back up to Y-Thompson rate.\r\n");
-   */ //Ask Lexi about this stuff
+    //Ask Lexi about this stuff
 
     osMutexWait(ADCS_Active_Mutex, 500);
     ADCS_ACTIVE = 1;

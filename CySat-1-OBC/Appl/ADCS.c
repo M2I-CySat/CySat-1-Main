@@ -832,7 +832,7 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
                 status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
         }
         status = HAL_UART_Receive(&huart4, data+3, out_byte+2, ADCS_UART_TIMEOUT);
-        debug_printf("ADCS Telemetry:")
+        debug_printf("ADCS Telemetry:");
         for(int i = 0; i<out_byte+5; i++){
         	debug_printf("%d %x",data[i],data[i]);
         }
@@ -900,7 +900,7 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
         status = HAL_UART_Receive(&huart4, data+3, 3, ADCS_UART_TIMEOUT);
         osMutexRelease(UART_Mutex);
         //debug_printf("[ADCS_TELECOMMAND]: Received Data: %d %d %d %d %d %d", data[0],data[1],data[2],data[3],data[4],data[5]); //shows received data
-        debug_printf("ADCS Telecommand response:")
+        debug_printf("ADCS Telecommand response:");
         for(int i = 0; i<6; i++){
         	debug_printf("%d %x",data[i],data[i]);
         }

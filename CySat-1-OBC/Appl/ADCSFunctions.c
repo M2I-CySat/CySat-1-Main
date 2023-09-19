@@ -162,7 +162,7 @@ void Magnetometer_Deployment(void){
     debug_printf("Deploying Magnetometer!\r\n");
 
     // First attempt at deploying Magnetometer
-    TC_7(10);
+    TC_7(2);
 
     //5 second delay
     osDelay(5000);
@@ -334,7 +334,7 @@ void Y_Momentum_Activation(){
     // Save to orbit parameters to flash memory
     TC_64();
     // Set Estimation Paramters 2 (To-Do: must find defaults for other parameters that currently equal 1)
-    TC_44(1.0, 1.0, 1.0, 0, 0, 0,1,1,1);
+    TC_44(0.001, 0.01, 0, 1, 1, 0,0,0,17);
     // Set Estimation Mode to Magnetometer Rate Filter with pitch estimation
     TC_14(3);
     // Y-Momentum stabilized - Initial Pitch Acquisition
@@ -369,8 +369,8 @@ void Sun_And_Nadir_Commissioning(){
             &cubeWheel2_power, &cubeWheel3_power, &motor_power, &GPS_power);
     // Enable CubeSense power and all others are defaults
     TC_11(cubeControl_signal, cubeControl_motor, 1, cubeStar_power, cubeWheel1_power, cubeWheel2_power, cubeWheel3_power, motor_power, GPS_power);
-    // Set Estimation Paramters 2 (TODO: must find defaults for other parameters that currently equal 1)
-    TC_44(1.0, 1.0, 1.0, 0, 0, 1,1,1,1);
+    // Set Estimation Paramters 2 (TODO: must find defaults for other parameters that currently equal 1 - assumed done)
+    TC_44(0.001, 0.01, 0.0, 1, 1, 0,0,0,17);
     // Set Estimation Mode to Full-State EKF
     TC_14(5);
 }
