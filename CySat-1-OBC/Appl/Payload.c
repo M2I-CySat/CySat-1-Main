@@ -204,9 +204,12 @@ HAL_StatusTypeDef GET_PAYLOAD_VALUES(float* bandwidth, float* calib_1,
  * @brief Commands the payload to take a measurement
  *
  * @param time: The time that the measurement will take place for
- * @param measurement_tatus: The status of taking the measurement. (0=error, 1=success)
+ * @param measurement_status: The status of taking the measurement. (0=error, 1=success)
  */
-HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time){
+HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
+	debug_printf("Delaying for %i seconds");
+	osDelay(delay*1000);
+	debug_printf("Starting measurement");
     CySat_Packet_t packet;
     packet.Subsystem_Type = PAYLOAD_SUBSYSTEM_TYPE;
     packet.Command = 0x19;
@@ -219,7 +222,7 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time){
     if(status != HAL_OK){
         return status;
     }
-    HAL_Delay(time*1000);
+   osDelay(time*1000);
     uint8_t data_ptr[6];
     status = HAL_UART_Receive(&huart6, data_ptr, 6, PAYLOAD_UART_TIMEOUT);
     if(status != HAL_OK){
@@ -235,6 +238,9 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time){
     else if(validateCySatChecksum(packet) != 1)
         return HAL_ERROR;
     return status;
+
+    FILE_TRANSFER(0,1);
+    FILE_TRANSFER(1,0);
 }
 
 
@@ -626,27 +632,44 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
     {
     	char packet[129]={0xFE}; //129 so the last byte doesn't get cut off by end of char character
     	char toscramble[129]={0x00};
+    	char scrambled[129]={0xAA};
+    	int seed = rand();
+    	int seed2 = rand();
+    	uint32_t lfsr;
+    	lfsr = seed << 16 + seed2;
+
+    	toscramble[0]=0xAA;
+    	toscramble[1]=0xAA;
+    	toscramble[2]=0xAA;
+
     	// STRUCTURE:
     	// 0xFF then 0xAA for packet start
     	// START SCRAMBLING
+    	// 3 sacrificial AAs to be lost to synchronization
+    	// 1 byte for data type
     	// 4 bytes for measurement id
     	// 4 bytes for packet number
     	// 1 byte for bytes read
-    	// That is 11 chars of header
-    	// Up to 117 bytes of data
-    	// End scrambling
+    	// That is 15 chars of header
+    	// Up to 113 bytes of data
+    	// END SCRAMBLING
     	// Should be no remaining bytes
+
+
+    	//^ Is xor
 
     	packet[0] = 0xFF;
     	packet[1] = 0xAA;
-		memcpy(&toscramble[0], &measurementID, 4);
-		memcpy(&toscramble[4], &i, 4);
+
+		memcpy(&toscramble[3], &dataType, 1);
+		memcpy(&toscramble[4], &measurementID, 4);
+		memcpy(&toscramble[8], &i, 4);
 
         //PSEUDOCODE FOR: Check to see if packet requested is greater than the length of a file (if so break out of the loop)
 
         char data[120] = {"A"};
         UINT bytesRead=0;
-		fres = f_read(&currfile, data, 117, &bytesRead);
+		fres = f_read(&currfile, data, 113, &bytesRead);
 		//debug_printf("Bytes read: %d",bytesRead);
 		if(fres != FR_OK)
 		{
@@ -654,27 +677,44 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 			debug_printf("[PACKET_SEPARATOR]: Error reading file");
 			return HAL_ERROR;
 		}
-		toscramble[8] = bytesRead;
+		toscramble[12] = bytesRead;
 		for (int j = 0; j < bytesRead; j++) // Copy the data into the packet
 		{
-			toscramble[9+j] = data[j];
+			toscramble[13+j] = data[j];
 			//debug_printf_no_newline("%c",packet[j+12]);
 		}
 
-		if (bytesRead<117){
-			for (int a = bytesRead; a<116; a++){
-				toscramble[9+a]=0xAA;
+		if (bytesRead<113){
+			for (int a = bytesRead; a<112; a++){
+				toscramble[13+a]=0xAA;
 			}
 		}
 
 		//Scrambles
 		//The scrambling polynomial is 1 + X^12 + X^17. This means the currently transmitted bit is the EXOR of the current data bit, plus the bits that were transmitted 12 and 17 bits earlier. Likewise the unscrambling operation simply EXORs the bit received now with those sent 12 and 17 bits earlier. The unscrambler perforce requires 17 bits to synchronise.
-
-		rand();
+		char x17;
+		char x12;
+		char currentbit;
+		char outbit;
+		scrambled[0] = 0xAA;
+		scrambled[1] = 0xAA;
+		scrambled[2] = 0xAA;
+		for (int i = 0; i < 125; i++){
+			for (int j = 0; j<8; j++){
+				currentbit = toscramble[i] << i & 0x01;
+				x17 = lfsr >> 16;
+				x12 = lfsr >> 11;
+				outbit = (x17 ^ x12) ^ currentbit;
+				lfsr = lfsr << 1;
+				lfsr = lfsr + outbit;
+				scrambled[i] << 1;
+				scrambled[i] = scrambled[1] + outbit;
+			}
+		}
 
 		//Copies into packet
 
-		memcpy(&packet[2], &toscramble[0], 126);
+		memcpy(&packet[3], &scrambled[0], 126);
 
 
         HAL_UART_Transmit(&huart1, &packet, 128, 132);

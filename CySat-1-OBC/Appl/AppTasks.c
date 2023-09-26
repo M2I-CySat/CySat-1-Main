@@ -277,17 +277,18 @@ void ADCS_Task(void const *argument) {
     //Magnetometer_Deployment(); //TODO: ENABLE FOR FLIGHT
 
 
-    Detumbling_To_Y_Thomson();
-    y_ramp_result_t result;
-    result = Y_Wheel_Ramp_Up_Test();
-    if(result == NO_ERROR)
-        debug_printf("Y Wheel Ramp Test is Success!!!\r\n");
-    else if(result == FAULT_COMMAND_SPEED)
-        debug_printf("Did not command speed properly.\r\n");
-    else if(result == FAULT_PITCH_ANGLE)
-        debug_printf("Pitch did not stay constant!\r\n");
-    else if(result == FAULT_Y_RATE)
-        debug_printf("Did not go to 0 y-rate and then back up to Y-Thompson rate.\r\n");
+    //Detumbling_To_Y_Thomson();
+    //y_ramp_result_t result;
+    //result = Y_Wheel_Ramp_Up_Test();
+    //Y_Momentum_Activation();
+//    if(result == NO_ERROR)
+//        debug_printf("Y Wheel Ramp Test is Success!!!\r\n");
+//    else if(result == FAULT_COMMAND_SPEED)
+//        debug_printf("Did not command speed properly.\r\n");
+//    else if(result == FAULT_PITCH_ANGLE)
+//        debug_printf("Pitch did not stay constant!\r\n");
+//    else if(result == FAULT_Y_RATE)
+//        debug_printf("Did not go to 0 y-rate and then back up to Y-Thompson rate.\r\n");
     //Ask Lexi about this stuff
 
     osMutexWait(ADCS_Active_Mutex, 500);
