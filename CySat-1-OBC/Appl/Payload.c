@@ -632,7 +632,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
     {
     	char packet[129]={0xFE}; //129 so the last byte doesn't get cut off by end of char character
     	char toscramble[129]={0x00};
-    	char scrambled[129]={0xAA};
+    	char scrambled[129]={0x00};
     	int seed = rand();
     	int seed2 = rand();
     	uint32_t lfsr;
@@ -643,6 +643,8 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
     	toscramble[2]=0xAA;
 
     	// STRUCTURE:
+    	// The ground station will always add an 0x80 to the start, this appears unavoidable
+
     	// 0xFF then 0xAA for packet start
     	// START SCRAMBLING
     	// 3 sacrificial AAs to be lost to synchronization
@@ -652,6 +654,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
     	// 1 byte for bytes read
     	// That is 15 chars of header
     	// Up to 113 bytes of data
+    	// If there is not 113 bytes of data left, the rest will be filled with 0xAA
     	// END SCRAMBLING
     	// Should be no remaining bytes
 
@@ -664,6 +667,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 		memcpy(&toscramble[3], &dataType, 1);
 		memcpy(&toscramble[4], &measurementID, 4);
 		memcpy(&toscramble[8], &i, 4);
+		//toscramble[11]=0xFF;
 
         //PSEUDOCODE FOR: Check to see if packet requested is greater than the length of a file (if so break out of the loop)
 
@@ -699,22 +703,23 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 		scrambled[0] = 0xAA;
 		scrambled[1] = 0xAA;
 		scrambled[2] = 0xAA;
-		for (int i = 0; i < 125; i++){
+		for (int i = 0; i < 126; i++){ //Was 125
 			for (int j = 0; j<8; j++){
-				currentbit = toscramble[i] << i & 0x01;
-				x17 = lfsr >> 16;
-				x12 = lfsr >> 11;
+				currentbit = (toscramble[i] >> (7-j)) & 0x01;
+				x17 = lfsr >> 16 & 0x01;
+				x12 = lfsr >> 11 & 0x01;
 				outbit = (x17 ^ x12) ^ currentbit;
 				lfsr = lfsr << 1;
 				lfsr = lfsr + outbit;
-				scrambled[i] << 1;
-				scrambled[i] = scrambled[1] + outbit;
+				scrambled[i] = scrambled[i] << 1;
+				scrambled[i] = scrambled[i] + outbit;
+				//debug_printf("Toscramble[i]: %d Current bit: %d X17: %d X12: %d Outbit: %d LFSR: %lu, scrambled[i]: %d",toscramble[i],currentbit,x17,x12,outbit,lfsr,scrambled[i]);
 			}
 		}
 
 		//Copies into packet
 
-		memcpy(&packet[3], &scrambled[0], 126);
+		memcpy(&packet[2], &scrambled[0], 126);
 
 
         HAL_UART_Transmit(&huart1, &packet, 128, 132);

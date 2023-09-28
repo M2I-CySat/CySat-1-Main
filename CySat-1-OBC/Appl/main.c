@@ -197,18 +197,20 @@ int main(void) {
     MX_FATFS_Init();
 
     /* Awake message */
-	debug_printf("This is Cy-Sat 1 from Iowa State University\nBEEP BEEP BOOP BOOP Systems Starting!\nWait period starting");
+	debug_printf("This is Cy-Sat 1 from Iowa State University\nBEEP BEEP BOOP BOOP Systems Starting!\n\rWait period starting");
 
 	/* Initialize Random Number Generator */
 	srand(291843);
+	debug_printf("After RNG");
 
     /*
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     * TRHEADS INITIALIZATION - Tasks specified in AppTasks.c
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
-    osThreadDef(myMainTask, Main_Task, osPriorityRealtime, 0, 12288); // System initialization
+    osThreadDef(myMainTask, Main_Task, osPriorityRealtime, 0, 8192); // System initialization
     osThreadCreate(osThread(myMainTask), NULL);
+    debug_printf("After Big RAM");
 
     osThreadDef(myUHFTxRxTask, UHF_TxRx_Task, osPriorityNormal, 0, 512); // UHF Receive/Transmit
     osThreadCreate(osThread(myUHFTxRxTask), NULL);
@@ -225,6 +227,7 @@ int main(void) {
      *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
     /* FINAL TASK: Start scheduler */
+    debug_printf("Starting AppTasks.c");
     osKernelStart();
 }
 
