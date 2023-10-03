@@ -386,6 +386,83 @@ HAL_StatusTypeDef TC_64(){
 	return status;
 }
 
+/**
+ * @brief Save image from sun or nadir sensor to SD card
+ * * @param Camera. 0 = nadir, 1 = sun.
+ * * @param Size. 0 for best quality (1024x1024)
+ */
+HAL_StatusTypeDef TC_80(uint8_t camera, uint8_t size){
+	uint8_t data[3];
+	data[0] = 80;
+	data[1] = camera;
+	data[2] = size;
+
+	HAL_StatusTypeDef status = ADCS_TELECOMMAND(data, 3);
+	return status;
+}
+
+
+/**
+ * @brief Erase File
+ */
+HAL_StatusTypeDef TC_108(uint8_t filetype, uint8_t filecounter, uint8_t eraseall){
+	uint8_t data[4];
+	data[0] = 108;
+	data[1] = filetype;
+	data[2] = filecounter;
+	data[3] = eraseall;
+
+	HAL_StatusTypeDef status = ADCS_TELECOMMAND(data, 4);
+	return status;
+}
+
+/**
+ * @brief Load File Download Block
+ * @param filetype 3 is jpg, 4 is bmp
+ * @param counter, the file number
+ * @param offset, offset in file position probably?
+ * @param blocklength length of the block to be sent
+ */
+HAL_StatusTypeDef TC_112(uint8_t filetype, uint8_t counter, uint32_t offset, uint16_t blocklength){
+	uint8_t data[9];
+	data[0] = 112;
+	data[1] = filetype;
+	data[2] = counter;
+	memcpy(&data[3], &offset, 4);
+	memcpy(&data[7], &blocklength, 2);
+
+	HAL_StatusTypeDef status = ADCS_TELECOMMAND(data, 9);
+	return status;
+}
+
+/**
+ * @brief Advance File List Read Pointer
+ */
+HAL_StatusTypeDef TC_113(){
+	uint8_t data[1];
+	data[0] = 64;
+
+	HAL_StatusTypeDef status = ADCS_TELECOMMAND(data, 1);
+	return status;
+}
+
+/**
+ * @brief Initiate Download Burst Command
+ * @param message length
+ * @param ignore hole map
+ */
+HAL_StatusTypeDef TC_119(uint8_t messagelength, uint8_t ignore_holemap){
+	uint8_t data[3];
+	data[0] = 119;
+	data[1] = messagelength;
+	data[2] = ignore_holemap;
+
+	HAL_StatusTypeDef status = ADCS_TELECOMMAND(data, 3);
+	return status;
+}
+
+
+
 
 /***************************************** TELEMETRY REQUESTS (commands 128 - 254) **********************************************************************/
 

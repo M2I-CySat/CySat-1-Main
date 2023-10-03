@@ -374,3 +374,17 @@ void Sun_And_Nadir_Commissioning(){
     // Set Estimation Mode to Full-State EKF
     TC_14(5);
 }
+
+void Take_Image(){
+
+
+
+	// Download image
+
+	// Load file download block command
+	// Poll telemetry to see if block is done loading
+	// Initiate download burst command (IHM true)
+	// Consecutive Read of Download File Packet
+	// If file is incomplete, send hole map, set ignore hole map false, and initiate download burst again
+	// If file is complete, go again
+}
