@@ -140,55 +140,104 @@ int handleCySatPacket(CySat_Packet_t packet){
             break;
 
         case ADCS_SUBSYSTEM_TYPE: // ADCS
-                case 0x01:	{	//Set Unix Time from Ground:
+        	switch(packet.Command){
+        		case 0x01: { // Generic Telecommand
+					uint8_t* command;
+					uint8_t in_byte;
 
-        			//TODO: retrieve Unix time from ground station
-        			uint32_t sec;
-        			uint16_t millis;
-
-        			memcpy(&sec, &packet.Data[0], 4);
-        			memcpy(&millis, &packet.Data[4], 2);
-
-        			status = TC_2(sec, millis);
-        			if (status != HAL_OK)
+					in_byte = packet.Data[0];
+					command = (uint8_t*)malloc(sizeof(uint8_t)*in_byte);
+					memcpy(&command, &packet.data[1], in_byte);
+        			status = ADCS_TELECOMMAND(command, in_byte);
+        			if (status != HAL_OK){
         				return -1;
+        			}
+					outgoingPacket.Subsystem_Type = ADCS_SUBSYSTEM_TYPE;
+					outgoingPacket.Command = 0x00;
+					outgoingPacket.Data_Length = 0x01;
+					outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
+					outgoingPacket.Data[0] = 0x01;
+					status = sendCySatPacket(outgoingPacket);
+					free(command);
+					free(outgoingPacket.Data);
+					return status;
 
-        			//status is ok, make success packet:
-        			outgoingPacket.Subsystem_Type = ADCS_SUBSYSTEM_TYPE;
-        			outgoingPacket.Command = 0x02;
-        			outgoingPacket.Data_Length = 0x01;
-        			outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
-        			outgoingPacket.Data[0] = 0x01;
-
-        			return status;
         		}
-        		case 0x03:	{	//Update Two-Line Elements:
+        		case 0x03: { // Generic Telemetry Request
+        			uint8_t* dataptr;
+        			uint8_t telem_id;
+					uint8_t out_byte;
 
-        			//TODO: update two-line elements:
-        			double inclination, eccentricity, right_ascension, argument, b_star, mean_motion, mean_anomaly, epoch;
+					telem_id = packet.Data[0];
+					out_byte = packet.Data[1];
+					dataptr = (uint8_t*)malloc(sizeof(uint8_t)*out_byte);
+					status = ADCS_TELEMETRY(telem_id, dataptr, out_byte);
+					if (status != HAL_OK){
+						return -1;
+					}
 
-        			memcpy(&inclination, &packet.Data[0], 8);
-        			memcpy(&eccentricity, &packet.Data[8], 8);
-        			memcpy(&right_ascension, &packet.Data[16], 8);
-        			memcpy(&argument, &packet.Data[24], 8);
-        			memcpy(&b_star, &packet.Data[32], 8);
-        			memcpy(&mean_motion, &packet.Data[40], 8);
-        			memcpy(&mean_anomaly, &packet.Data[48], 8);
-        			memcpy(&epoch, &packet.Data[56], 8);
-
-        			status = TC_45(inclination, eccentricity, right_ascension, argument, b_star, mean_motion, mean_anomaly, epoch);
-        			if(status != HAL_OK)
-        				return -1;
-
-        			outgoingPacket.Subsystem_Type = ADCS_SUBSYSTEM_TYPE;
-        			outgoingPacket.Command = 0x07;
-        			outgoingPacket.Data_Length = 0x01;
-        			outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
-        			outgoingPacket.Data[0] = 0x01;
-
-        			return status;
+					outgoingPacket.Subsystem_Type = ADCS_SUBSYSTEM_TYPE;
+					outgoingPacket.Command = 0x02;
+					outgoingPacket.Data_Length = out_byte;
+					outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * out_byte);
+					memcpy(&packet.data[0], &dataptr, out_byte);
+					status = sendCySatPacket(outgoingPacket);
+					free(command);
+					free(outgoingPacket.Data);
+					return status;
         		}
-                break;
+				case 0x05:	{	//Set Unix Time from Ground:
+
+					//TODO: retrieve Unix time from ground station
+					uint32_t sec;
+					uint16_t millis;
+
+					memcpy(&sec, &packet.Data[0], 4);
+					memcpy(&millis, &packet.Data[4], 2);
+
+					status = TC_2(sec, millis);
+					if (status != HAL_OK)
+						return -1;
+
+					//status is ok, make success packet:
+					outgoingPacket.Subsystem_Type = ADCS_SUBSYSTEM_TYPE;
+					outgoingPacket.Command = 0x04;
+					outgoingPacket.Data_Length = 0x01;
+					outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
+					outgoingPacket.Data[0] = status;
+					status = sendCySatPacket(outgoingPacket);
+					free(outgoingPacket.Data);
+					return status;
+				}
+				case 0x07:	{	//Update Two-Line Elements:
+
+					//TODO: update two-line elements:
+					double inclination, eccentricity, right_ascension, argument, b_star, mean_motion, mean_anomaly, epoch;
+
+					memcpy(&inclination, &packet.Data[0], 8);
+					memcpy(&eccentricity, &packet.Data[8], 8);
+					memcpy(&right_ascension, &packet.Data[16], 8);
+					memcpy(&argument, &packet.Data[24], 8);
+					memcpy(&b_star, &packet.Data[32], 8);
+					memcpy(&mean_motion, &packet.Data[40], 8);
+					memcpy(&mean_anomaly, &packet.Data[48], 8);
+					memcpy(&epoch, &packet.Data[56], 8);
+
+					status = TC_45(inclination, eccentricity, right_ascension, argument, b_star, mean_motion, mean_anomaly, epoch);
+					if(status != HAL_OK)
+						return -1;
+
+					outgoingPacket.Subsystem_Type = ADCS_SUBSYSTEM_TYPE;
+					outgoingPacket.Command = 0x06;
+					outgoingPacket.Data_Length = 0x01;
+					outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
+					outgoingPacket.Data[0] = 0x01;
+					status = sendCySatPacket(outgoingPacket);
+					free(outgoingPacket.Data);
+					return status;
+				}
+        	}
+			break;
 
         case EPS_SUBSYSTEM_TYPE: // EPS
             switch(packet.Command){
