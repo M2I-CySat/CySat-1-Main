@@ -84,13 +84,6 @@ void Main_Task(void const *argument) {
 
 
 
-    if(f_mount(&FatFs, "", 0) != FR_OK) //Checks to make sure drive mounted successfully
-    {
-    	debug_printf("Failed to mount SD drive");
-    }else{
-    	debug_printf("SD Card Successfully mounted");
-    }
-
     /*
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     * EPS INITIALIZATION
@@ -110,7 +103,9 @@ void Main_Task(void const *argument) {
     osDelay(500);
     debug_printf("Starting UHF Configuration");
     // Deploy the Antenna
-    // TODO: Antenna Deployment Function Goes Here (DO NOT RUN WITH ACTUAL ANTENNA UNTIL FLIGHT, IT IS SINGLE USE)
+    // TODO: Antenna Deployment Function Goes Here
+    // CONFIGURE_ANTENNA();
+    // osDelay(1500);
     // DEPLOY_ANTENNA(30); // DON'T TOUCH UNLESS YOU KNOW WHAT YOU'RE DOING
     //debug_printf("Sending 0x1F to I2C slave address 0x33");
 
@@ -254,16 +249,15 @@ void Main_Task(void const *argument) {
 /*
  * @brief main UHF Task/Thread
  */
-void UHF_TxRx_Task(void const *argument) {
+void Restart_Task(void const *argument) {
 	osDelay(100000); // Delay 100 seconds
-	debug_printf("######## UHF TX/RX TASK ########\r\n");
+	debug_printf("######## RESTART TASK ########\r\n");
 
-    HAL_StatusTypeDef txRxStatus = HAL_OK;
-    debug_printf("UHF Task currently unused");
+    osDelay(86400000);
+    debug_printf("Restarting Satellite");
+	shutdown_EPS();
+	NVIC_SystemReset();
 
-    while (1) {
-        osDelay(3000);
-    }
 }
 
 /*

@@ -582,6 +582,147 @@ int handleCySatPacket(CySat_Packet_t packet){
                     free(outgoingPacket.Data);
                     return status; //send the response
                 }
+                case 0x13: { //Heath checks
+                	FIL fil;
+					f_open(&fil, "2.HCK", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+
+					char dataline[64];
+					float floatdata;
+					uint16_t data;
+					UINT bytesWritten;
+
+					READ_EPS_BATTERY_VOLTAGE(&floatdata);
+					sprintf(&dataline[0], ("Battery Voltage: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_BATTERY_CURRENT(&floatdata);
+					sprintf(&dataline[0], ("Battery Current: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_BCR_VOLTAGE(&floatdata);
+					sprintf(&dataline[0], ("BCR Voltage: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_BCR_CURRENT(&floatdata);
+					sprintf(&dataline[0], ("BCR Current: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_SOLAR_X_VOLTAGE(&floatdata);
+					sprintf(&dataline[0], ("X Voltage: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_SOLAR_X_NEG_CURRENT(&floatdata);
+					sprintf(&dataline[0], ("X- Current: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_SOLAR_X_POS_CURRENT(&floatdata);
+					sprintf(&dataline[0], ("X+ Current: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_SOLAR_Y_VOLTAGE(&floatdata);
+					sprintf(&dataline[0], ("Y Voltage: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_SOLAR_Y_NEG_CURRENT(&floatdata);
+					sprintf(&dataline[0], ("Y- Current: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_SOLAR_Y_POS_CURRENT(&floatdata);
+					sprintf(&dataline[0], ("Y+ Current: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_SOLAR_Z_VOLTAGE(&floatdata);
+					sprintf(&dataline[0], ("Z Voltage: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_SOLAR_Z_NEG_CURRENT(&floatdata);
+					sprintf(&dataline[0], ("Z- Current: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_SOLAR_Z_POS_CURRENT(&floatdata);
+					sprintf(&dataline[0], ("Z+ Current: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_3V_CURRENT(&floatdata);
+					sprintf(&dataline[0], ("3V Current: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_5V_CURRENT(&floatdata);
+					sprintf(&dataline[0], ("5V Current: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_MCU_TEMP(&floatdata);
+					sprintf(&dataline[0], ("MCU Temp: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_BATT_1_TEMP(&floatdata);
+					sprintf(&dataline[0], ("Battery 1 Temp: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_BATT_2_TEMP(&floatdata);
+					sprintf(&dataline[0], ("Battery 2 Temp: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_BATT_3_TEMP(&floatdata);
+					sprintf(&dataline[0], ("Battery 3 Temp: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_BATT_4_TEMP(&floatdata);
+					sprintf(&dataline[0], ("Battery 4 Temp: %f\n\r"),floatdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_INPUT_CONDITION(&data);
+					sprintf(&dataline[0], ("Input Condition: %u\n\r"),data);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_OUTPUT_CONDITION1(&data);
+					sprintf(&dataline[0], ("Output Condition 1: %u\n\r"),data);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_OUTPUT_CONDITION2(&data);
+					sprintf(&dataline[0], ("Output Condition 2: %u\n\r"),data);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_POWER_ON_CYCLES(&data);
+					sprintf(&dataline[0], ("Power On Cycles: %u\n\r"),data);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_UNDER_VOLT_COUNT(&data);
+					sprintf(&dataline[0], ("Under Volt Count: %u\n\r"),data);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_SHORT_CIRCUIT_COUNT(&data);
+					sprintf(&dataline[0], ("Short Circuit Count: %u\n\r"),data);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_OVER_TEMP_COUNT(&data);
+					sprintf(&dataline[0], ("Over Temp Count: %u\n\r"),data);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_CHARGE_CYCLES(&data);
+					sprintf(&dataline[0], ("Charge Cycles: %u\n\r"),data);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_DEFAULTS1(&data);
+					sprintf(&dataline[0], ("Defaults 1: %u\n\r"),data);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					READ_EPS_DEFAULTS2(&data);
+					sprintf(&dataline[0], ("Defaults 2: %u\n\r"),data);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					f_close(&fil);
+
+					PACKET_SEPARATOR(2,3,0,20,0x01,"");
+
+					outgoingPacket.Subsystem_Type = EPS_SUBSYSTEM_TYPE;
+					outgoingPacket.Command = 0x12;
+					outgoingPacket.Data_Length = 0x01;
+					outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
+					outgoingPacket.Data[0] = 1;
+					status = sendCySatPacket(outgoingPacket);
+					free(outgoingPacket.Data);
+                }
                 
             }
             break;
@@ -949,6 +1090,58 @@ int handleCySatPacket(CySat_Packet_t packet){
                     break;
                 }
                 
+                case 0x33:{ // Health check requests
+                	FIL fil;
+                	f_open(&fil, "1.HCK", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+                	uint8_t data[23];
+                	uint32_t longdata;
+                	char dataline[64];
+                	float temp;
+                	UINT bytesWritten;
+
+                	GET_UHF_STATUS(data);
+                	sprintf(&dataline[0], ("Status: %s\n\r"),data);
+                	f_write(&fil, dataline, 64, &bytesWritten);
+
+                	GET_UHF_UPTIME(&longdata);
+					sprintf(&dataline[0], ("Uptime: %lu\n\r"),longdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					GET_UHF_NUM_TRANSMITTED_PACKETS(&longdata);
+					sprintf(&dataline[0], ("Tx Packets: %lu\n\r"),longdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					GET_UHF_NUM_RECEIVED_PACKETS(&longdata);
+					sprintf(&dataline[0], ("Rx Packets: %lu\n\r"),longdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					GET_UHF_NUM_RECEIVED_PACKETS_WITH_ERRORS(&longdata);
+					sprintf(&dataline[0], ("Rx Packets With Errors: %lu\n\r"),longdata);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					GET_UHF_TEMP(&temp);
+					sprintf(&dataline[0], ("Temperature: %f\n\r"),temp);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					GET_ANTENNA_STATUS(data);
+					sprintf(&dataline[0], ("Antenna Status:%s\n\r"),data);
+					f_write(&fil, dataline, 64, &bytesWritten);
+
+					f_close(&fil);
+
+					PACKET_SEPARATOR(1,3,0,10,0x01,"");
+
+                    outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x32;
+                    outgoingPacket.Data_Length = 0x01;
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
+                    outgoingPacket.Data[0] = 1;
+                    status = sendCySatPacket(outgoingPacket);
+                    free(outgoingPacket.Data);
+
+                	break;
+                }
+
             }
             
             break;
