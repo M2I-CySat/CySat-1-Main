@@ -140,7 +140,55 @@ int handleCySatPacket(CySat_Packet_t packet){
             break;
 
         case ADCS_SUBSYSTEM_TYPE: // ADCS
-            break;
+                case 0x01:	{	//Set Unix Time from Ground:
+
+        			//TODO: retrieve Unix time from ground station
+        			uint32_t sec;
+        			uint16_t millis;
+
+        			memcpy(&sec, &packet.Data[0], 4);
+        			memcpy(&millis, &packet.Data[4], 2);
+
+        			status = TC_2(sec, millis);
+        			if (status != HAL_OK)
+        				return -1;
+
+        			//status is ok, make success packet:
+        			outgoingPacket.Subsystem_Type = ADCS_SUBSYSTEM_TYPE;
+        			outgoingPacket.Command = 0x02;
+        			outgoingPacket.Data_Length = 0x01;
+        			outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
+        			outgoingPacket.Data[0] = 0x01;
+
+        			return status;
+        		}
+        		case 0x03:	{	//Update Two-Line Elements:
+
+        			//TODO: update two-line elements:
+        			double inclination, eccentricity, right_ascension, argument, b_star, mean_motion, mean_anomaly, epoch;
+
+        			memcpy(&inclination, &packet.Data[0], 8);
+        			memcpy(&eccentricity, &packet.Data[8], 8);
+        			memcpy(&right_ascension, &packet.Data[16], 8);
+        			memcpy(&argument, &packet.Data[24], 8);
+        			memcpy(&b_star, &packet.Data[32], 8);
+        			memcpy(&mean_motion, &packet.Data[40], 8);
+        			memcpy(&mean_anomaly, &packet.Data[48], 8);
+        			memcpy(&epoch, &packet.Data[56], 8);
+
+        			status = TC_45(inclination, eccentricity, right_ascension, argument, b_star, mean_motion, mean_anomaly, epoch);
+        			if(status != HAL_OK)
+        				return -1;
+
+        			outgoingPacket.Subsystem_Type = ADCS_SUBSYSTEM_TYPE;
+        			outgoingPacket.Command = 0x07;
+        			outgoingPacket.Data_Length = 0x01;
+        			outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
+        			outgoingPacket.Data[0] = 0x01;
+
+        			return status;
+        		}
+                break;
 
         case EPS_SUBSYSTEM_TYPE: // EPS
             switch(packet.Command){
@@ -594,14 +642,10 @@ int handleCySatPacket(CySat_Packet_t packet){
                     // TODO: 
                     break;
                 }
-                
                 case 0x10: { // Time Set Request
-
-                    //TODO
-
+                    //TODO:
                     break;
                 }
-
             }
             break;
 
