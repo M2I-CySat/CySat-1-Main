@@ -204,6 +204,50 @@ void Main_Task(void const *argument) {
     //FILE_TRANSFER(1,0);
 
     debug_printf("Before fil");
+	FIL fil;
+	f_open(&fil, "1.HCK", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+	uint8_t data[23];
+	uint32_t longdata;
+	char dataline[64] = {"\0"};
+	float temp;
+	UINT bytesWritten;
+
+	GET_UHF_STATUS(data);
+	dataline[0] = '\0';
+	sprintf(&dataline[0], ("Status: %s\n!"),data);
+	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+	GET_UHF_UPTIME(&longdata);
+	dataline[0] = '\0';
+	sprintf(&dataline[0], ("Uptime: %lu\n!"),longdata);
+	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+	GET_UHF_NUM_TRANSMITTED_PACKETS(&longdata);
+	dataline[0] = '\0';
+	sprintf(&dataline[0], ("Tx Packets: %lu\n!"),longdata);
+	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+	GET_UHF_NUM_RECEIVED_PACKETS(&longdata);
+	dataline[0] = '\0';
+	sprintf(&dataline[0], ("Rx Packets: %lu\n!"),longdata);
+	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+	GET_UHF_NUM_RECEIVED_PACKETS_WITH_ERRORS(&longdata);
+	dataline[0] = '\0';
+	sprintf(&dataline[0], ("Rx Packets With Errors: %lu\n!"),longdata);
+	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+	GET_UHF_TEMP(&temp);
+	dataline[0] = '\0';
+	sprintf(&dataline[0], ("Temperature: %f\n!"),temp);
+	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+	GET_ANTENNA_STATUS(data);
+	dataline[0] = '\0';
+	sprintf(&dataline[0], ("Antenna Status:%s\n!"),data);
+	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+	f_close(&fil);
 
 
     // Loop for handling communications
