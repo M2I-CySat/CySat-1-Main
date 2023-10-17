@@ -1191,37 +1191,43 @@ int handleCySatPacket(CySat_Packet_t packet){
                 	f_open(&fil, "1.HCK", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
                 	uint8_t data[23];
                 	uint32_t longdata;
-                	char dataline[64];
+                	char dataline[64] = {'\0'};
                 	float temp;
                 	UINT bytesWritten;
 
                 	GET_UHF_STATUS(data);
                 	sprintf(&dataline[0], ("Status: %s\n\r"),data);
-                	f_write(&fil, dataline, 64, &bytesWritten);
+                	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
                 	GET_UHF_UPTIME(&longdata);
+                	dataline[0] = '\0';
 					sprintf(&dataline[0], ("Uptime: %lu\n\r"),longdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					GET_UHF_NUM_TRANSMITTED_PACKETS(&longdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Tx Packets: %lu\n\r"),longdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					GET_UHF_NUM_RECEIVED_PACKETS(&longdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Rx Packets: %lu\n\r"),longdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					GET_UHF_NUM_RECEIVED_PACKETS_WITH_ERRORS(&longdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Rx Packets With Errors: %lu\n\r"),longdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					GET_UHF_TEMP(&temp);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Temperature: %f\n\r"),temp);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					GET_ANTENNA_STATUS(data);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Antenna Status:%s\n\r"),data);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					f_close(&fil);
 
