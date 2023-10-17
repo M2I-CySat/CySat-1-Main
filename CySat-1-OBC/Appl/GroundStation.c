@@ -147,7 +147,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 
 					in_byte = packet.Data[0];
 					command = (uint8_t*)malloc(sizeof(uint8_t)*in_byte);
-					memcpy(&command, &packet.data[1], in_byte);
+					memcpy(&command, &packet.Data[1], in_byte);
         			status = ADCS_TELECOMMAND(command, in_byte);
         			if (status != HAL_OK){
         				return -1;
@@ -180,9 +180,9 @@ int handleCySatPacket(CySat_Packet_t packet){
 					outgoingPacket.Command = 0x02;
 					outgoingPacket.Data_Length = out_byte;
 					outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * out_byte);
-					memcpy(&packet.data[0], &dataptr, out_byte);
+					memcpy(&packet.Data[0], &dataptr, out_byte);
 					status = sendCySatPacket(outgoingPacket);
-					free(command);
+					free(dataptr);
 					free(outgoingPacket.Data);
 					return status;
         		}

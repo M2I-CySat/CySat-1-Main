@@ -90,7 +90,7 @@ osMutexId Low_Power_Mode_Mutex;
 osMutexId UHF_UART_Mutex;
 
 /* Threads */
-osThreadId myUHFTxRxTask;
+osThreadId myRestartTask;
 osThreadId myADCSTask;
 osThreadId myMainTask;
 
@@ -196,31 +196,25 @@ int main(void) {
     /* Awake message */
 	debug_printf("This is Cy-Sat 1 from Iowa State University\nBEEP BEEP BOOP BOOP Systems Starting!\n\rWait period starting");
 
-    if(f_mount(&FatFs, "", 0) != FR_OK) //Checks to make sure drive mounted successfully
-    {
-    	debug_printf("Failed to mount SD drive");
-    }else{
-    	debug_printf("SD Card Successfully mounted");
-    }
 
 	/* Initialize Random Number Generator */
 	srand(291843);
 	debug_printf("Random Number Generator Initialized");
 
-	FIL startupfile;
 	//startupfile = f_open(&fil, "STARTUP.TXT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS)
 
 
     /* TODO: Uncomment before launch: Delay for the specified 30 minutes required by NASA */
-	HAL_Delay(DEBUG_WAIT);
+	//HAL_Delay(DEBUG_WAIT);
+	//osDelay(DEBUG_WAIT);
     // HAL_Delay(INITIAL_WAIT);
-
+	debug_printf("Post wait");
     /*
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     * TRHEADS INITIALIZATION - Tasks specified in AppTasks.c
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
-    osThreadDef(myMainTask, Main_Task, osPriorityHigh, 0, 8192); // System initialization
+    osThreadDef(myMainTask, Main_Task, osPriorityHigh, 0, 10000); // System initialization
     osThreadCreate(osThread(myMainTask), NULL);
 
     osThreadDef(myRestartTask, Restart_Task, osPriorityRealtime, 0, 512); // Automatic Restart

@@ -83,6 +83,15 @@ void Main_Task(void const *argument) {
     UHF_UART_Mutex = osMutexCreate(osMutex(UHF_UART_Mutex));
 
 
+	if(f_mount(&FatFs, "", 0) != FR_OK) //Checks to make sure drive mounted successfully
+	{
+		debug_printf("Failed to mount SD drive");
+	}else{
+		debug_printf("SD Card Successfully mounted");
+	}
+
+
+
 
     /*
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -187,12 +196,148 @@ void Main_Task(void const *argument) {
 
     //f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks
     //DELETE_DATA_FILE(3);
-    PACKET_SEPARATOR(8, 0, 0, 80, 0x01, "0");
+    //PACKET_SEPARATOR(8, 0, 0, 80, 0x01, "0");
     //PACKET_SEPARATOR(8,0,0,80,".DAT");
 
     //list_dir();
     //FILE_TRANSFER(0,1);
     //FILE_TRANSFER(1,0);
+
+    debug_printf("Before fil");
+    FIL fil;
+    debug_printf("Before f_open");
+	f_open(&fil, "2.HCK", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+	debug_printf("Before declares");
+	char dataline[64];
+	float floatdata;
+	uint16_t data;
+	UINT bytesWritten;
+	debug_printf("Before questions");
+	READ_EPS_BATTERY_VOLTAGE(&floatdata);
+	debug_printf("Before sprintf");
+	sprintf(&dataline[0], ("Battery Voltage: %f\n\r"),floatdata);
+	debug_printf("Before f_write");
+	f_write(&fil, dataline, 64, &bytesWritten);
+	debug_printf("Question 2");
+
+	READ_EPS_BATTERY_CURRENT(&floatdata);
+	sprintf(&dataline[0], ("Battery Current: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_BCR_VOLTAGE(&floatdata);
+	sprintf(&dataline[0], ("BCR Voltage: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_BCR_CURRENT(&floatdata);
+	sprintf(&dataline[0], ("BCR Current: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_SOLAR_X_VOLTAGE(&floatdata);
+	sprintf(&dataline[0], ("X Voltage: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_SOLAR_X_NEG_CURRENT(&floatdata);
+	sprintf(&dataline[0], ("X- Current: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_SOLAR_X_POS_CURRENT(&floatdata);
+	sprintf(&dataline[0], ("X+ Current: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_SOLAR_Y_VOLTAGE(&floatdata);
+	sprintf(&dataline[0], ("Y Voltage: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_SOLAR_Y_NEG_CURRENT(&floatdata);
+	sprintf(&dataline[0], ("Y- Current: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_SOLAR_Y_POS_CURRENT(&floatdata);
+	sprintf(&dataline[0], ("Y+ Current: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_SOLAR_Z_VOLTAGE(&floatdata);
+	sprintf(&dataline[0], ("Z Voltage: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_SOLAR_Z_NEG_CURRENT(&floatdata);
+	sprintf(&dataline[0], ("Z- Current: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_SOLAR_Z_POS_CURRENT(&floatdata);
+	sprintf(&dataline[0], ("Z+ Current: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_3V_CURRENT(&floatdata);
+	sprintf(&dataline[0], ("3V Current: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_5V_CURRENT(&floatdata);
+	sprintf(&dataline[0], ("5V Current: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_MCU_TEMP(&floatdata);
+	sprintf(&dataline[0], ("MCU Temp: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_BATT_1_TEMP(&floatdata);
+	sprintf(&dataline[0], ("Battery 1 Temp: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_BATT_2_TEMP(&floatdata);
+	sprintf(&dataline[0], ("Battery 2 Temp: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_BATT_3_TEMP(&floatdata);
+	sprintf(&dataline[0], ("Battery 3 Temp: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_BATT_4_TEMP(&floatdata);
+	sprintf(&dataline[0], ("Battery 4 Temp: %f\n\r"),floatdata);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_INPUT_CONDITION(&data);
+	sprintf(&dataline[0], ("Input Condition: %u\n\r"),data);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_OUTPUT_CONDITION1(&data);
+	sprintf(&dataline[0], ("Output Condition 1: %u\n\r"),data);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_OUTPUT_CONDITION2(&data);
+	sprintf(&dataline[0], ("Output Condition 2: %u\n\r"),data);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_POWER_ON_CYCLES(&data);
+	sprintf(&dataline[0], ("Power On Cycles: %u\n\r"),data);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_UNDER_VOLT_COUNT(&data);
+	sprintf(&dataline[0], ("Under Volt Count: %u\n\r"),data);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_SHORT_CIRCUIT_COUNT(&data);
+	sprintf(&dataline[0], ("Short Circuit Count: %u\n\r"),data);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_OVER_TEMP_COUNT(&data);
+	sprintf(&dataline[0], ("Over Temp Count: %u\n\r"),data);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_CHARGE_CYCLES(&data);
+	sprintf(&dataline[0], ("Charge Cycles: %u\n\r"),data);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_DEFAULTS1(&data);
+	sprintf(&dataline[0], ("Defaults 1: %u\n\r"),data);
+	f_write(&fil, dataline, 64, &bytesWritten);
+
+	READ_EPS_DEFAULTS2(&data);
+	sprintf(&dataline[0], ("Defaults 2: %u\n\r"),data);
+	f_write(&fil, dataline, 64, &bytesWritten);
+	debug_printf("After questions");
+
+	f_close(&fil);
 
     // Loop for handling communications
     GroundStationRxBuffer[0] = '\0';
@@ -283,7 +428,6 @@ void ADCS_Task(void const *argument) {
 //        debug_printf("Pitch did not stay constant!\r\n");
 //    else if(result == FAULT_Y_RATE)
 //        debug_printf("Did not go to 0 y-rate and then back up to Y-Thompson rate.\r\n");
-    //Ask Lexi about this stuff
 
     osMutexWait(ADCS_Active_Mutex, 500);
     ADCS_ACTIVE = 1;
