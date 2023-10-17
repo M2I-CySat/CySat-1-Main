@@ -686,130 +686,160 @@ int handleCySatPacket(CySat_Packet_t packet){
                 	FIL fil;
 					f_open(&fil, "2.HCK", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
 
-					char dataline[64];
+					char dataline[64] = {"\0"};
 					float floatdata;
 					uint16_t data;
 					UINT bytesWritten;
 
 					READ_EPS_BATTERY_VOLTAGE(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Battery Voltage: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_BATTERY_CURRENT(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Battery Current: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_BCR_VOLTAGE(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("BCR Voltage: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_BCR_CURRENT(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("BCR Current: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_SOLAR_X_VOLTAGE(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("X Voltage: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_SOLAR_X_NEG_CURRENT(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("X- Current: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_SOLAR_X_POS_CURRENT(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("X+ Current: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_SOLAR_Y_VOLTAGE(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Y Voltage: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_SOLAR_Y_NEG_CURRENT(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Y- Current: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_SOLAR_Y_POS_CURRENT(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Y+ Current: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_SOLAR_Z_VOLTAGE(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Z Voltage: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_SOLAR_Z_NEG_CURRENT(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Z- Current: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_SOLAR_Z_POS_CURRENT(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Z+ Current: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_3V_CURRENT(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("3V Current: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_5V_CURRENT(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("5V Current: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_MCU_TEMP(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("MCU Temp: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_BATT_1_TEMP(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Battery 1 Temp: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_BATT_2_TEMP(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Battery 2 Temp: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_BATT_3_TEMP(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Battery 3 Temp: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_BATT_4_TEMP(&floatdata);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Battery 4 Temp: %f\n\r"),floatdata);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_INPUT_CONDITION(&data);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Input Condition: %u\n\r"),data);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_OUTPUT_CONDITION1(&data);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Output Condition 1: %u\n\r"),data);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_OUTPUT_CONDITION2(&data);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Output Condition 2: %u\n\r"),data);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_POWER_ON_CYCLES(&data);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Power On Cycles: %u\n\r"),data);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_UNDER_VOLT_COUNT(&data);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Under Volt Count: %u\n\r"),data);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_SHORT_CIRCUIT_COUNT(&data);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Short Circuit Count: %u\n\r"),data);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_OVER_TEMP_COUNT(&data);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Over Temp Count: %u\n\r"),data);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_CHARGE_CYCLES(&data);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Charge Cycles: %u\n\r"),data);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_DEFAULTS1(&data);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Defaults 1: %u\n\r"),data);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					READ_EPS_DEFAULTS2(&data);
+					dataline[0] = '\0';
 					sprintf(&dataline[0], ("Defaults 2: %u\n\r"),data);
-					f_write(&fil, dataline, 64, &bytesWritten);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					f_close(&fil);
 
