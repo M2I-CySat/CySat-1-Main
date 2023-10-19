@@ -577,9 +577,45 @@ HAL_StatusTypeDef CONFIGURE_ANTENNA() {
  */
 HAL_StatusTypeDef GET_ANTENNA_STATUS(uint8_t *read) {
     uint8_t command[] = "ES+R22F3 5DE401D5\r";
-    uint8_t response[17];
+    //uint8_t command[] = "ES+R33F3 E49A0C87\r";
+	//uint8_t command[] = "ES+R33F3 4F51AE3B\r";
+    uint8_t response[17] = {"\0"};
 
-    HAL_StatusTypeDef status = UHF_READ(command, response, 19, 17);
+    //HAL_StatusTypeDef status = UHF_READ(command, response, 19, 17);
+    //HAL_StatusTypeDef status = ANT_I2C_READ(0, response);
+
+    debug_printf("Response 1: Hex: %x, Int: %d, Char: %c",response[0],response[0],response[0]);
+    debug_printf("Response 2: Hex: %x, Int: %d, Char: %c",response[1],response[1],response[1]);
+    debug_printf("Response 3: Hex: %x, Int: %d, Char: %c",response[2],response[2],response[2]);
+
+    if (status != HAL_OK) {
+        return status;
+    }
+    if (response[0] != 'O' || response[1] != 'K') {
+        return HAL_ERROR;
+    }
+    read[0] = (((response[3] - 0x30) <= 9 ? (response[3] - 0x30) : (response[3] - 0x37))) |
+              (((response[4] - 0x30) <= 9 ? ((response[4] - 0x30) << 8) : ((response[4] - 0x37) << 8)));
+    read[1] = (((response[5] - 0x30) <= 9 ? (response[5] - 0x30) : (response[5] - 0x37))) |
+              (((response[6] - 0x30) <= 9 ? ((response[6] - 0x30) << 8) : ((response[6] - 0x37) << 8)));
+    read[2] = (((response[7] - 0x30) <= 9 ? (response[7] - 0x30) : (response[7] - 0x37))) |
+              (((response[8] - 0x30) <= 9 ? ((response[8] - 0x30) << 8) : ((response[8] - 0x37) << 8)));
+    return status;
+}
+
+
+/*
+ * @brief Read antenna status
+ * @param status: The 3 bytes of returned by an ADCS read
+ */
+HAL_StatusTypeDef GET_ANTENNA_CONFIG(uint8_t *read) {
+    uint8_t command[] = "ES+R22F2 2AE33143\r";
+    uint8_t response[17] = {"\0"};
+
+    debug_printf("Response 1: Hex: %x, Int: %d, Char: %c",response[0],response[0],response[0]);
+    debug_printf("Response 2: Hex: %x, Int: %d, Char: %c",response[1],response[1],response[1]);
+    debug_printf("Response 3: Hex: %x, Int: %d, Char: %c",response[2],response[2],response[2]);
+
     if (status != HAL_OK) {
         return status;
     }
@@ -632,18 +668,18 @@ HAL_StatusTypeDef GET_ANTENNA_STATUS(uint8_t *read) {
 HAL_StatusTypeDef UHF_READ(uint8_t command[], uint8_t *data_ptr, uint8_t in_byte, uint8_t out_byte) {
     //osMutexWait(UART_Mutex, 2500);
 	HAL_UART_AbortReceive(&huart1);
-	//debug_printf("UHF Read sending command: %s", command);
+	debug_printf("UHF Read sending command: %s", command);
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, command, in_byte, UHF_UART_TIMEOUT);
     if (status != HAL_OK) {
         osMutexRelease(UART_Mutex);
-    	//debug_printf("UHF Read Status Not OK");
+    	debug_printf("UHF Read Status Not OK");
     	osDelay(500);
     	//HAL_UART_Receive_IT(&huart1, start_of_rx_buffer, GroundStationPacketLength);
         return status;
     }
     status = HAL_UART_Receive(&huart1, data_ptr, out_byte, UHF_UART_TIMEOUT);
     //osMutexRelease(UART_Mutex);
-    //debug_printf("UHF Write received data: %s", data_ptr);
+    debug_printf("UHF Read received data: %s", data_ptr);
     osDelay(500);
     //HAL_UART_Receive_IT(&huart1, start_of_rx_buffer, GroundStationPacketLength);
     return status;
@@ -658,10 +694,10 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
 	HAL_UART_AbortReceive(&huart1);
     //osMutexWait(UART_Mutex, 2500);
 	uint8_t data[25]={"\0"};
-	//debug_printf("UHF Write sending command: %s", command);
+	debug_printf("UHF Write sending command: %s", command);
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, command, in_byte, UHF_UART_TIMEOUT);
     if (status != HAL_OK) {
-        //debug_printf("[UHF_WRITE/ERROR]: UART Tx FAIL.");
+        debug_printf("[UHF_WRITE/ERROR]: UART Tx FAIL.");
         osMutexRelease(UART_Mutex);
         osDelay(500);
         //HAL_UART_Receive_IT(&huart1, start_of_rx_buffer, GroundStationPacketLength);
@@ -669,15 +705,45 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
     }
     status = HAL_UART_Receive(&huart1, data, 25, UHF_UART_TIMEOUT);
     //osMutexRelease(UART_Mutex);
-   	//debug_printf("UHF Write received data: %s", data);
+   	debug_printf("UHF Write received data: %s", data);
     if (data[0] != 'O' || data[1] != 'K') {
 
-        //debug_printf("[UHF_WRITE/ERROR]: UART Rx FAIL.");
+        debug_printf("[UHF_WRITE/ERROR]: UART Rx FAIL.");
         osDelay(500);
         //HAL_UART_Receive_IT(&huart1, start_of_rx_buffer, GroundStationPacketLength);
         return HAL_ERROR;
     }
     osDelay(500);
-    HAL_UART_Receive_IT(&huart1, start_of_rx_buffer, GroundStationPacketLength);
+    //HAL_UART_Receive_IT(&huart1, start_of_rx_buffer, GroundStationPacketLength); //TODO: Steven if it breaks its probably right here
     return status;
 }
+
+/**
+ * @brief Sends a write command to the Antenna over I2C
+ * @param command  :the command to be used on the antenna
+ * @param in_byte  :The size of the command that is being sent
+ */
+//HAL_StatusTypeDef ANT_I2C_READ(uint8_t command, uint8_t* data_ptr) {
+//	osMutexWait(EPS_I2C_Mutex, 2500);
+//
+//	HAL_StatusTypeDef status = HAL_ERROR;
+//	status = HAL_I2C_Master_Transmit(&hi2c1, (uint16_t) (0x33 << 0x1), &command, 1, EPS_I2C_TIMEOUT);
+//	if(status != HAL_OK){
+//		osMutexWait(Num_I2C_Errors_Mutex, 500);
+//		NUM_I2C_ERRORS++;
+//		osMutexRelease(Num_I2C_Errors_Mutex);
+//		osMutexRelease(EPS_I2C_Mutex);
+//		return status;
+//	}
+//	status = HAL_I2C_Master_Receive(&hi2c1, (uint16_t) (0x33 << 0x1), data_ptr, 2, EPS_I2C_TIMEOUT);
+//
+//	if(status != HAL_OK){
+//		osMutexWait(Num_I2C_Errors_Mutex, 500);
+//		NUM_I2C_ERRORS++;
+//		osMutexRelease(Num_I2C_Errors_Mutex);
+//	}
+//
+//	osMutexRelease(EPS_I2C_Mutex);
+//	return status;
+//}
+

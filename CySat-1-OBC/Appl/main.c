@@ -49,7 +49,7 @@
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 #define INITIAL_WAIT (30 * 60 * 1000) // waits 30 minutes
-#define DEBUG_WAIT (1 * 2 * 1000) // waits 2 seconds
+#define DEBUG_WAIT (1 * 1 * 1000) // waits 1 second
 uint8_t GroundStationPacketLength = 255;
 
 
@@ -205,7 +205,7 @@ int main(void) {
 
 
     /* TODO: Uncomment before launch: Delay for the specified 30 minutes required by NASA */
-	//HAL_Delay(DEBUG_WAIT);
+	HAL_Delay(DEBUG_WAIT);
 	//osDelay(DEBUG_WAIT);
     // HAL_Delay(INITIAL_WAIT);
 	debug_printf("Post wait");

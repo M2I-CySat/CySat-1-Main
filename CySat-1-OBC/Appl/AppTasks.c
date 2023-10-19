@@ -206,46 +206,66 @@ void Main_Task(void const *argument) {
     debug_printf("Before fil");
 	FIL fil;
 	f_open(&fil, "1.HCK", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-	uint8_t data[23];
+	uint8_t data[23] = {"\0"};
+	memset(&data[0], 0x00, 23);
 	uint32_t longdata;
 	char dataline[64] = {"\0"};
 	float temp;
 	UINT bytesWritten;
 
 	GET_UHF_STATUS(data);
-	dataline[0] = '\0';
+	memset(&dataline[0], 0x00, 64);
 	sprintf(&dataline[0], ("Status: %s\n!"),data);
 	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+	memset(&data[0], 0x00, 23);
+	debug_printf("After status");
 
 	GET_UHF_UPTIME(&longdata);
-	dataline[0] = '\0';
+	memset(&dataline[0], 0x00, 64);
 	sprintf(&dataline[0], ("Uptime: %lu\n!"),longdata);
 	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+	debug_printf("After uptime");
 
 	GET_UHF_NUM_TRANSMITTED_PACKETS(&longdata);
-	dataline[0] = '\0';
+	memset(&dataline[0], 0x00, 64);
 	sprintf(&dataline[0], ("Tx Packets: %lu\n!"),longdata);
 	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+	longdata = 0;
+	debug_printf("After Trans Packets");
 
 	GET_UHF_NUM_RECEIVED_PACKETS(&longdata);
-	dataline[0] = '\0';
+	memset(&dataline[0], 0x00, 64);
 	sprintf(&dataline[0], ("Rx Packets: %lu\n!"),longdata);
 	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+	longdata = 0;
+	debug_printf("After Rec Packets");
 
 	GET_UHF_NUM_RECEIVED_PACKETS_WITH_ERRORS(&longdata);
-	dataline[0] = '\0';
+	memset(&dataline[0], 0x00, 64);
 	sprintf(&dataline[0], ("Rx Packets With Errors: %lu\n!"),longdata);
 	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+	longdata = 0;
+	debug_printf("After Rex Packets Errors");
 
 	GET_UHF_TEMP(&temp);
-	dataline[0] = '\0';
+	memset(&dataline[0], 0x00, 64);
 	sprintf(&dataline[0], ("Temperature: %f\n!"),temp);
 	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+	debug_printf("After UHF Temp");
 
 	GET_ANTENNA_STATUS(data);
-	dataline[0] = '\0';
+	memset(&dataline[0], 0x00, 64);
 	sprintf(&dataline[0], ("Antenna Status:%s\n!"),data);
 	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+	memset(&data[0], 0x00, 23);
+	debug_printf("After Antenna Status");
+
+	GET_ANTENNA_CONFIG(data);
+	memset(&dataline[0], 0x00, 64);
+	sprintf(&dataline[0], ("Antenna Status:%s\n!"),data);
+	f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+	memset(&data[0], 0x00, 23);
+	debug_printf("After Antenna Config Read");
 
 	f_close(&fil);
 
