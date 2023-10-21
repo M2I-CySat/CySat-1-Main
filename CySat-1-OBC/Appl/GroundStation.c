@@ -10,6 +10,7 @@
 #include <CySatPacketProtocol.h>
 #include "MCU_init.h"
 #include "EPS.h"
+#include "ADCS.h"
 #include "UHF.h"
 #include "payload.h"
 #include "helper_functions.h"
@@ -146,7 +147,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 					uint8_t in_byte;
 
 					in_byte = packet.Data[0];
-					command = (uint8_t*)malloc(sizeof(uint8_t)*in_byte);
+					command = (uint8_t*) malloc((sizeof(uint8_t))*in_byte);
 					memcpy(&command, &packet.Data[1], in_byte);
         			status = ADCS_TELECOMMAND(command, in_byte);
         			if (status != HAL_OK){
@@ -237,6 +238,129 @@ int handleCySatPacket(CySat_Packet_t packet){
 					outgoingPacket.Data[0] = 0x01;
 					status = sendCySatPacket(outgoingPacket);
 					free(outgoingPacket.Data);
+					return status;
+				}
+				//new case for health checks
+				case 0x09:	{
+					FIL fil;
+					f_open(&fil, "3.HCK", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+
+					char dataline[256] = {'\0'};
+					float float1;
+					float float2;
+					float float3;
+					uint32_t data1;
+					uint16_t data2;
+					int16_t int1;
+					int16_t int2;
+					int16_t int3;
+					uint8_t b1;
+					uint8_t b2;
+					uint8_t b3;
+					uint8_t b4;
+					uint8_t b5;
+					uint8_t b6;
+					uint8_t b7;
+					uint8_t b8;
+					uint8_t b9;
+					UINT bytesWritten;
+
+					//Telemetry requests:
+					TLM_140(&data1, &data2);
+					sprintf(&dataline[0], "Current Unix time: %lu seconds, %i milliseconds\n\r", data1, data2);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					TLM_146(&float1, &float2, &float3);
+					sprintf(&dataline[0], "Estimated attitude angles: %f deg (roll), %f deg (pitch), %f deg (yaw)\n\r", float1, float2, float3);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					TLM_147(&float1, &float2, &float3);
+					sprintf(&dataline[0], "Estimated angular rates: %f deg/s (x), %f deg/s (y), %f deg/s (z)\n\r", float1, float2, float3);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					TLM_150(&float1, &float2, &float3);
+					sprintf(&dataline[0], "Satellite position: %f deg (lattitude), %f deg (longitude)\nAltitude: %f km\n\r", float1, float2, float3);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					TLM_151(&float1, &float2, &float3);
+					sprintf(&dataline[0], "Magnetic Field Vector: %f uT (x), %f uT (y), %f uT (z)\n\r", float1, float2, float3);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					TLM_154(&float1, &float2, &float3);
+					sprintf(&dataline[0], "Nadir Vector: %f (x), %f (y), %f (z)\n\r", float1, float2, float3);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					TLM_155(&float1, &float2, &float3);
+					sprintf(&dataline[0], "Rate Sensor Rates: %f deg/s (x), %f deg/s (y), %f deg/s (z)\n\r", float1, float2, float3);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					TLM_156(&int1);
+					sprintf(&dataline[0], "Wheel Speed Measurement: %i rpm\n\r", int1);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					TLM_157(&float1, &float2, &float3);
+					sprintf(&dataline[0], "Magnetorquer Commanded on-time: %f s (x), %f s (y), %f s (z)\n\r", float1, float2, float3);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					//TLM_158(int16_t, int16_t, int16_t);
+					TLM_158(&int1, &int2, &int3);
+					sprintf(&dataline[0], "Wheel Speed Commanded: %d rpm (x), %d rpm (y), %d rpm (z)\n\r", int1, int2, int3);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					TLM_168(&b1, &b2, &b3, &b4, &b5, &b6);
+					sprintf(&dataline[0], "Raw CSS Measurements:\n1: %d\n2: %d\n3: %d\n4: %d\n5: %d\n6: %d", b1, b2, b3, b4, b5, b6);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					//TLM_169(uint8_t, uint8_t, uint8_t, uint8_t);
+					TLM_169(&b1, &b2, &b3, &b4);
+					sprintf(&dataline[0], "7: %d\n8: %d\n9: %d\n10: %d\n\r", b1, b2, b3, b4);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					//TLM_170(int16_t, int16_t, int16_t);
+					TLM_170(&int1, &int2, &int3);
+					sprintf(&dataline[0], "Raw Magnetometer: %i (MagX), %i (MagY), %i (MagZ)\n\r", int1, int2, int3);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					TLM_172(&float1, &float2, &float3);
+					sprintf(&dataline[0], "Current Measurements:\n3V3 Current: %f mA\n5V Current: %f mA\nVbat Current: %f mA\n\r", float1, float2, float3);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					//TLM_197(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t);
+					TLM_197(&b1, &b2, &b3, &b4, &b5, &b6, &b7, &b8, &b9);
+					sprintf(&dataline[0], "Control Power Selections:\nCubeControl Signal PIC: %d\nCubeControl Motor PIC: %d\nCubeSense: %d\nDubeStar: %d\nCubeWheel1: %d\nCubeWheel2: %d\nCubeWheel3: %d\nMotor Electronics: %d\nGPS LNA: %d\n\r", b1, b2, b3, b4, b5, b6, b7, b8, b9);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					dataline[0] = '\0';
+					TLM_199(&float1, &float2, &float3);
+					sprintf(&dataline[0], "Commanded Attitude Angles: %f deg (roll), %f deg (pitch), %f deg (yaw)\n\r", float1, float2, float3);
+					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
+
+					f_close(&fil);
+
+					PACKET_SEPARATOR(3,3,0,30,0x01,"");
+
+					outgoingPacket.Subsystem_Type = ADCS_SUBSYSTEM_TYPE;
+					outgoingPacket.Command = 0x08;
+					outgoingPacket.Data_Length = 0x01;
+					outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
+					outgoingPacket.Data[0] = 1;
+					status = sendCySatPacket(outgoingPacket);
+					free(outgoingPacket.Data);
+
 					return status;
 				}
         	}
@@ -852,6 +976,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 					outgoingPacket.Data[0] = 1;
 					status = sendCySatPacket(outgoingPacket);
 					free(outgoingPacket.Data);
+					return status;
                 }
                 
             }
@@ -1292,7 +1417,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     status = sendCySatPacket(outgoingPacket);
                     free(outgoingPacket.Data);
 
-                	break;
+                	return status;
                 }
 
             }
