@@ -187,9 +187,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 					free(outgoingPacket.Data);
 					return status;
         		}
-				case 0x05:	{	//Set Unix Time from Ground:
-
-					//TODO: retrieve Unix time from ground station
+				case 0x05:	{	// Set Unix Time from Ground:
 					uint32_t sec;
 					uint16_t millis;
 
@@ -210,9 +208,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 					free(outgoingPacket.Data);
 					return status;
 				}
-				case 0x07:	{	//Update Two-Line Elements:
-
-					//TODO: update two-line elements:
+				case 0x07:	{	// Update Two-Line Elements:
 					double inclination, eccentricity, right_ascension, argument, b_star, mean_motion, mean_anomaly, epoch;
 
 					memcpy(&inclination, &packet.Data[0], 8);
@@ -240,8 +236,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 					free(outgoingPacket.Data);
 					return status;
 				}
-				//new case for health checks
-				case 0x09:	{
+				case 0x09:	{	// Health Check Request
 					FIL fil;
 					f_open(&fil, "3.HCK", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
 
@@ -317,7 +312,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 
 					dataline[0] = '\0';
 					TLM_168(&b1, &b2, &b3, &b4, &b5, &b6);
-					sprintf(&dataline[0], "Raw CSS Measurements:\n1: %d\n2: %d\n3: %d\n4: %d\n5: %d\n6: %d", b1, b2, b3, b4, b5, b6);
+					sprintf(&dataline[0], "Raw CSS Measurements:\n1: %d\n2: %d\n3: %d\n4: %d\n5: %d\n6: %d\n", b1, b2, b3, b4, b5, b6);
 					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					dataline[0] = '\0';
@@ -337,7 +332,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 
 					dataline[0] = '\0';
 					TLM_197(&b1, &b2, &b3, &b4, &b5, &b6, &b7, &b8, &b9);
-					sprintf(&dataline[0], "Control Power Selections:\nCubeControl Signal PIC: %d\nCubeControl Motor PIC: %d\nCubeSense: %d\nDubeStar: %d\nCubeWheel1: %d\nCubeWheel2: %d\nCubeWheel3: %d\nMotor Electronics: %d\nGPS LNA: %d\n\r", b1, b2, b3, b4, b5, b6, b7, b8, b9);
+					sprintf(&dataline[0], "Control Power Selections:\nCubeControl Signal PIC: %d\nCubeControl Motor PIC: %d\nCubeSense: %d\nCubeStar: %d\nCubeWheel1: %d\nCubeWheel2: %d\nCubeWheel3: %d\nMotor Electronics: %d\nGPS LNA: %d\n\r", b1, b2, b3, b4, b5, b6, b7, b8, b9);
 					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					dataline[0] = '\0';
