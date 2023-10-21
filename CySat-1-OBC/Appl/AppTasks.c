@@ -311,7 +311,6 @@ void Main_Task(void const *argument) {
 	f_close(&fil);
 	debug_printf("After fil");
 
-
 	// Loop for handling communications
 	GroundStationRxBuffer[0] = '\0';
 

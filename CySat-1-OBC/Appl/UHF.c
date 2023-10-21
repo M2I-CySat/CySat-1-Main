@@ -579,9 +579,9 @@ HAL_StatusTypeDef GET_ANTENNA_STATUS(uint8_t *read) {
     uint8_t command[] = "ES+R22F3 5DE401D5\r";
     //uint8_t command[] = "ES+R33F3 E49A0C87\r";
 	//uint8_t command[] = "ES+R33F3 4F51AE3B\r";
-    uint8_t response[17] = {"\0"};
+    uint8_t response[17] = {"A"};
 
-    //HAL_StatusTypeDef status = UHF_READ(command, response, 19, 17);
+    HAL_StatusTypeDef status = UHF_READ(command, response, 19, 17);
     //HAL_StatusTypeDef status = ANT_I2C_READ(0, response);
 
     debug_printf("Response 1: Hex: %x, Int: %d, Char: %c",response[0],response[0],response[0]);
@@ -610,7 +610,8 @@ HAL_StatusTypeDef GET_ANTENNA_STATUS(uint8_t *read) {
  */
 HAL_StatusTypeDef GET_ANTENNA_CONFIG(uint8_t *read) {
     uint8_t command[] = "ES+R22F2 2AE33143\r";
-    uint8_t response[17] = {"\0"};
+    uint8_t response[17] = {"A"};
+    HAL_StatusTypeDef status = UHF_READ(command, response, 19, 17);
 
     debug_printf("Response 1: Hex: %x, Int: %d, Char: %c",response[0],response[0],response[0]);
     debug_printf("Response 2: Hex: %x, Int: %d, Char: %c",response[1],response[1],response[1]);
