@@ -311,7 +311,6 @@ int handleCySatPacket(CySat_Packet_t packet){
 					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					dataline[0] = '\0';
-					//TLM_158(int16_t, int16_t, int16_t);
 					TLM_158(&int1, &int2, &int3);
 					sprintf(&dataline[0], "Wheel Speed Commanded: %d rpm (x), %d rpm (y), %d rpm (z)\n\r", int1, int2, int3);
 					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
@@ -322,13 +321,11 @@ int handleCySatPacket(CySat_Packet_t packet){
 					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					dataline[0] = '\0';
-					//TLM_169(uint8_t, uint8_t, uint8_t, uint8_t);
 					TLM_169(&b1, &b2, &b3, &b4);
 					sprintf(&dataline[0], "7: %d\n8: %d\n9: %d\n10: %d\n\r", b1, b2, b3, b4);
 					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					dataline[0] = '\0';
-					//TLM_170(int16_t, int16_t, int16_t);
 					TLM_170(&int1, &int2, &int3);
 					sprintf(&dataline[0], "Raw Magnetometer: %i (MagX), %i (MagY), %i (MagZ)\n\r", int1, int2, int3);
 					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
@@ -339,7 +336,6 @@ int handleCySatPacket(CySat_Packet_t packet){
 					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
 
 					dataline[0] = '\0';
-					//TLM_197(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t);
 					TLM_197(&b1, &b2, &b3, &b4, &b5, &b6, &b7, &b8, &b9);
 					sprintf(&dataline[0], "Control Power Selections:\nCubeControl Signal PIC: %d\nCubeControl Motor PIC: %d\nCubeSense: %d\nDubeStar: %d\nCubeWheel1: %d\nCubeWheel2: %d\nCubeWheel3: %d\nMotor Electronics: %d\nGPS LNA: %d\n\r", b1, b2, b3, b4, b5, b6, b7, b8, b9);
 					f_write(&fil, dataline, strlen(dataline), &bytesWritten);
