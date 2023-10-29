@@ -222,9 +222,11 @@ int handleCySatPacket(CySat_Packet_t packet){
 
 					status = TC_45(inclination, eccentricity, right_ascension, argument, b_star, mean_motion, mean_anomaly, epoch);
 					if(status != HAL_OK)
+						debug_printf("TC45 Error");
 						return -1;
 					status = TC_64(); // Saves parameters to flash memory after setting them
 					if(status != HAL_OK)
+						debug_printf("TC64 Error");
 						return -1;
 
 					outgoingPacket.Subsystem_Type = ADCS_SUBSYSTEM_TYPE;
