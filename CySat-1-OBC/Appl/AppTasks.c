@@ -262,7 +262,8 @@ void Restart_Task(void const *argument) {
 	osDelay(100000); // Delay 100 seconds
 	debug_printf("######## RESTART TASK ########\r\n");
 
-	osDelay(86400000);
+//	osDelay(86400000);
+	osDelay(120000);		//waiting 2 minutes
 	debug_printf("Restarting Satellite");
 	shutdown_EPS();
 	NVIC_SystemReset();
