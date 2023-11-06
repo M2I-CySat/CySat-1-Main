@@ -599,6 +599,8 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 		case 3:
 			strcpy(extension, ".HCK");
 			break;
+		case 4:
+			strcpy(extension, ".TES");
 		default:
 			debug_printf("Invalid data type");
 			return HAL_ERROR;

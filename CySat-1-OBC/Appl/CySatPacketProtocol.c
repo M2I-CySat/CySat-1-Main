@@ -60,17 +60,16 @@ HAL_StatusTypeDef sendCySatPacket(CySat_Packet_t packet){
     debug_printf("Full message: %s", message);
 
     HAL_StatusTypeDef status = HAL_ERROR;
-    if(packet.Subsystem_Type == OBC_SUBSYSTEM_TYPE){
-        status = START_PIPE();
-        if(status!=HAL_OK){
-        	debug_printf("Transparent mode start error");
-        }
-    	debug_printf("Pipe Enable");
-        status = HAL_UART_Transmit(&huart1, &message, packet.Data_Length + 5, 1000); //send the message over uart, but timeout after 1s
-        debug_printf("Post UART Transmit");
-    }
-    else if(packet.Subsystem_Type == PAYLOAD_SUBSYSTEM_TYPE){
+    if(packet.Subsystem_Type == PAYLOAD_SUBSYSTEM_TYPE){
         status = HAL_UART_Transmit(&huart6, message, packet.Data_Length + 5, 1000); //send the message over uart, but timeout after 1s
+    }else{
+    	status = START_PIPE();
+		if(status!=HAL_OK){
+			debug_printf("Transparent mode start error");
+		}
+		debug_printf("Pipe Enable");
+		status = HAL_UART_Transmit(&huart1, &message, packet.Data_Length + 5, 1000); //send the message over uart, but timeout after 1s
+		debug_printf("Post UART Transmit");
     }
     return status;
 }

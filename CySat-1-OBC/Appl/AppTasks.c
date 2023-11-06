@@ -196,7 +196,7 @@ void Main_Task(void const *argument) {
 
 	//f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks
 	//DELETE_DATA_FILE(3);
-	//PACKET_SEPARATOR(8, 0, 0, 80, 0x01, "0");
+	PACKET_SEPARATOR(8, 0, 0, 80, 0x01, "0");
 	//PACKET_SEPARATOR(8,0,0,80,".DAT");
 
 	//list_dir();
@@ -259,11 +259,9 @@ void Main_Task(void const *argument) {
  * @brief main UHF Task/Thread
  */
 void Restart_Task(void const *argument) {
-	osDelay(100000); // Delay 100 seconds
 	debug_printf("######## RESTART TASK ########\r\n");
-
-//	osDelay(86400000);
-	osDelay(120000);		//waiting 2 minutes
+	osDelay(86400000);
+	//osDelay(60000);		//waiting 1 minute
 	debug_printf("Restarting Satellite");
 	shutdown_EPS();
 	NVIC_SystemReset();

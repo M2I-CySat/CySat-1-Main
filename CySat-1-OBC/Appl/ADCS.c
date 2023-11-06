@@ -53,6 +53,21 @@ HAL_StatusTypeDef TC_7(uint8_t timeout){
 }
 
 /**
+ * @brief Save Unix Time to Flash Memory
+ * No params, the real deal does have params but we shouldn't need them
+ */
+
+HAL_StatusTypeDef TC_9(){
+	uint8_t data[3];
+	data[0] = 9;
+	data[1] = 1;
+	data[2] = 0;
+
+	HAL_StatusTypeDef status = ADCS_TELECOMMAND(data, 3);
+	return status;
+}
+
+/**
  * @brief Set ADCS enabled state & control loop behavior
  * @param enabled Set ADCS enabled state according to the following values:
  * 		0 Off
@@ -949,14 +964,15 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
         telecommand[in_byte+3] = 0xFF;
         debug_printf_no_newline("Telecommand: ");
         for(int j = 0; j< in_byte+4; j++){
-            debug_printf_no_newline("%d" , telecommand[j]);
+            debug_printf("%d %x" , telecommand[j],telecommand[j]);
         }
         debug_printf("\r\n");
         osMutexWait(UART_Mutex, 2500);
         status = HAL_UART_Transmit(&huart4, telecommand, in_byte+4, ADCS_UART_TIMEOUT);
         if(status != HAL_OK){
-            osMutexRelease(UART_Mutex);
-            return status;
+        	debug_printf("ADCS UART Tx Error, Going on anyway");
+            //osMutexRelease(UART_Mutex);
+            //return status;
         }
         uint8_t data[6];
         int counter=0;
@@ -989,12 +1005,14 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
 
 
 
-        if(status != HAL_OK)
+        if(status != HAL_OK){
+        	debug_printf("ADCS TC Status not ok");
             return status;
-        else if(data[2]!= command[0] || data[3]==1 || data[3] == 2){
+        }else if(data[2]!= command[0] || data[3]==1 || data[3] == 2){
             debug_printf("There was an error: %d\r\n", data[3]);
             return HAL_ERROR;
         }
         else
+        	debug_printf("ADCS TC Status ok");
             return status;
 }

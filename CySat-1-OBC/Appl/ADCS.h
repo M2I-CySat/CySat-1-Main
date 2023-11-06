@@ -13,11 +13,12 @@
 #include "MCU_Init.h"
 #include "helper_functions.h"
 
-#define ADCS_UART_TIMEOUT 5
+#define ADCS_UART_TIMEOUT 50
 
 /*************************** TELECOMMAND FUNCTIONS **********************************/
 HAL_StatusTypeDef TC_2(uint32_t, uint16_t);
 HAL_StatusTypeDef TC_7(uint8_t);
+HAL_StatusTypeDef TC_9();
 HAL_StatusTypeDef TC_10(uint8_t);
 HAL_StatusTypeDef TC_11(uint8_t,uint8_t,uint8_t,uint8_t,uint8_t,uint8_t,uint8_t,uint8_t,uint8_t);
 HAL_StatusTypeDef TC_13(uint8_t,uint8_t,uint16_t);
