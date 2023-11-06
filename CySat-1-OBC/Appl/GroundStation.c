@@ -112,7 +112,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
                     return 0;
                 }
-                case 0x0B: { //Send file list home
+                case 0x13: { //Send file list home
 					status = list_dir();
                     if(status != HAL_OK){
                         return -1;
@@ -129,7 +129,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
                     return 0;
                 }
-                case 0x0D: { //Restart Satellite Request
+                case 0x15: { //Restart Satellite Request
 					debug_printf("Satellite restart requested");
                 	shutdown_EPS();
 					NVIC_SystemReset();
