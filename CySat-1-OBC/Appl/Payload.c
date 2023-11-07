@@ -576,7 +576,7 @@ HAL_StatusTypeDef PACKET_PRINT(){
 }
 
 
-HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int dataType, unsigned int startPacket, unsigned int endPacket, unsigned int do_numbering, char* fullname){
+HAL_StatusTypeDef PACKET_SEPARATOR(int measurementID, int dataType, int startPacket, int endPacket, int do_numbering, char* fullname){
 	FIL currfile; //File containing data entry number
 	FRESULT fres; //Result after operations
 	char extension[5];
@@ -601,6 +601,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
 			break;
 		case 4:
 			strcpy(extension, ".TES");
+			break;
 		default:
 			debug_printf("Invalid data type");
 			return HAL_ERROR;
@@ -625,6 +626,13 @@ HAL_StatusTypeDef PACKET_SEPARATOR(unsigned int measurementID, unsigned int data
     	return HAL_ERROR;
     }
     debug_printf("[PACKET_SEPARATOR]: Successfully opened measurement file %s",fileName);
+
+    fres = f_lseek(&currfile,113*startPacket);
+    if(fres != FR_OK){
+    	debug_printf("[PACKET_SEPARATOR/ERROR]: Failed to seek measurement file");
+    	return HAL_ERROR;
+    }
+    debug_printf("[PACKET_SEPARATOR]: Successfully seeked file %s",fileName);
 
 
     HAL_StatusTypeDef status;

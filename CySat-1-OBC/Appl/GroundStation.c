@@ -87,10 +87,10 @@ int handleCySatPacket(CySat_Packet_t packet){
                 	return 0;
                 }
                 case 0x11: { //Send large file home
-                	unsigned int measurementID = 0;
-					unsigned int dataType = 0;
-					unsigned int startPacket = 0;
-					unsigned int endPacket = 0;
+                	int measurementID = 0;
+					int dataType = 0;
+					int startPacket = 0;
+					int endPacket = 0;
 
 
 					memcpy(&measurementID, &packet.Data[0], 4);
@@ -98,7 +98,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 					memcpy(&startPacket, &packet.Data[8], 4);
 					memcpy(&endPacket, &packet.Data[12], 4);
 
-					debug_printf("Packet separator called.\r\nID: %u\r\ndataType: %u\r\nstartPacket: %u\r\nendPacket: %u\r\n",measurementID,dataType,startPacket,endPacket);
+					debug_printf("Packet separator called.\r\nID: %d\r\ndataType: %d\r\nstartPacket: %d\r\nendPacket: %d\r\n",measurementID,dataType,startPacket,endPacket);
 
 					status = PACKET_SEPARATOR(measurementID, dataType, startPacket, endPacket, 0x01, "");
                     if(status != HAL_OK){
@@ -117,7 +117,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     if(status != HAL_OK){
                         return -1;
                     }
-                    status = PACKET_SEPARATOR(0, 0, 0, 50, 0x00, "filelist.txt");
+                    status = PACKET_SEPARATOR(0, 2, 0, 50, 0x00, "filelist.txt");
                     if(status != HAL_OK){
                         return -1;
                     }
@@ -1341,7 +1341,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     break;
                 }
                 
-                case 0x33:{ // Health check requests
+                case 0x23:{ // Health check requests
                 	debug_printf("Before fil");
 					FIL fil;
 					f_open(&fil, "1.HCK", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
@@ -1407,6 +1407,9 @@ int handleCySatPacket(CySat_Packet_t packet){
 					debug_printf("After Antenna Config Read");
 
 					f_close(&fil);
+
+					osDelay(1000);
+
 					PACKET_SEPARATOR(1,3,0,10,0x01,"");
 
                     outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
