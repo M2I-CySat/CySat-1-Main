@@ -167,6 +167,19 @@ void Main_Task(void const *argument) {
 	}
 	osDelay(500);
 
+	debug_printf("New Incrementer Tests");
+
+	UINT byteswritten, bytesread; // File write/read counts
+	fres = f_open(&fil, "entry.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
+	int number = 0;
+	fres = f_read(&fil, &number, 4, &bytesread);
+	debug_printf("Old number %d",number);
+	number = number+1;
+	debug_printf("New number %d",number);
+	fres = f_lseek(&fil, 0);
+	fres = f_write(&fil, &number, 4, &byteswritten);
+	fres = f_close (&fil);
+
 	// De-tumbling Sequence
 	// TODO: De-tumbling functions (ADCS) go here
 	// debug_printf("Beginning de-tumbling sequence (unfinished)");

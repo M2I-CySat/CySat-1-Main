@@ -135,6 +135,23 @@ int handleCySatPacket(CySat_Packet_t packet){
 					NVIC_SystemReset();
 					return 0;
                 }
+                case 0x17: { //Delete File Request
+                	debug_printf("Delete File Request");
+					int measurementID = 0;
+					int dataType = 0;
+					memcpy(&measurementID, &packet.Data[0], 4);
+					memcpy(&dataType, &packet.Data[4], 4);
+					debug_printf("File Delete Function Called.\r\nID: %d\r\ndataType: %d\r\n",measurementID,dataType);
+					status = DELETE_FILE(measurementID,dataType);
+
+                    outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x10;
+                    outgoingPacket.Data_Length = 0x00;
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
+                    outgoingPacket.Data[0] = status;
+                    outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
+                    return sendCySatPacket(outgoingPacket);
+                }
                 break;
 
             }
@@ -165,14 +182,18 @@ int handleCySatPacket(CySat_Packet_t packet){
 
         		}
         		case 0x03: { // Generic Telemetry Request
-        			uint8_t* dataptr;
         			uint8_t telem_id;
 					uint8_t out_byte;
-
 					telem_id = packet.Data[0];
 					out_byte = packet.Data[1];
-					dataptr = (uint8_t*)malloc(sizeof(uint8_t)*out_byte);
+
+					debug_printf("ID is %d Outbyte is %d",telem_id,out_byte);
+
+					uint8_t dataptr[out_byte];
+					memset( dataptr, 0, out_byte*sizeof(uint8_t) );
+
 					status = ADCS_TELEMETRY(telem_id, dataptr, out_byte);
+
 					if (status != HAL_OK){
 						return -1;
 					}
@@ -181,7 +202,8 @@ int handleCySatPacket(CySat_Packet_t packet){
 					outgoingPacket.Command = 0x02;
 					outgoingPacket.Data_Length = out_byte;
 					outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * out_byte);
-					memcpy(&packet.Data[0], &dataptr, out_byte);
+					memcpy(outgoingPacket.Data, dataptr, out_byte);
+
 					status = sendCySatPacket(outgoingPacket);
 					free(dataptr);
 					free(outgoingPacket.Data);

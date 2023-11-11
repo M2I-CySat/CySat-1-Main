@@ -269,7 +269,7 @@ HAL_StatusTypeDef NEW_FILE_TRANSFER(int file_type, int increment){
  */
 
 
-HAL_StatusTypeDef FILE_TRANSFER(int file_type, int increment){
+HAL_StatusTypeDef FILE_TRANSFER(int file_type, int increment){ //TODO: Rewrite in NEW_FILE_TRANSFER to do both files and not need file type or increment
     // Start transfer request to payload
     CySat_Packet_t packet;
     packet.Subsystem_Type = PAYLOAD_SUBSYSTEM_TYPE;
@@ -347,7 +347,7 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int increment){
 	debug_printf("[SD Write/SUCCESS]: Entry number file opened successfully");
 
 	//Read the number from the file that has the data number in it
-	char temp_bytes [8]="00000000";
+	char temp_bytes [8]={"\0"};
 	long int entry_id = 0;
 	fres = f_read(&fil, &temp_bytes, 8, &bytesread);
 	sscanf(temp_bytes,"%ld",&entry_id);
@@ -362,29 +362,28 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int increment){
 
 	//Adds 1 to the data entry number and writes it to the sd card, only if increment is true
 
-	if(increment==1){
-		long int new_entry_id = entry_id + 1;
-		debug_printf("[SD Write]: New entry id: %ld", new_entry_id);
-		char new_entry_str[8]="00000000";
-		sprintf(new_entry_str, "%ld", new_entry_id);
-		debug_printf(new_entry_str);
 
-		//Write to the text file, rewinding first
-		fres = f_lseek(&fil, 0);
-		if(fres != FR_OK){
-			debug_printf("[SD Write]: Write Unsuccessful (rewind)");
-			return HAL_ERROR;
-		}
-		fres = f_write(&fil, new_entry_str, strlen((char *)new_entry_str), (void *)&byteswritten);
-		if(fres != FR_OK){
-			debug_printf("[SD Write]: Write Unsuccessful (write)");
-			return HAL_ERROR;
-		}
+	long int new_entry_id = entry_id + 1;
+	debug_printf("[SD Write]: New entry id: %ld", new_entry_id);
+	char new_entry_str[8]="00000000";
+	sprintf(new_entry_str, "%ld", new_entry_id);
+	debug_printf(new_entry_str);
 
-		//Checks for actual writing or fres not okay
-		if((byteswritten == 0) || (fres != FR_OK)){
-			debug_printf("[SD Write/ERROR]: Failed write to entry number file");
-		}
+	//Write to the text file, rewinding first
+	fres = f_lseek(&fil, 0);
+	if(fres != FR_OK){
+		debug_printf("[SD Write]: Write Unsuccessful (rewind)");
+		return HAL_ERROR;
+	}
+	fres = f_write(&fil, new_entry_str, strlen((char *)new_entry_str), (void *)&byteswritten);
+	if(fres != FR_OK){
+		debug_printf("[SD Write]: Write Unsuccessful (write)");
+		return HAL_ERROR;
+	}
+
+	//Checks for actual writing or fres not okay
+	if((byteswritten == 0) || (fres != FR_OK)){
+		debug_printf("[SD Write/ERROR]: Failed write to entry number file");
 	}
 
 	//Closes the file
@@ -393,11 +392,11 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int increment){
 	//Assemble the file name from the dat/kelvin and measurement number
 	char data_file_name[12]={"\0"}; //Might have to initialize to just [12]; if it fails
 	if(file_type == 0){
-		sprintf(data_file_name, "%ld.dat", entry_id);  // Prepend with "data_file_name[0] = " in case doesn't work, same with below version
+		sprintf(data_file_name, "%d.DAT", entry_id);  // Prepend with "data_file_name[0] = " in case doesn't work, same with below version
 		debug_printf("dat file");
 	}
 	else {
-		sprintf(data_file_name, "%ld.kelvin", entry_id);
+		sprintf(data_file_name, "%d.KEL", entry_id);
 		debug_printf("kel file");
 	}
 	debug_printf("%s", data_file_name);
@@ -498,69 +497,43 @@ HAL_StatusTypeDef KELVIN_FILE_TRANSFER(int increment){
 
 /**
  * @brief Deletes the specified data file from the SD card
- *  Deletes the DAT file
+ *
+ * @param data_file_no: The number of the file to be deleted
+ * @param data_type: Corresponds to the data type to be deleted
  */
-HAL_StatusTypeDef DELETE_DATA_FILE_DAT(int data_file_no){
 
-    // It's going to be very similar to DELETE_DATA_FILE_KEL
-    // deletes %d.dat
-    // make the file name using the data_file_no
-    char file_name[16]={"\0"}; // length of full name with some buffer and clearing memory
-    sprintf(file_name, "%d.dat", data_file_no);
-    debug_printf("Trying to delete file: %s",file_name);
+HAL_StatusTypeDef DELETE_FILE(int data_file_no, int data_type){
+	char extension[5];
+	char fileName[15] = {"\0"};
+	switch(data_type){
+		case 0:
+			strcpy(extension, ".DAT");
+			break;
+		case 1:
+			strcpy(extension, ".KEL");
+			break;
+		case 2:
+			strcpy(extension, ".LIS");
+			break;
+		case 3:
+			strcpy(extension, ".HCK");
+			break;
+		default:
+			debug_printf("Invalid data type");
+			return HAL_ERROR;
+	}
+	sprintf(fileName,"%d%s", data_file_no, extension);
+	debug_printf("Trying to delete file: %s",fileName);
 
-    // try to delete
-    if(f_unlink(file_name)!=FR_OK) {
-    	debug_printf("Error deleting file");
-    	return HAL_ERROR;
-    }
-    else {
-    	debug_printf("File successfully deleted");
-    	return HAL_OK;
-    }
-}
-
-
-/**
- * @brief Deletes the specified data file from the SD card
- *  Deletes the KEL file
- */
-HAL_StatusTypeDef DELETE_DATA_FILE_KEL(int data_file_no){
-    // It's going to be very similar to DELETE_DATA_FILE_DAT
-    // deletes &d.kelvin
-    // make the file name using the data_file_no
-	char file_name[16]={"\0"}; // length of full name 8 = num of characters in kel.txt + 1
-    sprintf(file_name, "%d.kelvin", data_file_no);
-    debug_printf("Trying to delete file: %s",file_name);
-
-    // try to delete
-    if(f_unlink(file_name)!=FR_OK) {
-    	debug_printf("Error deleting file");
-    	return HAL_ERROR;
-    }
-
-    else {
-    	debug_printf("File successfully deleted");
-    	return HAL_OK;
-    }
-}
-
-/**
- * @brief Deletes the specified data file from the SD card
- *  Deletes the KEL and DAT file
- */
-HAL_StatusTypeDef DELETE_DATA_FILE(int data_file_no){
-	HAL_StatusTypeDef status = HAL_OK;
-    //status=DELETE_DATA_FILE_KEL(data_file_no);
-    //if (status != HAL_OK){
-    //	debug_printf("Error deleting .kelvin file");
-    //	return status;
-    //}
-    status=DELETE_DATA_FILE_DAT(data_file_no);
-    if (status != HAL_OK){
-    	debug_printf("Error deleting .dat file");
-    }
-    return status;
+	// try to delete
+	if(f_unlink(fileName)!=FR_OK) {
+		debug_printf("Error deleting file");
+		return HAL_ERROR;
+	}
+	else {
+		debug_printf("File successfully deleted");
+		return HAL_OK;
+	}
 }
 
 
@@ -569,12 +542,6 @@ HAL_StatusTypeDef DELETE_DATA_FILE(int data_file_no){
  * @brief Selects which part of the data is transmitted and sends that part home 
  * 
 */
-
-HAL_StatusTypeDef PACKET_PRINT(){
-	debug_printf("This is a test");
-	return HAL_OK;
-}
-
 
 HAL_StatusTypeDef PACKET_SEPARATOR(int measurementID, int dataType, int startPacket, int endPacket, int do_numbering, char* fullname){
 	FIL currfile; //File containing data entry number

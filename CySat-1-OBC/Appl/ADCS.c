@@ -926,7 +926,7 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
         status = HAL_UART_Receive(&huart4, data+3, out_byte+2, ADCS_UART_TIMEOUT);
         debug_printf_no_newline("ADCS Telemetry:");
         for(int i = 0; i<out_byte+5; i++){
-        	debug_printf_no_newline("%d ",data[i]);
+        	debug_printf("%d %x",data[i],data[i]);
         }
         debug_printf("\r\n");
         memcpy(data_ptr, &data[3], out_byte);
