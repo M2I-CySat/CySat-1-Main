@@ -194,17 +194,17 @@ void Main_Task(void const *argument) {
 	 * ADCS TESTING
 	 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 */
-	// Reaction wheel spinup tests
-	//    osDelay(7000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
-	//    TC_10(1);
-	//    osDelay(1000);
-	//    TC_11(0, 1, 0, 0, 0, 0, 0, 0, 0);
-	//    osDelay(1000);
-	//    TC_11(0, 1, 0, 0, 0, 0, 0, 1, 0);
-	//    osDelay(1000);
-	//    TC_17(4000);
-	//    osDelay(5000);
-	//    TC_17(0);
+	 //Reaction wheel spinup tests
+	    osDelay(7000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
+	    TC_10(1);
+	    osDelay(1000);
+	    TC_11(0, 1, 0, 0, 0, 0, 0, 0, 0);
+	    osDelay(1000);
+	    TC_11(0, 1, 0, 0, 0, 0, 0, 1, 0);
+	    osDelay(1000);
+	    TC_17(4000);
+	    osDelay(5000);
+	    TC_17(0);
 
 
 	//f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks

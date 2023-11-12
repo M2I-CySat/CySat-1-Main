@@ -162,11 +162,16 @@ int handleCySatPacket(CySat_Packet_t packet){
         		case 0x01: { // Generic Telecommand
 					uint8_t* command;
 					uint8_t in_byte;
+					debug_printf("1");
 
 					in_byte = packet.Data[0];
+
 					command = (uint8_t*) malloc((sizeof(uint8_t))*in_byte);
-					memcpy(&command, &packet.Data[1], in_byte);
+					debug_printf("2");
+					memcpy(command, &packet.Data[1], in_byte);
+					debug_printf("3");
         			status = ADCS_TELECOMMAND(command, in_byte);
+        			debug_printf("4");
         			if (status != HAL_OK){
         				return -1;
         			}
