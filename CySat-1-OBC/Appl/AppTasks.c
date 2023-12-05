@@ -167,18 +167,18 @@ void Main_Task(void const *argument) {
 	}
 	osDelay(500);
 
-	debug_printf("New Incrementer Tests");
-
-	UINT byteswritten, bytesread; // File write/read counts
-	fres = f_open(&fil, "entry.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
-	int number = 0;
-	fres = f_read(&fil, &number, 4, &bytesread);
-	debug_printf("Old number %d",number);
-	number = number+1;
-	debug_printf("New number %d",number);
-	fres = f_lseek(&fil, 0);
-	fres = f_write(&fil, &number, 4, &byteswritten);
-	fres = f_close (&fil);
+//	debug_printf("New Incrementer Tests");
+//
+//	UINT byteswritten, bytesread; // File write/read counts
+//	fres = f_open(&fil, "entry.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
+//	int number = 0;
+//	fres = f_read(&fil, &number, 4, &bytesread);
+//	debug_printf("Old number %d",number);
+//	number = number+1;
+//	debug_printf("New number %d",number);
+//	fres = f_lseek(&fil, 0);
+//	fres = f_write(&fil, &number, 4, &byteswritten);
+//	fres = f_close (&fil);
 
 	// De-tumbling Sequence
 	// TODO: De-tumbling functions (ADCS) go here
@@ -195,16 +195,16 @@ void Main_Task(void const *argument) {
 	 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 */
 	 //Reaction wheel spinup tests
-	    osDelay(7000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
-	    TC_10(1);
-	    osDelay(1000);
-	    TC_11(0, 1, 0, 0, 0, 0, 0, 0, 0);
-	    osDelay(1000);
-	    TC_11(0, 1, 0, 0, 0, 0, 0, 1, 0);
-	    osDelay(1000);
-	    TC_17(4000);
-	    osDelay(5000);
-	    TC_17(0);
+//	    osDelay(7000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
+//	    TC_10(1);
+//	    osDelay(1000);
+//	    TC_11(0, 1, 0, 0, 0, 0, 0, 0, 0);
+//	    osDelay(1000);
+//	    TC_11(0, 1, 0, 0, 0, 0, 0, 1, 0);
+//	    osDelay(1000);
+//	    TC_17(4000);
+//	    osDelay(5000);
+//	    TC_17(0);
 
 
 	//f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks

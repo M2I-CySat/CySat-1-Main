@@ -18,6 +18,7 @@
 #include <helper_functions.h>
 #include <UHF.h>
 #include <stdlib.h>
+#include <ADCS.h>
 
 
 
@@ -204,11 +205,53 @@ HAL_StatusTypeDef GET_PAYLOAD_VALUES(float* bandwidth, float* calib_1,
  * @brief Commands the payload to take a measurement
  *
  * @param time: The time that the measurement will take place for
+ * @param delay: How long until the measurement starts. Allow an additional 30 seconds for power on sequence.
  * @param measurement_status: The status of taking the measurement. (0=error, 1=success)
  */
 HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
+
+    // Create file variables
+	FIL fil;
+	UINT byteswritten, bytesread;
+	FRESULT fres;
+
+	// Creates new measurement ID for this measurement
+	fres = f_open(&fil, "entry.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
+	int number = 0;
+	fres = f_read(&fil, &number, 4, &bytesread);
+	debug_printf("Old number %d",number);
+	number = number+1;
+	debug_printf("New number %d",number);
+	fres = f_lseek(&fil, 0);
+	fres = f_write(&fil, &number, 4, &byteswritten);
+	fres = f_close (&fil);
+
+	// Creates .MET file for the measurement with time, duration, delay, etc, orbit data if we have time
+	char data_file_name[12]={"\0"}; //Might have to initialize to just [12]; if it fails
+	sprintf(data_file_name, "%d.MET", number);
+	f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+
+	char dataline[256] = {'\0'};
+	uint32_t data1;
+	uint16_t data2;
+
+	TLM_140(&data1, &data2);
+
+	sprintf(&dataline[0], "Entry ID: %d\n\rCurrent Time: %ld\n\rScheduled Time For Measurement Start: %ld\n\rPlanned Duration: %d\n\r",number,data1,data1+delay+30,time);
+	f_write(&fil, dataline, strlen(dataline), &byteswritten);
+	f_close(&fil);
+
+
+
+	// Delays until measurement start time
 	debug_printf("Delaying for %i seconds");
 	osDelay(delay*1000);
+	debug_printf("Power on sequence starting");
+
+	// Powers on payload and RF chain
+	//TODO: Power on payload, delay a bit for power spike, turn on LNAs, delay until SDR is warmed up (30 seconds? More? Less?), maybe check power status.
+
+	// Sends start measurement command
 	debug_printf("Starting measurement");
     CySat_Packet_t packet;
     packet.Subsystem_Type = PAYLOAD_SUBSYSTEM_TYPE;
@@ -222,7 +265,9 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
     if(status != HAL_OK){
         return status;
     }
-   osDelay(time*1000);
+
+    // Delays until measurement end and waits for the reception of the success packet
+    osDelay(time*1000-1000); // One second earier as a conservative barrier against payload-OBC synchronization issues. PAYLOAD_UART_TIMEOUT is 10 seconds to protect in the other direction.
     uint8_t data_ptr[6];
     status = HAL_UART_Receive(&huart6, data_ptr, 6, PAYLOAD_UART_TIMEOUT);
     if(status != HAL_OK){
@@ -230,7 +275,7 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
     }
     packet = parseCySatPacket(data_ptr);
     if(packet.Data[0] != 1)
-        return HAL_ERROR;
+        return HAL_ERROR; //TODO: Turn off payload power at all these returns including the one above here a section or two back
     else if(packet.Subsystem_Type != PAYLOAD_SUBSYSTEM_TYPE)
         return HAL_ERROR;
     else if(packet.Command != 0x18)
@@ -239,43 +284,32 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
         return HAL_ERROR;
     return status;
 
-    FILE_TRANSFER(0,1);
-    FILE_TRANSFER(1,0);
+    // Measurement has successfully taken place, transfer the files
+    FILE_TRANSFER(0, number);
+    FILE_TRANSFER(1, number);
+
+    // Disable power to the payload
+    // TODO: Turn off payload and LNAs, also do that in any of the returns above
+
+    // Return a success
+	return status;
 }
-
-
-/**
- * @brief Private function to transfer spectrum.dat file from radiometer to SD card.
- *
- *
- *
- */
-
-
-HAL_StatusTypeDef NEW_FILE_TRANSFER(int file_type, int increment){
-	//message = "1";
-	//status = HAL_UART_Transmit(&huart6, message, 2, 1000);
-
-}
-
-
-
 
 /**
  * @brief Private function to transfer file type. Sends request for measurement transfer to payload and acquires .dat and .kelvin files. Writes
  *
  * @param file_type: 0 = dat file and 1 = kelvin file
- * @param increment: 0 = do not increase file number and 1 = increase file number. Very jank poor practice workaround to another problem. Sorry.
+ * @param file_num: The sequential number that identifies the measurement
  */
 
 
-HAL_StatusTypeDef FILE_TRANSFER(int file_type, int increment){ //TODO: Rewrite in NEW_FILE_TRANSFER to do both files and not need file type or increment
+HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
     // Start transfer request to payload
     CySat_Packet_t packet;
     packet.Subsystem_Type = PAYLOAD_SUBSYSTEM_TYPE;
     packet.Command = 0x1B;
     packet.Data_Length = 1;
-    packet.Data = &file_type;
+    packet.Data = file_type;
     packet.Checksum = generateCySatChecksum(packet);
     HAL_StatusTypeDef status = sendCySatPacket(packet);
     if(status != HAL_OK){
@@ -335,68 +369,15 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int increment){ //TODO: Rewrite i
 
 	FIL fil; //File handle
 	FRESULT fres; //Result after operations
-	UINT byteswritten, bytesread; // File write/read counts
 	//TCHAR const* SDPath = "0"; //Unused but worth keeping I think
-
-	//Open file that has the data number in it
-	fres = f_open(&fil, "entry.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
-	if(fres != FR_OK){
-		debug_printf("[SD Write/ERROR]: Failed to open entry number file");
-		return HAL_ERROR;
-	}
-	debug_printf("[SD Write/SUCCESS]: Entry number file opened successfully");
-
-	//Read the number from the file that has the data number in it
-	char temp_bytes [8]={"\0"};
-	long int entry_id = 0;
-	fres = f_read(&fil, &temp_bytes, 8, &bytesread);
-	sscanf(temp_bytes,"%ld",&entry_id);
-
-	//If no data number is present, provides a starting value
-	if(fres != FR_OK){
-		entry_id = 0;
-		debug_printf("[SD Write]: Entry number file created");
-	}
-
-	debug_printf("[SD Write]: Old entry id char and long: %c%c%c%c%c%c%c%c %ld", temp_bytes[0],temp_bytes[1],temp_bytes[2],temp_bytes[3],temp_bytes[4],temp_bytes[5],temp_bytes[6],temp_bytes[7],entry_id);
-
-	//Adds 1 to the data entry number and writes it to the sd card, only if increment is true
-
-
-	long int new_entry_id = entry_id + 1;
-	debug_printf("[SD Write]: New entry id: %ld", new_entry_id);
-	char new_entry_str[8]="00000000";
-	sprintf(new_entry_str, "%ld", new_entry_id);
-	debug_printf(new_entry_str);
-
-	//Write to the text file, rewinding first
-	fres = f_lseek(&fil, 0);
-	if(fres != FR_OK){
-		debug_printf("[SD Write]: Write Unsuccessful (rewind)");
-		return HAL_ERROR;
-	}
-	fres = f_write(&fil, new_entry_str, strlen((char *)new_entry_str), (void *)&byteswritten);
-	if(fres != FR_OK){
-		debug_printf("[SD Write]: Write Unsuccessful (write)");
-		return HAL_ERROR;
-	}
-
-	//Checks for actual writing or fres not okay
-	if((byteswritten == 0) || (fres != FR_OK)){
-		debug_printf("[SD Write/ERROR]: Failed write to entry number file");
-	}
-
-	//Closes the file
-	f_close(&fil);
 
 	//Assemble the file name from the dat/kelvin and measurement number
 	char data_file_name[12]={"\0"}; //Might have to initialize to just [12]; if it fails
 	if(file_type == 0){
-		sprintf(data_file_name, "%d.DAT", entry_id);  // Prepend with "data_file_name[0] = " in case doesn't work, same with below version
+		sprintf(data_file_name, "%d.DAT", file_num);  // Prepend with "data_file_name[0] = " in case doesn't work, same with below version
 		debug_printf("dat file");
-	}
-	else {
-		sprintf(data_file_name, "%d.KEL", entry_id);
+	}else {
+		sprintf(data_file_name, "%d.KEL", file_num);
 		debug_printf("kel file");
 	}
 	debug_printf("%s", data_file_name);
@@ -435,7 +416,7 @@ FRESULT list_dir (){
     FIL fil;
     int nfile, ndir;
     UINT byteswritten;
-    char writearray[21];
+    char writearray[21] = {'\0'};
 
     if(f_open(&fil, "filelist.txt", FA_READ | FA_CREATE_ALWAYS | FA_OPEN_ALWAYS | FA_WRITE)!=FR_OK) {
     	debug_printf("Error creating file");
@@ -453,12 +434,12 @@ FRESULT list_dir (){
                 debug_printf("   <DIR>   %s\n", fno.fname);
                 ndir++;
             } else {                               /* File */
-            	sprintf(&writearray, "{%s %u}",fno.fname,fno.fsize);
+            	sprintf(&writearray[0], "{%s %lu}",fno.fname,fno.fsize);
                 debug_printf("%10u %s\n", fno.fsize, fno.fname);
                 debug_printf("%s",writearray);
                 f_write(&fil, writearray, strlen(writearray), &byteswritten);
                 debug_printf("Byteswritten: %d",byteswritten);
-                writearray[0]="\0";
+                writearray[0]='\0';
                 nfile++;
             }
         }
@@ -518,6 +499,8 @@ HAL_StatusTypeDef DELETE_FILE(int data_file_no, int data_type){
 		case 3:
 			strcpy(extension, ".HCK");
 			break;
+		case 5:
+			strcpy(extension, ".MET");
 		default:
 			debug_printf("Invalid data type");
 			return HAL_ERROR;
@@ -616,7 +599,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(int measurementID, int dataType, int startPac
     	int seed = rand();
     	int seed2 = rand();
     	uint32_t lfsr;
-    	lfsr = seed << 16 + seed2;
+    	lfsr = (seed << 16) + seed2;
 
     	toscramble[0]=0xAA;
     	toscramble[1]=0xAA;
@@ -702,7 +685,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(int measurementID, int dataType, int startPac
 		memcpy(&packet[2], &scrambled[0], 126);
 
 
-        HAL_UART_Transmit(&huart1, &packet, 128, 132);
+        HAL_UART_Transmit(&huart1, &packet, 128, 132); // Incompatible pointer types, but I don't want to poke it because it finally works and I don't remember how I got it to work besides trial and error
         osDelay(3); //It wants 3ms of delay to ensure no dropped data, not sure how much delay the above code will cause but just being safe in case it is below 3
     }
     f_close(&currfile);

@@ -395,7 +395,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 
         case EPS_SUBSYSTEM_TYPE: // EPS
             switch(packet.Command){
-                case 0x01: { //Battery Pack Voltage/Current Request
+                case 0x15: { //Battery Pack Voltage/Current Request, changed from 01 to 15 for UHF compatibility reasons
                     float voltage, current;
                     status = READ_EPS_BATTERY_VOLTAGE(&voltage); //read the voltage from the EPS Battery Pack
                     if(status != HAL_OK){
@@ -591,7 +591,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     free(outgoingPacket.Data);
                     return status; //send the response
                 }
-                case 0x0D: { //Input, Output, and Default Conditions Request
+                case 0x17: { //Input, Output, and Default Conditions Request, changed from 0D to 17 for UHF compatibility reasons
                     uint16_t input, output1, output2, defaults1, defaults2;
                     status = READ_EPS_INPUT_CONDITION(&input); //read the Input Conditions
                     if(status != HAL_OK){
