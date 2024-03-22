@@ -1017,6 +1017,20 @@ int handleCySatPacket(CySat_Packet_t packet){
                     // TODO: 
                     break;
                 }
+                case 0x03: { // Take Measurement
+                	osDelay(10000); // Delay to allow end beacon to go through properly
+                	END_BEACON();
+                	uint16_t duration, delay;
+                	memcpy(&duration, &packet.Data[0], 2);
+                	memcpy(&delay, &packet.Data[2], 2);
+					status = TAKE_MEASUREMENT(duration, delay); //read the Solar Panel Z axis voltage
+					if(status != HAL_OK){
+						START_BEACON();
+						return -1;
+					}
+					START_BEACON();
+					return status; //send the response
+                }
                 case 0x10: { // Time Set Request
                     //TODO:
                     break;

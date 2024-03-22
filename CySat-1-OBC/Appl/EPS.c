@@ -565,7 +565,7 @@ HAL_StatusTypeDef READ_EPS_DEFAULTS2(uint16_t *default_ptr){
 
 /********************************************** WRITE FUNCTIONS **********************************************************************************/
 HAL_StatusTypeDef enable_EPS_Vbatt_Bus(){
-    return EPS_WRITE(1, 1); //turn command 1 to the ON state
+    return EPS_WRITE(1, 3); //turn command 1 to the FORCE ON state
 }
 
 HAL_StatusTypeDef disable_EPS_Vbatt_Bus(){
@@ -573,7 +573,7 @@ HAL_StatusTypeDef disable_EPS_Vbatt_Bus(){
 }
 
 HAL_StatusTypeDef enable_EPS_BCR_Bus(){
-    return EPS_WRITE(2, 1); //turn command 2 to the ON state
+    return EPS_WRITE(2, 3); //turn command 2 to the FORCE ON state
 }
 
 HAL_StatusTypeDef disable_EPS_BCR_Bus(){
@@ -581,7 +581,7 @@ HAL_StatusTypeDef disable_EPS_BCR_Bus(){
 }
 
 HAL_StatusTypeDef enable_EPS_5v_Bus(){
-    return EPS_WRITE(4, 1); //turn command 4 to the ON state
+    return EPS_WRITE(4, 3); //turn command 4 to the FORCE ON state
 }
 
 HAL_StatusTypeDef disable_EPS_5v_Bus(){
@@ -655,7 +655,7 @@ HAL_StatusTypeDef disable_UHF(){
     return EPS_WRITE(14, 0); //turn command 14 to the OFF state
 }
 
-HAL_StatusTypeDef enable_EPS_Output_6(){
+HAL_StatusTypeDef enable_EPS_Output_6(){ // LNA Toggle
     return EPS_WRITE(15, 1); //turn command 15 to the ON state
 }
 

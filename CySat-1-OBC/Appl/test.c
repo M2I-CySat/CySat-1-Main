@@ -14,10 +14,11 @@
  */
 bool PAYLOAD_TEST_SETTING_VALUES(){
     HAL_StatusTypeDef status;
-    bool power_status, default_status;
+    bool default_status;
+    char power_status;
     float bandwidth, calib_1, calib_2, gain, fftsize, frequency, integral, rate, spavg;
     status = GET_PAYLOAD_POWER_STATUS(&power_status);
-    if(status != HAL_OK || power_status != true)
+    if(status != HAL_OK || power_status != 1)
         return false;
     status = RESET_PAYLOAD_TO_DEFAULTS(&default_status);
     if(status != HAL_OK || default_status != true)

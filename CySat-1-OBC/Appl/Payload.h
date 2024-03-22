@@ -17,7 +17,7 @@
 #define PAYLOAD_UART_TIMEOUT 10000
 
 /*************************** CALIBRATION FUNCTIONS *****************************/
-HAL_StatusTypeDef GET_PAYLOAD_POWER_STATUS(bool*);
+HAL_StatusTypeDef GET_PAYLOAD_POWER_STATUS(char*);
 HAL_StatusTypeDef SET_PAYLOAD_RF_BANDWIDTH(float);
 HAL_StatusTypeDef SET_PAYLOAD_CALIBRATION1(float);
 HAL_StatusTypeDef SET_PAYLOAD_CALIBRATION2(float);

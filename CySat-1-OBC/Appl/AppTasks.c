@@ -194,18 +194,28 @@ void Main_Task(void const *argument) {
 	 * ADCS TESTING
 	 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 */
-	 //Reaction wheel spinup tests
-//	    osDelay(7000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
-//	    TC_10(1);
-//	    osDelay(1000);
-//	    TC_11(0, 1, 0, 0, 0, 0, 0, 0, 0);
-//	    osDelay(1000);
-//	    TC_11(0, 1, 0, 0, 0, 0, 0, 1, 0);
-//	    osDelay(1000);
-//	    TC_17(4000);
-//	    osDelay(5000);
-//	    TC_17(0);
-
+	//osDelay(15000);
+	//debug_printf("Reaction wheel spinup tests");
+	//Y_Wheel_Ramp_Up_Test();
+//	osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
+//	TC_10(1);
+//	osDelay(1000);
+//	TC_11(0, 1, 0, 0, 0, 0, 0, 0, 0);
+//	osDelay(1000);
+//	TC_11(0, 1, 0, 0, 0, 0, 0, 1, 0);
+//	osDelay(1000);
+//	TC_17(4000);
+//	osDelay(5000);
+//	TC_17(0);
+	char power_status;
+	debug_printf("Testing payload power status command");
+	mainStatus = GET_PAYLOAD_POWER_STATUS(&power_status);
+	debug_printf("Power status: %d", power_status);
+	if (mainStatus != HAL_OK){
+		debug_printf("Payload comms error");
+	}else{
+		debug_printf("Payload comms success");
+	}
 
 	//f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks
 	//DELETE_DATA_FILE(3);
@@ -287,7 +297,7 @@ void Restart_Task(void const *argument) {
  */
 void ADCS_Task(void const *argument) {
 	HAL_StatusTypeDef adcsStatus = HAL_OK;
-	osDelay(15000);
+	osDelay(60000);
 	debug_printf("######## ADCS TASK ########\r\n");
 	//Magnetometer_Deployment(); //TODO: ENABLE FOR FLIGHT
 
@@ -296,15 +306,16 @@ void ADCS_Task(void const *argument) {
 	//y_ramp_result_t result;
 	//result = Y_Wheel_Ramp_Up_Test();
 	//Y_Momentum_Activation();
-	//    if(result == NO_ERROR)
-	//        debug_printf("Y Wheel Ramp Test is Success!!!\r\n");
-	//    else if(result == FAULT_COMMAND_SPEED)
-	//        debug_printf("Did not command speed properly.\r\n");
-	//    else if(result == FAULT_PITCH_ANGLE)
-	//        debug_printf("Pitch did not stay constant!\r\n");
-	//    else if(result == FAULT_Y_RATE)
-	//        debug_printf("Did not go to 0 y-rate and then back up to Y-Thompson rate.\r\n");
-
+//	if(result == NO_ERROR)
+//		debug_printf("Y Wheel Ramp Test is Success!!!\r\n");
+//	else if(result == FAULT_COMMAND_SPEED)
+//		debug_printf("Did not command speed properly.\r\n");
+//	else if(result == FAULT_PITCH_ANGLE)
+//		debug_printf("Pitch did not stay constant!\r\n");
+//	else if(result == FAULT_Y_RATE)
+//		debug_printf("Did not go to 0 y-rate and then back up to Y-Thompson rate.\r\n");
+//	else
+//		debug_printf("Some other error.");
 	osMutexWait(ADCS_Active_Mutex, 500);
 	ADCS_ACTIVE = 1;
 	osMutexRelease(ADCS_Active_Mutex);

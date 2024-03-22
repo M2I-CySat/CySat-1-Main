@@ -255,10 +255,13 @@ y_ramp_result_t Y_Wheel_Ramp_Up_Test(){
     HAL_StatusTypeDef status;
     // Enable ADCS
     status = TC_10(1);
+    osDelay(1000);
     // CubeControl Signal, CubeControl Motor, and Motor Power are on, all others are off
     status = TC_11(1,1,0,0,0,0,0,1,0);
+    osDelay(1000);
     // Set Estimation Mode to Magnetometer Rate Filter with pitch estimation
     status = TC_14(3);
+    osDelay(1000);
     // No Control Mode
     status = TC_13(0,1,0);
     // Command the Y-Wheel to rotate at ??? RPM

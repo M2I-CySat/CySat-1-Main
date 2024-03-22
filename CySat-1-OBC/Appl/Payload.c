@@ -19,6 +19,7 @@
 #include <UHF.h>
 #include <stdlib.h>
 #include <ADCS.h>
+#include <EPS.h>
 
 
 
@@ -29,14 +30,14 @@
  *
  * @param power_status: The power status of the payload. (0=error, 1=success)
  */
-HAL_StatusTypeDef GET_PAYLOAD_POWER_STATUS(bool* power_status){
+HAL_StatusTypeDef GET_PAYLOAD_POWER_STATUS(char* power_status){
     uint8_t data[1];
     HAL_StatusTypeDef status = PAYLOAD_READ(0x01, data, 1);
     if(data[0] == 0x01){
-        *power_status = true;
+        *power_status = 1;
     }
     else{
-        *power_status = false;
+        *power_status = 0;
     }
     return status;
 }
@@ -227,9 +228,12 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
 	fres = f_close (&fil);
 
 	// Creates .MET file for the measurement with time, duration, delay, etc, orbit data if we have time
-	char data_file_name[12]={"\0"}; //Might have to initialize to just [12]; if it fails
+	char data_file_name[18] = {"\0"}; //Might have to initialize to just [12]; if it fails
 	sprintf(data_file_name, "%d.MET", number);
-	f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+	debug_printf("Attempting to create file: %s",data_file_name);
+
+	fres = f_open(&fil, &data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+	debug_printf("f_open fres: %d",fres);
 
 	char dataline[256] = {'\0'};
 	uint32_t data1;
@@ -238,7 +242,8 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
 	TLM_140(&data1, &data2);
 
 	sprintf(&dataline[0], "Entry ID: %d\n\rCurrent Time: %ld\n\rScheduled Time For Measurement Start: %ld\n\rPlanned Duration: %d\n\r",number,data1,data1+delay+30,time);
-	f_write(&fil, dataline, strlen(dataline), &byteswritten);
+	fres = f_write(&fil, dataline, strlen(dataline), &byteswritten);
+	debug_printf("f_write fres: %d",fres);
 	f_close(&fil);
 
 
@@ -552,6 +557,9 @@ HAL_StatusTypeDef PACKET_SEPARATOR(int measurementID, int dataType, int startPac
 		case 4:
 			strcpy(extension, ".TES");
 			break;
+		case 5:
+			strcpy(extension, ".MET");
+			break;
 		default:
 			debug_printf("Invalid data type");
 			return HAL_ERROR;
@@ -792,6 +800,10 @@ HAL_StatusTypeDef PAYLOAD_READ(uint8_t command, uint8_t* out_data_ptr, uint8_t o
 
     uint8_t data_ptr[out_byte+5];
     status = HAL_UART_Receive(&huart6, data_ptr, out_byte + 5, PAYLOAD_UART_TIMEOUT);
+    debug_printf("Message from SDR:");
+    for(int i = 0; i<out_byte+5; i++){
+    	debug_printf("%d %x",data_ptr[i],data_ptr[i]);
+    }
     if(status != HAL_OK){
         return status;
     }

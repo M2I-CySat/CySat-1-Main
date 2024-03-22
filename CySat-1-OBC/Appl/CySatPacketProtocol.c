@@ -12,6 +12,7 @@
 #include <string.h>
 #include <UHF.h>
 #include <helper_functions.h>
+#include <cmsis_os.h>
 
 /**
  * @brief Takes in an array containing the cysat packet in byte form and builds a struct from it
@@ -58,9 +59,15 @@ HAL_StatusTypeDef sendCySatPacket(CySat_Packet_t packet){
     debug_printf("Command: %02x", packet.Command);
     debug_printf("Data length (dec): %d (hex): %02x", packet.Data_Length ,packet.Data_Length);
     debug_printf("Full message: %s", message);
+    debug_printf("Full message hex:");
+    for(int i = 0; i<packet.Data_Length+5; i++){
+    	debug_printf("%d %x",message[i],message[i]);
+    }
 
     HAL_StatusTypeDef status = HAL_ERROR;
     if(packet.Subsystem_Type == PAYLOAD_SUBSYSTEM_TYPE){
+    	debug_printf("Delaying a bit to avoid confusing the SDR");
+    	osDelay(3000);
         status = HAL_UART_Transmit(&huart6, message, packet.Data_Length + 5, 1000); //send the message over uart, but timeout after 1s
     }else{
     	status = START_PIPE();
