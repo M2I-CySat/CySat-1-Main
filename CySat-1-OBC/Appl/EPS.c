@@ -636,7 +636,7 @@ HAL_StatusTypeDef disable_Payload(){
     return EPS_WRITE(11, 0); //turn command 11 to the OFF state
 }
 
-HAL_StatusTypeDef enable_EPS_Output_3(){
+HAL_StatusTypeDef enable_EPS_Output_3(){ //Likely to be used for backup antena deployment
     return EPS_WRITE(12, 1); //turn command 12 to the ON state
 }
 
@@ -655,11 +655,11 @@ HAL_StatusTypeDef disable_UHF(){
     return EPS_WRITE(14, 0); //turn command 14 to the OFF state
 }
 
-HAL_StatusTypeDef enable_EPS_Output_6(){ // LNA Toggle
+HAL_StatusTypeDef enable_LNAs(){ // LNA Toggle
     return EPS_WRITE(15, 1); //turn command 15 to the ON state
 }
 
-HAL_StatusTypeDef disable_EPS_Output_6(){
+HAL_StatusTypeDef disable_LNAs(){
     return EPS_WRITE(15, 0); //turn command 15 to the OFF state
 }
 

@@ -68,7 +68,7 @@ HAL_StatusTypeDef sendCySatPacket(CySat_Packet_t packet){
     if(packet.Subsystem_Type == PAYLOAD_SUBSYSTEM_TYPE){
     	debug_printf("Delaying a bit to avoid confusing the SDR");
     	osDelay(3000);
-        status = HAL_UART_Transmit(&huart6, message, packet.Data_Length + 5, 1000); //send the message over uart, but timeout after 1s
+        status = HAL_UART_Transmit(&huart6, &message, packet.Data_Length + 5, 1000); //send the message over uart, but timeout after 1s
     }else{
     	status = START_PIPE();
 		if(status!=HAL_OK){

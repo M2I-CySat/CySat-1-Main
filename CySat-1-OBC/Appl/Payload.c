@@ -210,7 +210,7 @@ HAL_StatusTypeDef GET_PAYLOAD_VALUES(float* bandwidth, float* calib_1,
  * @param measurement_status: The status of taking the measurement. (0=error, 1=success)
  */
 HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
-
+	HAL_StatusTypeDef status = HAL_OK;
     // Create file variables
 	FIL fil;
 	UINT byteswritten, bytesread;
@@ -227,7 +227,7 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
 	fres = f_write(&fil, &number, 4, &byteswritten);
 	fres = f_close (&fil);
 
-	// Creates .MET file for the measurement with time, duration, delay, etc, orbit data if we have time
+	// Creates .MET file for the measurement with time, duration, delay, vbatt, etc, orbit data if we have time
 	char data_file_name[18] = {"\0"}; //Might have to initialize to just [12]; if it fails
 	sprintf(data_file_name, "%d.MET", number);
 	debug_printf("Attempting to create file: %s",data_file_name);
@@ -241,7 +241,11 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
 
 	TLM_140(&data1, &data2);
 
-	sprintf(&dataline[0], "Entry ID: %d\n\rCurrent Time: %ld\n\rScheduled Time For Measurement Start: %ld\n\rPlanned Duration: %d\n\r",number,data1,data1+delay+30,time);
+	float data3;
+
+	READ_EPS_BATTERY_VOLTAGE(&data3);
+
+	sprintf(&dataline[0], "Entry ID: %d\n\rCurrent Time: %ld\n\rScheduled Time For Measurement Start: %ld\n\rEPS Battery Voltage: %f\n\rPlanned Duration: %d\n\r",number,data1,data1+delay+30,data3,time);
 	fres = f_write(&fil, dataline, strlen(dataline), &byteswritten);
 	debug_printf("f_write fres: %d",fres);
 	f_close(&fil);
@@ -249,12 +253,40 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
 
 
 	// Delays until measurement start time
-	debug_printf("Delaying for %i seconds");
+	debug_printf("Delaying for %i seconds",delay);
 	osDelay(delay*1000);
+	debug_printf("Ending beacon");
+	END_BEACON();
 	debug_printf("Power on sequence starting");
-
 	// Powers on payload and RF chain
 	//TODO: Power on payload, delay a bit for power spike, turn on LNAs, delay until SDR is warmed up (30 seconds? More? Less?), maybe check power status.
+
+	debug_printf("Payload power on");
+	status = enable_Payload();
+	debug_printf("Payload power status: %d",status);
+	debug_printf("Delaying 20 seconds");
+	osDelay(20000);
+	debug_printf("LNA power on");
+	status = enable_LNAs();
+	debug_printf("LNA power status: %d",status);
+	debug_printf("Delaying 10 seconds");
+	osDelay(10000);
+	char power_status;
+	debug_printf("Sending payload power status command");
+	status = GET_PAYLOAD_POWER_STATUS(&power_status);
+	debug_printf("Power status: %d", power_status);
+	if (status != HAL_OK){
+		debug_printf("Payload comms error");
+		debug_printf("Disabling LNA and SDR power");
+		disable_Payload();
+		disable_LNAs();
+		START_BEACON();
+		return status;
+	}else{
+		debug_printf("Payload comms success");
+	}
+	osDelay(2000);
+
 
 	// Sends start measurement command
 	debug_printf("Starting measurement");
@@ -266,36 +298,79 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
     convert_to_bytes(data, time, 2);
     packet.Data = data;
     packet.Checksum = generateCySatChecksum(packet);
-    HAL_StatusTypeDef status = sendCySatPacket(packet);
-    if(status != HAL_OK){
-        return status;
-    }
+    status = sendCySatPacket(packet);
+//    if(status != HAL_OK){
+//    	debug_printf("Disabling LNA and SDR power");
+//    	disable_Payload();
+//    	disable_LNAs();
+//    	START_BEACON();
+//        return status;
+//    }
 
     // Delays until measurement end and waits for the reception of the success packet
-    osDelay(time*1000-1000); // One second earier as a conservative barrier against payload-OBC synchronization issues. PAYLOAD_UART_TIMEOUT is 10 seconds to protect in the other direction.
+    debug_printf("Message sent successfully, waiting for measurement.");
+    //osDelay(time*1000-1000-PAYLOAD_UART_TIMEOUT); // One second earier as a conservative barrier against payload-OBC synchronization issues. PAYLOAD_UART_TIMEOUT is 10 seconds to protect in the other direction.
     uint8_t data_ptr[6];
-    status = HAL_UART_Receive(&huart6, data_ptr, 6, PAYLOAD_UART_TIMEOUT);
+    status = HAL_UART_Receive(&huart6, data_ptr, 6, time*1000+20000);
+    debug_printf("Message from SDR:");
+    for(int i = 0; i<6; i++){
+    	//data_ptr[i] = data_ptr[i+1]; // Shifts everything over one byte to get rid of the carriage return the SDR sends for some reason
+    	debug_printf("%d %x",data_ptr[i],data_ptr[i]);
+
+    }
+    uint8_t header[17+6]; // parse packet function discards UHF header so we are simulating UHF header
+    memcpy(&header[16],&data_ptr[0],6);
+
+
     if(status != HAL_OK){
+    	debug_printf("Receive Status not okay. Disabling LNA and SDR power");
+    	disable_Payload();
+    	disable_LNAs();
+    	START_BEACON();
         return status;
     }
-    packet = parseCySatPacket(data_ptr);
-    if(packet.Data[0] != 1)
+    packet = parseCySatPacket(header);
+    if(packet.Data[0] != 1){
+    	debug_printf("Packet.Data[0] not equal to 1. Disabling LNA and SDR power");
+    	disable_Payload();
+    	disable_LNAs();
+    	START_BEACON();
         return HAL_ERROR; //TODO: Turn off payload power at all these returns including the one above here a section or two back
-    else if(packet.Subsystem_Type != PAYLOAD_SUBSYSTEM_TYPE)
+    }else if(packet.Subsystem_Type != PAYLOAD_SUBSYSTEM_TYPE){
+    	debug_printf("Subsystem not payload. Disabling LNA and SDR power");
+    	disable_Payload();
+    	disable_LNAs();
+    	START_BEACON();
         return HAL_ERROR;
-    else if(packet.Command != 0x18)
+    }else if(packet.Command != 0x18){
+    	debug_printf("Command not 18. Disabling LNA and SDR power");
+    	disable_Payload();
+    	disable_LNAs();
+    	START_BEACON();
         return HAL_ERROR;
-    else if(validateCySatChecksum(packet) != 1)
+    }else if(validateCySatChecksum(packet) != 1){
+    	debug_printf("Disabling LNA and SDR power");
+    	disable_Payload();
+    	disable_LNAs();
+    	START_BEACON();
         return HAL_ERROR;
-    return status;
+    }
 
     // Measurement has successfully taken place, transfer the files
+    debug_printf("File transfer 1 starting");
+    osDelay(2000);
     FILE_TRANSFER(0, number);
+    debug_printf("File transfer 2 starting");
+    osDelay(2000);
     FILE_TRANSFER(1, number);
+    osDelay(1000);
 
     // Disable power to the payload
     // TODO: Turn off payload and LNAs, also do that in any of the returns above
-
+	debug_printf("Disabling LNA and SDR power");
+	disable_Payload();
+	disable_LNAs();
+	START_BEACON();
     // Return a success
 	return status;
 }
@@ -337,7 +412,7 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
 
     // Transfer of data occurs
     uint8_t data[file_size];
-    status = HAL_UART_Receive(&huart6, data, file_size, PAYLOAD_UART_TIMEOUT*file_size);
+    status = HAL_UART_Receive(&huart6, data, file_size, PAYLOAD_UART_TIMEOUT);
     if(status != HAL_OK){
         return status;
     }
@@ -348,7 +423,11 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
     if(status != HAL_OK){
         return status;
     }
-    packet = parseCySatPacket(checksum_data);
+
+    uint8_t header[17+6]; // parse packet function discards UHF header so we are simulating UHF header
+    memcpy(&header[16],&checksum_data[0],6);
+
+    packet = parseCySatPacket(header);
     if(packet.Subsystem_Type != PAYLOAD_SUBSYSTEM_TYPE)
         return HAL_ERROR;
     else if(packet.Command != 0x1C)
@@ -798,16 +877,27 @@ HAL_StatusTypeDef PAYLOAD_READ(uint8_t command, uint8_t* out_data_ptr, uint8_t o
         return status;
     }
 
-    uint8_t data_ptr[out_byte+5];
-    status = HAL_UART_Receive(&huart6, data_ptr, out_byte + 5, PAYLOAD_UART_TIMEOUT);
+    uint8_t data_ptr[out_byte+5+1]; // Plus 1 because the thing sends a carriage return smh
+    status = HAL_UART_Receive(&huart6, data_ptr, out_byte + 5+1, PAYLOAD_UART_TIMEOUT);
     debug_printf("Message from SDR:");
     for(int i = 0; i<out_byte+5; i++){
+    	data_ptr[i] = data_ptr[i+1]; // Shifts everything over one byte to get rid of the carriage return the SDR sends for some reason
     	debug_printf("%d %x",data_ptr[i],data_ptr[i]);
+
     }
     if(status != HAL_OK){
         return status;
     }
-    packet = parseCySatPacket(data_ptr);
+    uint8_t header[17+out_byte+5]; // parse packet function discards UHF header so we are simulating UHF header
+    memcpy(&header[16],&data_ptr[0],out_byte+5);
+
+    debug_printf("Header With Message:");
+    for(int i = 0; i<18+out_byte+5; i++){
+    	debug_printf("%d %x",header[i],header[i]);
+
+    }
+
+    packet = parseCySatPacket(header);
     memcpy(out_data_ptr, packet.Data, packet.Data_Length);
     if(packet.Subsystem_Type != PAYLOAD_SUBSYSTEM_TYPE)
         return HAL_ERROR;

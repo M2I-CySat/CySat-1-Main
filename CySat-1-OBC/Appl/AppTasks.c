@@ -109,7 +109,7 @@ void Main_Task(void const *argument) {
 	 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 */
 
-	osDelay(500);
+	osDelay(50);
 	debug_printf("Starting UHF Configuration");
 	// Deploy the Antenna
 	// TODO: Antenna Deployment Function Goes Here
@@ -124,7 +124,7 @@ void Main_Task(void const *argument) {
 	} else {
 		debug_printf("[Main Thread/SUCCESS]: Beacon period set successfully");
 	}
-	osDelay(500);
+	osDelay(50);
 
 	// If these don't work increase text allowance in set text by 1?
 	// uint8_t initial_beacon_text[22] = "Hello I Am Space Core";
@@ -137,7 +137,7 @@ void Main_Task(void const *argument) {
 		debug_printf("[Main Thread/SUCCESS]: Beacon text successfully set to:");
 		debug_printf("> %s", initial_beacon_text);
 	}
-	osDelay(500);
+	osDelay(50);
 
 
 	mainStatus = SET_PIPE_TIMEOUT(5);
@@ -146,7 +146,7 @@ void Main_Task(void const *argument) {
 	} else {
 		debug_printf("[Main Thread/SUCCESS]: Transparent mode timeout set successfully");
 	}
-	osDelay(500);
+	osDelay(50);
 
 
 	mainStatus = START_BEACON();
@@ -155,7 +155,7 @@ void Main_Task(void const *argument) {
 	} else {
 		debug_printf("[Main Thread/SUCCESS]: Beacon successfully started");
 	}
-	osDelay(500);
+	osDelay(50);
 
 	/* Temperature sensor test. This is not important but it is one of the first things I (Steven) got working on this project so I've left it here for nostalgia */
 	float uhfTemperature;
@@ -165,7 +165,7 @@ void Main_Task(void const *argument) {
 	} else {
 		debug_printf("[Main Thread/SUCCESS]: UHF temperature: %lf", uhfTemperature);
 	}
-	osDelay(500);
+	osDelay(50);
 
 //	debug_printf("New Incrementer Tests");
 //
@@ -207,15 +207,29 @@ void Main_Task(void const *argument) {
 //	TC_17(4000);
 //	osDelay(5000);
 //	TC_17(0);
-	char power_status;
-	debug_printf("Testing payload power status command");
-	mainStatus = GET_PAYLOAD_POWER_STATUS(&power_status);
-	debug_printf("Power status: %d", power_status);
-	if (mainStatus != HAL_OK){
-		debug_printf("Payload comms error");
-	}else{
-		debug_printf("Payload comms success");
-	}
+//	debug_printf("Payload power on");
+//	mainStatus = enable_Payload();
+//	debug_printf("Payload power status: %d",mainStatus);
+//	debug_printf("Delaying 20 seconds");
+//	osDelay(20000);
+//	debug_printf("LNA power on");
+//	mainStatus = enable_LNAs();
+//	debug_printf("LNA power status: %d",mainStatus);
+//	debug_printf("Delaying 10 seconds");
+//	osDelay(10000);
+//	char power_status;
+//	debug_printf("Testing payload power status command");
+//	mainStatus = GET_PAYLOAD_POWER_STATUS(&power_status);
+//	debug_printf("Power status: %d", power_status);
+//	if (mainStatus != HAL_OK){
+//		debug_printf("Payload comms error");
+//	}else{
+//		debug_printf("Payload comms success");
+//	}
+//	osDelay(3000);
+//	debug_printf("Disabling LNA and SDR power");
+//	disable_Payload();
+//	disable_LNAs();
 
 	//f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks
 	//DELETE_DATA_FILE(3);

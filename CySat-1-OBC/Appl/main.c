@@ -140,7 +140,7 @@ void shutdown_EPS(void) {
     disable_Payload();
     disable_EPS_Output_3();
     disable_UHF();
-    disable_EPS_Output_6();
+    disable_LNAs();
     disable_EPS_Batt_Heater_1();
     disable_EPS_Batt_Heater_2();
     disable_EPS_Batt_Heater_3();

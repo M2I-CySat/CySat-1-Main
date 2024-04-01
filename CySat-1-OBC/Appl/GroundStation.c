@@ -79,11 +79,11 @@ int handleCySatPacket(CySat_Packet_t packet){
                     return sendCySatPacket(outgoingPacket); //send the response
                 }
                 case 0x05: { //Basic Health Check Request
-                    //TODO
+                    //Deprecated by per subsystem health checks
                 	return 0;
                 }
                 case 0x07: { //Main Operations Request
-                    //TODO
+                    //Deprecated by changing ways to do things
                 	return 0;
                 }
                 case 0x11: { //Send large file home
@@ -779,10 +779,10 @@ int handleCySatPacket(CySat_Packet_t packet){
                             }
                             case 0x0C:{ //Enable/Disable Out6
                                 if(packet.Data[1] == 0){
-                                    outgoingPacket.Data[0] = disable_EPS_Output_6();
+                                    outgoingPacket.Data[0] = disable_LNAs();
                                 }
                                 else if(packet.Data[1] == 1){
-                                    outgoingPacket.Data[0] = enable_EPS_Output_6();
+                                    outgoingPacket.Data[0] = enable_LNAs();
                                 }
                                 else{
                                     outgoingPacket.Data[0] = 0x00;
@@ -1014,7 +1014,7 @@ int handleCySatPacket(CySat_Packet_t packet){
             switch(packet.Command){
                 case 0x01: { //Power Status Request
                     
-                    // TODO: 
+                    // TODO: More functions if time, only measurement is critical
                     break;
                 }
                 case 0x03: { // Take Measurement
@@ -1032,7 +1032,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 					return status; //send the response
                 }
                 case 0x10: { // Time Set Request
-                    //TODO:
+                    //Unnecessary
                     break;
                 }
             }
