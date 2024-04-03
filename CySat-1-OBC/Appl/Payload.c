@@ -212,28 +212,22 @@ HAL_StatusTypeDef GET_PAYLOAD_VALUES(float* bandwidth, float* calib_1,
 HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
 	HAL_StatusTypeDef status = HAL_OK;
     // Create file variables
-	FIL fil;
-	UINT byteswritten, bytesread;
-	FRESULT fres;
 
-	// Creates new measurement ID for this measurement
-	fres = f_open(&fil, "entry.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
-	int number = 0;
-	fres = f_read(&fil, &number, 4, &bytesread);
-	debug_printf("Old number %d",number);
-	number = number+1;
-	debug_printf("New number %d",number);
-	fres = f_lseek(&fil, 0);
-	fres = f_write(&fil, &number, 4, &byteswritten);
-	fres = f_close (&fil);
-
+	// Creates new measurement ID for this measurement (RNG due to lack of flash storage, maybe try flash for this one thing?)
+//	fres = f_open(&fil, "entry.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
+//	int number = 0;
+//	fres = f_read(&fil, &number, 4, &bytesread);
+//	debug_printf("Old number %d",number);
+//	number = number+1;
+//	debug_printf("New number %d",number);
+//	fres = f_lseek(&fil, 0);
+//	fres = f_write(&fil, &number, 4, &byteswritten);
+//	fres = f_close (&fil);
+	METposition = 0;
+	MESnum = rand();
+	debug_printf("Generated measurement number %d",MESnum);
 	// Creates .MET file for the measurement with time, duration, delay, vbatt, etc, orbit data if we have time
-	char data_file_name[18] = {"\0"}; //Might have to initialize to just [12]; if it fails
-	sprintf(data_file_name, "%d.MET", number);
-	debug_printf("Attempting to create file: %s",data_file_name);
 
-	fres = f_open(&fil, &data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-	debug_printf("f_open fres: %d",fres);
 
 	char dataline[256] = {'\0'};
 	uint32_t data1;
@@ -245,10 +239,8 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
 
 	READ_EPS_BATTERY_VOLTAGE(&data3);
 
-	sprintf(&dataline[0], "Entry ID: %d\n\rCurrent Time: %ld\n\rScheduled Time For Measurement Start: %ld\n\rEPS Battery Voltage: %f\n\rPlanned Duration: %d\n\r",number,data1,data1+delay+30,data3,time);
-	fres = f_write(&fil, dataline, strlen(dataline), &byteswritten);
-	debug_printf("f_write fres: %d",fres);
-	f_close(&fil);
+	sprintf(&dataline[0], "Entry ID: %d\n\rCurrent Time: %ld\n\rScheduled Time For Measurement Start: %ld\n\rEPS Battery Voltage: %f\n\rPlanned Duration: %d\n\r",MESnum,data1,data1+delay+30,data3,time);
+	METappend(dataline);
 
 
 
@@ -257,6 +249,12 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
 	osDelay(delay*1000);
 	debug_printf("Ending beacon");
 	END_BEACON();
+
+	READ_EPS_BATTERY_VOLTAGE(&data3);
+	dataline[0] = '\0';
+	sprintf(&dataline[0], "EPS VBATT before power on: %f\n\r",data3);
+	METappend(dataline);
+
 	debug_printf("Power on sequence starting");
 	// Powers on payload and RF chain
 	//TODO: Power on payload, delay a bit for power spike, turn on LNAs, delay until SDR is warmed up (30 seconds? More? Less?), maybe check power status.
@@ -270,7 +268,14 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
 	status = enable_LNAs();
 	debug_printf("LNA power status: %d",status);
 	debug_printf("Delaying 10 seconds");
-	osDelay(10000);
+	osDelay(5000);
+
+	READ_EPS_BATTERY_VOLTAGE(&data3);
+	dataline[0] = '\0';
+	sprintf(&dataline[0], "EPS VBATT before measurement start: %f\n\r",data3);
+	METappend(dataline);
+
+	osDelay(5000);
 	char power_status;
 	debug_printf("Sending payload power status command");
 	status = GET_PAYLOAD_POWER_STATUS(&power_status);
@@ -359,10 +364,10 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
     // Measurement has successfully taken place, transfer the files
     debug_printf("File transfer 1 starting");
     osDelay(2000);
-    FILE_TRANSFER(0, number);
+    FILE_TRANSFER(0, MESnum);
     debug_printf("File transfer 2 starting");
     osDelay(2000);
-    FILE_TRANSFER(1, number);
+    FILE_TRANSFER(1, MESnum);
     osDelay(1000);
 
     // Disable power to the payload
@@ -385,6 +390,22 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
 
 HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
     // Start transfer request to payload
+	uint8_t* bigdata_ptr;
+	uint32_t file_size;
+
+	if(file_type == 0x00){
+		bigdata_ptr = &DATaddress[0];
+		file_size = DATlength;
+	}else if(file_type == 0x01){
+		bigdata_ptr = &KELaddress[0];
+		file_size = KELlength;
+	}else if (file_type == 0x04){
+		bigdata_ptr = &TESaddress[0];
+		file_size = TESlength;
+	}else{
+		debug_printf("File type not supported");
+	}
+
     CySat_Packet_t packet;
     packet.Subsystem_Type = PAYLOAD_SUBSYSTEM_TYPE;
     packet.Command = 0x1B;
@@ -410,11 +431,11 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
         return HAL_ERROR;
     else if(validateCySatChecksum(packet) != 1)
         return HAL_ERROR;
-    int file_size = convert_to_int(packet.Data, 3);
+    file_size = convert_to_int(packet.Data, 3);
 
     // Transfer of data occurs
-    uint8_t data[file_size];
-    status = HAL_UART_Receive(&huart6, data, file_size, PAYLOAD_UART_TIMEOUT);
+    //uint8_t data[file_size];
+    status = HAL_UART_Receive(&huart6, bigdata_ptr, file_size, PAYLOAD_UART_TIMEOUT);
     if(status != HAL_OK){
     	debug_printf("Data return timeout");
         return status;
@@ -441,48 +462,48 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
     // Validate file checksum
     uint32_t byte_sum;
     for(int i = 0; i < file_size; i++){
-        byte_sum += data[i];
+        byte_sum += *(bigdata_ptr+i);
     }
 
     if(packet.Data[0] == (0xFF - (byte_sum & 0xFF))){
         //Transfer data to computer for debugging
         for(int i = 0; i < file_size; i++){
-            debug_printf("%d", data[i]);
+            debug_printf("%d", *(bigdata_ptr+i));
         }
     }
 
-	//Write to SD Card
-	//NOTE: Code to read from entry number file inserted after successful testing in AppTasks, may need some tweaks to run in Payload
-
-	FIL fil; //File handle
-	FRESULT fres; //Result after operations
-	//TCHAR const* SDPath = "0"; //Unused but worth keeping I think
-
-	//Assemble the file name from the dat/kelvin and measurement number
-	char data_file_name[12]={"\0"}; //Might have to initialize to just [12]; if it fails
-	if(file_type == 0){
-		sprintf(data_file_name, "%d.DAT", file_num);  // Prepend with "data_file_name[0] = " in case doesn't work, same with below version
-		debug_printf("dat file");
-	}else {
-		sprintf(data_file_name, "%d.KEL", file_num);
-		debug_printf("kel file");
-	}
-	debug_printf("%s", data_file_name);
-
-	//Opens the file
-	fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-	if(fres != FR_OK){
-		return HAL_ERROR;
-	}
-
-	//Writes to the file
-	UINT bytes;
-	fres = f_write(&fil, (char*)data, (UINT)file_size, &bytes);
-	if(fres != FR_OK || bytes!= file_size){
-		//status = HAL_ERROR;
-		return HAL_ERROR;
-	}
-	f_close(&fil); //Close the file
+//	//Write to SD Card
+//	//NOTE: Code to read from entry number file inserted after successful testing in AppTasks, may need some tweaks to run in Payload
+//
+//	FIL fil; //File handle
+//	FRESULT fres; //Result after operations
+//	//TCHAR const* SDPath = "0"; //Unused but worth keeping I think
+//
+//	//Assemble the file name from the dat/kelvin and measurement number
+//	char data_file_name[12]={"\0"}; //Might have to initialize to just [12]; if it fails
+//	if(file_type == 0){
+//		sprintf(data_file_name, "%d.DAT", file_num);  // Prepend with "data_file_name[0] = " in case doesn't work, same with below version
+//		debug_printf("dat file");
+//	}else {
+//		sprintf(data_file_name, "%d.KEL", file_num);
+//		debug_printf("kel file");
+//	}
+//	debug_printf("%s", data_file_name);
+//
+//	//Opens the file
+//	fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+//	if(fres != FR_OK){
+//		return HAL_ERROR;
+//	}
+//
+//	//Writes to the file
+//	UINT bytes;
+//	fres = f_write(&fil, (char*)data, (UINT)file_size, &bytes);
+//	if(fres != FR_OK || bytes!= file_size){
+//		//status = HAL_ERROR;
+//		return HAL_ERROR;
+//	}
+//	f_close(&fil); //Close the file
 
     return status;
 }
@@ -606,7 +627,166 @@ HAL_StatusTypeDef DELETE_FILE(int data_file_no, int data_type){
 	}
 }
 
+/**
+ * @brief Selects which part of the data is transmitted and sends that part home
+ *
+*/
 
+HAL_StatusTypeDef RAM_PACKET_SEPARATOR(int measurementID, int dataType, int startPacket, int endPacket){
+	if (startPacket > endPacket) //Checks to make sure packet ordering is valid
+	{
+		debug_printf("[RAM_PACKET_SEPARATOR/ERROR]: Start Packet is greater than End Packet");
+		return HAL_ERROR;
+	}
+	// Determine data type and grab data and length pointers
+
+	uint8_t* dat_ptr;
+	uint32_t dat_len;
+
+	switch(dataType){
+		case 0: //DAT
+			dat_ptr = &DATaddress[0];
+			dat_len = DATlength;
+			debug_printf("DAT file");
+			break;
+		case 1: //KEL
+			dat_ptr = &KELaddress[0];
+			dat_len = KELlength;
+			debug_printf("KEL file");
+			break;
+		case 2: //Unused LIS
+			debug_printf("LIS unsupported on RAMSat");
+			return HAL_ERROR;
+		case 3: //HCK
+			dat_ptr = &HCKaddress[0];
+			dat_len = HCKlength;
+			debug_printf("HCK file");
+			break;
+		case 4: //TES
+			dat_ptr = &HCKaddress[0];
+			dat_len = HCKlength;
+			debug_printf("TES file");
+			break;
+		case 5: //MET
+			dat_ptr = &METaddress[0];
+			dat_len = METlength;
+			debug_printf("MET file");
+			break;
+		default:
+			debug_printf("Invalid data type");
+			return HAL_ERROR;
+	}
+
+	HAL_StatusTypeDef status;
+	status = START_PIPE();
+	if(status!=HAL_OK){
+		debug_printf("Transparent mode start error");
+	}
+
+	for (unsigned int i = startPacket; i <= endPacket; i++)
+	{
+		char packet[129]={0xFE}; //129 so the last byte doesn't get cut off by end of char character
+		char toscramble[129]={0x00};
+		char scrambled[129]={0x00};
+		int seed = rand();
+		int seed2 = rand();
+		uint32_t lfsr;
+		lfsr = (seed << 16) + seed2;
+
+		toscramble[0]=0xAA;
+		toscramble[1]=0xAA;
+		toscramble[2]=0xAA;
+
+		// STRUCTURE:
+		// The ground station will always add an 0x80 to the start, this appears unavoidable
+
+		// 0xFF then 0xAA for packet start
+		// START SCRAMBLING
+		// 3 sacrificial AAs to be lost to synchronization
+		// 1 byte for data type
+		// 4 bytes for measurement id
+		// 4 bytes for packet number
+		// 1 byte for bytes read
+		// That is 15 chars of header
+		// Up to 113 bytes of data
+		// If there is not 113 bytes of data left, the rest will be filled with 0xAA
+		// END SCRAMBLING
+		// Should be no remaining bytes
+
+
+		//^ Is xor
+
+		packet[0] = 0xFF;
+		packet[1] = 0xAA;
+
+		memcpy(&toscramble[3], &dataType, 1);
+		memcpy(&toscramble[4], &measurementID, 4);
+		memcpy(&toscramble[8], &i, 4);
+		//toscramble[11]=0xFF;
+
+		UINT bytesRead;
+		// We need to make bytes read a thing
+		char data[120] = {"A"};
+		if(i*113+113>dat_len+113){
+			break;
+		}else if(i*113+113>dat_len){
+			bytesRead = 113 - (i*113+113-dat_len);
+			memcpy(&data[0], dat_ptr+i*113, bytesRead);
+		}else{
+			bytesRead = 113;
+			memcpy(&data[0], dat_ptr+i*113,113);
+		}
+
+		toscramble[12] = bytesRead;
+		for (int j = 0; j < bytesRead; j++) // Copy the data into the packet
+		{
+			toscramble[13+j] = data[j];
+			//debug_printf_no_newline("%c",packet[j+12]);
+		}
+
+		if (bytesRead<113){
+			for (int a = bytesRead; a<112; a++){
+				toscramble[13+a]=0xAA;
+			}
+		}
+
+		//Scrambles
+		//The scrambling polynomial is 1 + X^12 + X^17. This means the currently transmitted bit is the EXOR of the current data bit, plus the bits that were transmitted 12 and 17 bits earlier. Likewise the unscrambling operation simply EXORs the bit received now with those sent 12 and 17 bits earlier. The unscrambler perforce requires 17 bits to synchronise.
+		char x17;
+		char x12;
+		char currentbit;
+		char outbit;
+		scrambled[0] = 0xAA;
+		scrambled[1] = 0xAA;
+		scrambled[2] = 0xAA;
+		for (int i = 0; i < 126; i++){ //Was 125
+			for (int j = 0; j<8; j++){
+				currentbit = (toscramble[i] >> (7-j)) & 0x01;
+				x17 = lfsr >> 16 & 0x01;
+				x12 = lfsr >> 11 & 0x01;
+				outbit = (x17 ^ x12) ^ currentbit;
+				lfsr = lfsr << 1;
+				lfsr = lfsr + outbit;
+				scrambled[i] = scrambled[i] << 1;
+				scrambled[i] = scrambled[i] + outbit;
+				//debug_printf("Toscramble[i]: %d Current bit: %d X17: %d X12: %d Outbit: %d LFSR: %lu, scrambled[i]: %d",toscramble[i],currentbit,x17,x12,outbit,lfsr,scrambled[i]);
+			}
+		}
+
+		//Copies into packet
+
+		memcpy(&packet[2], &scrambled[0], 126);
+
+
+		HAL_UART_Transmit(&huart1, &packet, 128, 132); // Incompatible pointer types, but I don't want to poke it because it finally works and I don't remember how I got it to work besides trial and error
+		osDelay(3); //It wants 3ms of delay to ensure no dropped data, not sure how much delay the above code will cause but just being safe in case it is below 3
+	}
+	osDelay(5500); //Let the pipe timeout so we don't get 0x80s in the wrong places
+	//END_PIPE();
+
+
+	return HAL_OK;
+}
 
 /**
  * @brief Selects which part of the data is transmitted and sends that part home 

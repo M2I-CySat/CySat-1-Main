@@ -99,9 +99,27 @@ extern Sat_Flags_t SatFlags;
 
 extern uint8_t GroundStationPacketLength;
 extern uint8_t GroundStationRxBuffer[256]; //Was 46
+extern uint8_t METaddress[256];
+extern uint8_t DATaddress[10800];
+extern uint8_t KELaddress[1080];
+extern uint8_t TESaddress[65536];
+extern uint8_t HCKaddress[1024];
 extern uint8_t* start_of_rx_buffer;
 
+extern uint32_t DATlength;
+extern uint32_t KELlength;
+extern uint32_t METlength;
+extern uint32_t TESlength;
+extern uint32_t HCKlength;
 
+extern uint16_t HCKposition;
+extern uint16_t METposition;
+
+extern int MESnum;
+extern uint8_t TESnum;
+
+extern HAL_StatusTypeDef HCKappend(char* content);
+extern HAL_StatusTypeDef METappend(char* content);
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * EXTERNAL ROUTINES DECLARATIONS 

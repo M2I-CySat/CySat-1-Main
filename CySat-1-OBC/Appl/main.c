@@ -19,6 +19,16 @@
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+
+
+// RAM-Sat branch of CySat OBC code
+// Steven Scheuermann's attempt at making the satellite only use RAM instead of the SD Card
+// Becuase Steven was a fool and let a loose 5V wire near the OBC destroying its capability to read SD Cards
+// Don't be like Steven
+
+
+
+
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * INCLUDES
@@ -42,6 +52,7 @@
 #include  <stdarg.h>
 #include  <stdio.h>
 #include  <stdlib.h>
+#include  <string.h>
 
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,6 +84,26 @@ uint8_t* start_of_rx_buffer = &GroundStationRxBuffer;
 Sat_Flags_t SatFlags;
 
 uint8_t GroundStationRxBuffer[256];
+uint8_t METaddress[256];
+uint8_t DATaddress[10800];
+uint8_t KELaddress[1080];
+uint8_t TESaddress[65536];
+uint8_t HCKaddress[1024];
+
+uint32_t DATlength;
+uint32_t KELlength;
+uint32_t METlength;
+uint32_t TESlength;
+uint32_t HCKlength;
+
+uint16_t HCKposition;
+uint16_t METposition;
+
+int MESnum;
+uint8_t TESnum;
+
+
+
 
 uint32_t calendar_format;
 
@@ -169,6 +200,18 @@ HAL_StatusTypeDef startup_EPS() {
 		}
 	}
 	return HalStatus;
+}
+
+HAL_StatusTypeDef HCKappend(char* content){
+    memcpy(&HCKaddress[HCKposition],&content,strlen(content));
+    HCKposition+=strlen(content);
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef METappend(char* content){
+    memcpy(&METaddress[METposition],&content,strlen(content));
+    HCKposition+=strlen(content);
+    return HAL_OK;
 }
 
 /**

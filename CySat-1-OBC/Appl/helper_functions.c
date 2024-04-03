@@ -195,3 +195,7 @@ uint32_t crc32(uint8_t* message, int length, uint8_t* crc_ascii) {
    sprintf(crc_ascii, "%lX", crc);
    return crc;
 }
+
+
+
+

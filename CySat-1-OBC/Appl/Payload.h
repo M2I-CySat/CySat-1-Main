@@ -39,6 +39,7 @@ HAL_StatusTypeDef KELVIN_FILE_TRANSFER(int);
 
 /*************************** TRANSMISSION FUNCTIONS *****************************/
 HAL_StatusTypeDef PACKET_SEPARATOR(int measurementID, int dataType, int startPacket, int endPacket, int do_numbering, char* fullname);
+HAL_StatusTypeDef RAM_PACKET_SEPARATOR(int measurementID, int dataType, int startPacket, int endPacket);
 HAL_StatusTypeDef DELETE_FILE(int data_file_no, int data_type);
 HAL_StatusTypeDef PACKET_PRINT();
 FRESULT list_dir();
