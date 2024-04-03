@@ -472,38 +472,83 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
         }
     }
 
-//	//Write to SD Card
-//	//NOTE: Code to read from entry number file inserted after successful testing in AppTasks, may need some tweaks to run in Payload
-//
-//	FIL fil; //File handle
-//	FRESULT fres; //Result after operations
-//	//TCHAR const* SDPath = "0"; //Unused but worth keeping I think
-//
-//	//Assemble the file name from the dat/kelvin and measurement number
-//	char data_file_name[12]={"\0"}; //Might have to initialize to just [12]; if it fails
-//	if(file_type == 0){
-//		sprintf(data_file_name, "%d.DAT", file_num);  // Prepend with "data_file_name[0] = " in case doesn't work, same with below version
-//		debug_printf("dat file");
-//	}else {
-//		sprintf(data_file_name, "%d.KEL", file_num);
-//		debug_printf("kel file");
-//	}
-//	debug_printf("%s", data_file_name);
-//
-//	//Opens the file
-//	fres = f_open(&fil, data_file_name, FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-//	if(fres != FR_OK){
-//		return HAL_ERROR;
-//	}
-//
-//	//Writes to the file
-//	UINT bytes;
-//	fres = f_write(&fil, (char*)data, (UINT)file_size, &bytes);
-//	if(fres != FR_OK || bytes!= file_size){
-//		//status = HAL_ERROR;
-//		return HAL_ERROR;
-//	}
-//	f_close(&fil); //Close the file
+    return status;
+}
+
+
+HAL_StatusTypeDef TES_FILE_TRANSFER(uint8_t* file_num){
+    // Start transfer request to payload
+	uint8_t* bigdata_ptr;
+	uint32_t file_size;
+
+	bigdata_ptr = &TESaddress[0];
+	file_size = TESlength;
+
+    CySat_Packet_t packet;
+    packet.Subsystem_Type = PAYLOAD_SUBSYSTEM_TYPE;
+    packet.Command = 0x1E;
+    packet.Data_Length = 1;
+    packet.Data = file_num;
+    packet.Checksum = generateCySatChecksum(packet);
+    HAL_StatusTypeDef status = sendCySatPacket(packet);
+    if(status != HAL_OK){
+        return status;
+    }
+    // Start transfer response with file size
+    uint8_t data_ptr[8];
+    status = HAL_UART_Receive(&huart6, data_ptr, 8, PAYLOAD_UART_TIMEOUT);
+    if(status != HAL_OK){
+        return status;
+    }
+    uint8_t header[17+6]; // parse packet function discards UHF header so we are simulating UHF header
+    memcpy(&header[16],&data_ptr[0],8);
+    packet = parseCySatPacket(header);
+    if(packet.Subsystem_Type != PAYLOAD_SUBSYSTEM_TYPE)
+        return HAL_ERROR;
+    else if(packet.Command != 0x1D)
+        return HAL_ERROR;
+    else if(validateCySatChecksum(packet) != 1)
+        return HAL_ERROR;
+    file_size = convert_to_int(packet.Data, 3);
+
+    // Transfer of data occurs
+    //uint8_t data[file_size];
+    status = HAL_UART_Receive(&huart6, bigdata_ptr, file_size, PAYLOAD_UART_TIMEOUT);
+    if(status != HAL_OK){
+    	debug_printf("Data return timeout");
+        return status;
+    }
+
+    // File checksum arrives in CySat packet
+    uint8_t checksum_data[6];
+    status = HAL_UART_Receive(&huart6, checksum_data, 6, PAYLOAD_UART_TIMEOUT);
+    if(status != HAL_OK){
+        return status;
+    }
+
+    uint8_t header2[17+6]; // parse packet function discards UHF header so we are simulating UHF header
+    memcpy(&header2[16],&checksum_data[0],6);
+
+    packet = parseCySatPacket(header2);
+    if(packet.Subsystem_Type != PAYLOAD_SUBSYSTEM_TYPE)
+        return HAL_ERROR;
+    else if(packet.Command != 0x1C)
+        return HAL_ERROR;
+    else if(validateCySatChecksum(packet) != 1)
+        return HAL_ERROR;
+
+    // Validate file checksum
+    uint32_t byte_sum;
+    for(int i = 0; i < file_size; i++){
+        byte_sum += *(bigdata_ptr+i);
+    }
+
+    if(packet.Data[0] == (0xFF - (byte_sum & 0xFF))){
+        //Transfer data to computer for debugging
+        for(int i = 0; i < file_size; i++){
+            debug_printf("%d", *(bigdata_ptr+i));
+        }
+    }
 
     return status;
 }

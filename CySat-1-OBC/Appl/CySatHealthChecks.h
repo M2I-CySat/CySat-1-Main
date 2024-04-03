@@ -17,3 +17,8 @@ typedef struct BasicHealthCheck{
 } BasicHealthCheck_t;
 
 #endif /* CYSATHEALTHCHECKS_H_ */
+
+
+HAL_StatusTypeDef EPS_HEALTH_CHECK();
+HAL_StatusTypeDef UHF_HEALTH_CHECK();
+HAL_StatusTypeDef ADCS_HEALTH_CHECK();
