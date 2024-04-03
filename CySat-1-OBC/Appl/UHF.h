@@ -42,7 +42,7 @@ HAL_StatusTypeDef SET_UHF_LOW_POWER_MODE();
 HAL_StatusTypeDef DEPLOY_ANTENNA(uint8_t);
 HAL_StatusTypeDef CONFIGURE_ANTENNA();
 HAL_StatusTypeDef GET_ANTENNA_STATUS(uint8_t* status);
-HAL_StatusTypeDef GET_ANTENNA_CONIFG(uint8_t* status);
+HAL_StatusTypeDef GET_ANTENNA_CONFIG(uint8_t* status);
 
 /*************************** HELPER FUNCTIONS **********************************/
 HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte);
