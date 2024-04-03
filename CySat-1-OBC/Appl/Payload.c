@@ -401,7 +401,9 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
     if(status != HAL_OK){
         return status;
     }
-    packet = parseCySatPacket(data_ptr);
+    uint8_t header[17+6]; // parse packet function discards UHF header so we are simulating UHF header
+    memcpy(&header[16],&data_ptr[0],8);
+    packet = parseCySatPacket(header);
     if(packet.Subsystem_Type != PAYLOAD_SUBSYSTEM_TYPE)
         return HAL_ERROR;
     else if(packet.Command != 0x1A)
@@ -414,6 +416,7 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
     uint8_t data[file_size];
     status = HAL_UART_Receive(&huart6, data, file_size, PAYLOAD_UART_TIMEOUT);
     if(status != HAL_OK){
+    	debug_printf("Data return timeout");
         return status;
     }
 
@@ -424,10 +427,10 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
         return status;
     }
 
-    uint8_t header[17+6]; // parse packet function discards UHF header so we are simulating UHF header
-    memcpy(&header[16],&checksum_data[0],6);
+    uint8_t header2[17+6]; // parse packet function discards UHF header so we are simulating UHF header
+    memcpy(&header2[16],&checksum_data[0],6);
 
-    packet = parseCySatPacket(header);
+    packet = parseCySatPacket(header2);
     if(packet.Subsystem_Type != PAYLOAD_SUBSYSTEM_TYPE)
         return HAL_ERROR;
     else if(packet.Command != 0x1C)
@@ -660,6 +663,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(int measurementID, int dataType, int startPac
     fres = f_open(&currfile, fileName, FA_READ);
     if(fres != FR_OK){
     	debug_printf("[PACKET_SEPARATOR/ERROR]: Failed to open measurement file");
+    	debug_printf("Error code %d",fres);
     	return HAL_ERROR;
     }
     debug_printf("[PACKET_SEPARATOR]: Successfully opened measurement file %s",fileName);

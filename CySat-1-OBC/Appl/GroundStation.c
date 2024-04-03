@@ -274,8 +274,9 @@ int handleCySatPacket(CySat_Packet_t packet){
 				}
 				case 0x09:	{	// Health Check Request
 					FIL fil;
-					f_open(&fil, "3.HCK", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-
+					FRESULT fres;
+					fres = f_open(&fil, "3.HCK", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+					debug_printf("ADCS Heath Check FRES Code: %d",fres);
 					char dataline[256] = {'\0'};
 					float float1;
 					float float2;
