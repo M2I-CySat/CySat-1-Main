@@ -888,6 +888,7 @@ HAL_StatusTypeDef TLM_199(float* roll, float* pitch, float* yaw){
 */
 HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out_byte){
         HAL_StatusTypeDef status = HAL_ERROR;
+        osStatus osStatus = osOK;
         uint8_t telemetry[5];
         telemetry[0] = 0x1F;
         telemetry[1] = 0x7F;
@@ -897,7 +898,12 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
         for(int i = 0; i<5; i++){
         	debug_printf("%d %x",telemetry[i],telemetry[i]);
         }
-        osMutexWait(UART_Mutex, 2500);
+        osStatus = osMutexWait(UART_Mutex, 2500);
+        if(osStatus != osOK){
+        	debug_printf("ADCS Telemetry: Mutex acquire error, aborting");
+        	osMutexRelease(UART_Mutex);
+			return status;
+        }
         status = HAL_UART_Transmit(&huart4, telemetry, 5, ADCS_UART_TIMEOUT);
         if(status != HAL_OK){
             osMutexRelease(UART_Mutex);
@@ -906,6 +912,7 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
         uint8_t data[out_byte+5];
         status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
         if(status != HAL_OK)
+        	osMutexRelease(UART_Mutex);
             return status;
 
         int counter=0;
@@ -954,6 +961,7 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
 */
 HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
         HAL_StatusTypeDef status = HAL_ERROR;
+        osStatus osStatus = osOK;
         uint8_t telecommand[in_byte+4];
         telecommand[0] = 0x1F;
         telecommand[1] = 0x7F;
@@ -967,7 +975,12 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
             debug_printf("%d %x" , telecommand[j],telecommand[j]);
         }
         debug_printf("\r\n");
-        osMutexWait(UART_Mutex, 2500);
+        osStatus = osMutexWait(UART_Mutex, 2500);
+        if(osStatus != osOK){
+        	debug_printf("ADCS Telecommand: Mutex acquire error, aborting");
+        	osMutexRelease(UART_Mutex);
+			return status;
+        }
         status = HAL_UART_Transmit(&huart4, telecommand, in_byte+4, ADCS_UART_TIMEOUT);
         if(status != HAL_OK){
         	debug_printf("ADCS UART Tx Error, Going on anyway");

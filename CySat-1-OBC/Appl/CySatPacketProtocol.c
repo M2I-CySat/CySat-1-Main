@@ -21,15 +21,24 @@
  */
 CySat_Packet_t parseCySatPacket(uint8_t* packet){
     CySat_Packet_t cySatPacket;
-    cySatPacket.Subsystem_Type = packet[17];
+    int offset = 17;
+    if(packet[17] == 0xFF){
+    	offset = 18;
+    }else if(packet[15] == 0xFF){
+    	offset = 16;
+    }else if(packet[17] == 0xFF){
+    	offset = 17;
+    }
+    debug_printf("Offset: %d",offset);
+    cySatPacket.Subsystem_Type = packet[offset];
     debug_printf("Subsystem type: %02x",cySatPacket.Subsystem_Type);
-    cySatPacket.Command = packet[18];
+    cySatPacket.Command = packet[offset+1];
     debug_printf("Command: %02x",cySatPacket.Command);
-    cySatPacket.Data_Length = packet[19];
+    cySatPacket.Data_Length = packet[offset+2];
     debug_printf("Data length (dec): %d (hex): %02x", cySatPacket.Data_Length ,cySatPacket.Data_Length);
     cySatPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * cySatPacket.Data_Length);
-    memcpy(cySatPacket.Data, packet+20, cySatPacket.Data_Length);
-    cySatPacket.Checksum = packet[cySatPacket.Data_Length+20];
+    memcpy(cySatPacket.Data, packet+offset+3, cySatPacket.Data_Length);
+    cySatPacket.Checksum = packet[cySatPacket.Data_Length+offset+3];
     debug_printf("Checksum (hex): %02x", cySatPacket.Checksum);
     return cySatPacket;
 }

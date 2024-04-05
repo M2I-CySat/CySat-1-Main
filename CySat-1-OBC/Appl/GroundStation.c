@@ -761,8 +761,8 @@ int handleCySatPacket(CySat_Packet_t packet){
                     break;
                 }
                 case 0x03: { // Take Measurement
-                	osDelay(10000); // Delay to allow end beacon to go through properly
-                	END_BEACON();
+                	//osDelay(5100); // Delay to allow end beacon to go through properly
+                	//END_BEACON();
                 	uint16_t duration, delay;
                 	memcpy(&duration, &packet.Data[0], 2);
                 	memcpy(&delay, &packet.Data[2], 2);
@@ -771,7 +771,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 						START_BEACON();
 						return -1;
 					}
-					START_BEACON();
+					//START_BEACON();
 					return status; //send the response
                 }
                 case 0x10: { // Time Set Request

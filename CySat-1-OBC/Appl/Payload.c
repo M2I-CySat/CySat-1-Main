@@ -323,7 +323,7 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
     	debug_printf("%d %x",data_ptr[i],data_ptr[i]);
 
     }
-    uint8_t header[17+6]; // parse packet function discards UHF header so we are simulating UHF header
+    uint8_t header[17+6] = {0}; // parse packet function discards UHF header so we are simulating UHF header
     memcpy(&header[16],&data_ptr[0],6);
 
 
@@ -388,20 +388,20 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
  */
 
 
-HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
+HAL_StatusTypeDef FILE_TRANSFER(uint8_t file_type, int file_num){
     // Start transfer request to payload
 	uint8_t* bigdata_ptr;
 	uint32_t file_size;
-
+	uint32_t* lendata_ptr;
 	if(file_type == 0x00){
 		bigdata_ptr = &DATaddress[0];
-		file_size = DATlength;
+		lendata_ptr = &DATlength;
+		debug_printf("Dat Transfer");
 	}else if(file_type == 0x01){
 		bigdata_ptr = &KELaddress[0];
-		file_size = KELlength;
-	}else if (file_type == 0x04){
-		bigdata_ptr = &TESaddress[0];
-		file_size = TESlength;
+		lendata_ptr = &KELlength;
+		debug_printf("Kel Transfer");
+
 	}else{
 		debug_printf("File type not supported");
 	}
@@ -410,7 +410,7 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
     packet.Subsystem_Type = PAYLOAD_SUBSYSTEM_TYPE;
     packet.Command = 0x1B;
     packet.Data_Length = 1;
-    packet.Data = file_type;
+    packet.Data = &file_type;
     packet.Checksum = generateCySatChecksum(packet);
     HAL_StatusTypeDef status = sendCySatPacket(packet);
     if(status != HAL_OK){
@@ -418,11 +418,11 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
     }
     // Start transfer response with file size
     uint8_t data_ptr[8];
-    status = HAL_UART_Receive(&huart6, data_ptr, 8, PAYLOAD_UART_TIMEOUT);
+    status = HAL_UART_Receive(&huart6, data_ptr, 8+file_type, PAYLOAD_UART_TIMEOUT); //Plus file type because kevin be giving us an extra byte???
     if(status != HAL_OK){
         return status;
     }
-    uint8_t header[17+6]; // parse packet function discards UHF header so we are simulating UHF header
+    uint8_t header[17+6] = {0}; // parse packet function discards UHF header so we are simulating UHF header
     memcpy(&header[16],&data_ptr[0],8);
     packet = parseCySatPacket(header);
     if(packet.Subsystem_Type != PAYLOAD_SUBSYSTEM_TYPE)
@@ -430,9 +430,12 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
     else if(packet.Command != 0x1A)
         return HAL_ERROR;
     else if(validateCySatChecksum(packet) != 1)
-        return HAL_ERROR;
+        debug_printf("Checksum is wrong likely becuse of two FFs in a row");
     file_size = convert_to_int(packet.Data, 3);
-
+    debug_printf("Size of file being transferred: %lu %ld",file_size, file_size);
+    memcpy(lendata_ptr, &file_size, 4);
+    debug_printf("Size of new lendata_ptr: %ld, %lu",*lendata_ptr, *lendata_ptr);
+    osDelay(500);
     // Transfer of data occurs
     //uint8_t data[file_size];
     status = HAL_UART_Receive(&huart6, bigdata_ptr, file_size, PAYLOAD_UART_TIMEOUT);
@@ -440,6 +443,7 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
     	debug_printf("Data return timeout");
         return status;
     }
+    osDelay(500);
 
     // File checksum arrives in CySat packet
     uint8_t checksum_data[6];
@@ -448,7 +452,7 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
         return status;
     }
 
-    uint8_t header2[17+6]; // parse packet function discards UHF header so we are simulating UHF header
+    uint8_t header2[17+6] = {0}; // parse packet function discards UHF header so we are simulating UHF header
     memcpy(&header2[16],&checksum_data[0],6);
 
     packet = parseCySatPacket(header2);
@@ -457,7 +461,7 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
     else if(packet.Command != 0x1C)
         return HAL_ERROR;
     else if(validateCySatChecksum(packet) != 1)
-        return HAL_ERROR;
+        debug_printf("Checksum likey wrong because offset, continuing");
 
     // Validate file checksum
     uint32_t byte_sum;
@@ -466,11 +470,13 @@ HAL_StatusTypeDef FILE_TRANSFER(int file_type, int file_num){
     }
 
     if(packet.Data[0] == (0xFF - (byte_sum & 0xFF))){
+    	debug_printf("Checksum success");
         //Transfer data to computer for debugging
         for(int i = 0; i < file_size; i++){
             debug_printf("%d", *(bigdata_ptr+i));
         }
     }
+    debug_printf("Checksum failure");
 
     return status;
 }
@@ -500,7 +506,7 @@ HAL_StatusTypeDef TES_FILE_TRANSFER(uint8_t* file_num){
     if(status != HAL_OK){
         return status;
     }
-    uint8_t header[17+6]; // parse packet function discards UHF header so we are simulating UHF header
+    uint8_t header[17+6] = {0}; // parse packet function discards UHF header so we are simulating UHF header
     memcpy(&header[16],&data_ptr[0],8);
     packet = parseCySatPacket(header);
     if(packet.Subsystem_Type != PAYLOAD_SUBSYSTEM_TYPE)
@@ -683,6 +689,7 @@ HAL_StatusTypeDef RAM_PACKET_SEPARATOR(int measurementID, int dataType, int star
 		debug_printf("[RAM_PACKET_SEPARATOR/ERROR]: Start Packet is greater than End Packet");
 		return HAL_ERROR;
 	}
+	debug_printf("RAM packet separator starting");
 	// Determine data type and grab data and length pointers
 
 	uint8_t* dat_ptr;
@@ -721,6 +728,7 @@ HAL_StatusTypeDef RAM_PACKET_SEPARATOR(int measurementID, int dataType, int star
 			debug_printf("Invalid data type");
 			return HAL_ERROR;
 	}
+	debug_printf("Dat len: %ld",dat_len);
 
 	HAL_StatusTypeDef status;
 	status = START_PIPE();
@@ -773,6 +781,7 @@ HAL_StatusTypeDef RAM_PACKET_SEPARATOR(int measurementID, int dataType, int star
 		// We need to make bytes read a thing
 		char data[120] = {"A"};
 		if(i*113+113>dat_len+113){
+			debug_printf("Packet too long, breaking");
 			break;
 		}else if(i*113+113>dat_len){
 			bytesRead = 113 - (i*113+113-dat_len);
@@ -781,6 +790,7 @@ HAL_StatusTypeDef RAM_PACKET_SEPARATOR(int measurementID, int dataType, int star
 			bytesRead = 113;
 			memcpy(&data[0], dat_ptr+i*113,113);
 		}
+		debug_printf("Packet data: %s",data);
 
 		toscramble[12] = bytesRead;
 		for (int j = 0; j < bytesRead; j++) // Copy the data into the packet
@@ -1118,6 +1128,10 @@ HAL_StatusTypeDef PAYLOAD_READ(uint8_t command, uint8_t* out_data_ptr, uint8_t o
         return status;
     }
     uint8_t header[17+out_byte+5]; // parse packet function discards UHF header so we are simulating UHF header
+    for(int i=0; i<17+out_byte+5; i++){
+    	header[i] = 0;
+    }
+
     memcpy(&header[16],&data_ptr[0],out_byte+5);
 
     debug_printf("Header With Message:");

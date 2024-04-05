@@ -194,9 +194,9 @@ void Main_Task(void const *argument) {
 	 * ADCS TESTING
 	 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 */
-	//osDelay(15000);
-	//debug_printf("Reaction wheel spinup tests");
-	//Y_Wheel_Ramp_Up_Test();
+//	osDelay(15000);
+//	debug_printf("Reaction wheel spinup tests");
+//	//Y_Wheel_Ramp_Up_Test();
 //	osDelay(15000); // Delay for 15 seconds to allow ADCS to boot-up in application mode
 //	TC_10(1);
 //	osDelay(1000);
@@ -243,6 +243,7 @@ void Main_Task(void const *argument) {
 	// Loop for handling communications
 	GroundStationRxBuffer[0] = '\0';
 
+	int randregen = 0;
 
 	debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
 	while (1) {
@@ -251,6 +252,7 @@ void Main_Task(void const *argument) {
 		GREEN_LED_OFF(); //Flashes LEDs
 		osDelay(500);
 		GREEN_LED_ON();
+		randregen = rand();
 		osDelay(500);
 
 
@@ -316,10 +318,10 @@ void ADCS_Task(void const *argument) {
 	//Magnetometer_Deployment(); //TODO: ENABLE FOR FLIGHT
 
 
-	//Detumbling_To_Y_Thomson();
-	//y_ramp_result_t result;
-	//result = Y_Wheel_Ramp_Up_Test();
-	//Y_Momentum_Activation();
+//	Detumbling_To_Y_Thomson();
+//	y_ramp_result_t result;
+//	result = Y_Wheel_Ramp_Up_Test();
+//	Y_Momentum_Activation();
 //	if(result == NO_ERROR)
 //		debug_printf("Y Wheel Ramp Test is Success!!!\r\n");
 //	else if(result == FAULT_COMMAND_SPEED)

@@ -203,14 +203,16 @@ HAL_StatusTypeDef startup_EPS() {
 }
 
 HAL_StatusTypeDef HCKappend(char* content){
-    memcpy(&HCKaddress[HCKposition],&content,strlen(content));
+    memcpy(&HCKaddress[HCKposition],&content[0],strlen(content));
     HCKposition+=strlen(content);
+    HCKlength = HCKposition;
     return HAL_OK;
 }
 
 HAL_StatusTypeDef METappend(char* content){
-    memcpy(&METaddress[METposition],&content,strlen(content));
-    HCKposition+=strlen(content);
+    memcpy(&METaddress[METposition],&content[0],strlen(content));
+    METposition+=strlen(content);
+    METlength = METposition;
     return HAL_OK;
 }
 

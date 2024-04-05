@@ -213,7 +213,7 @@ HAL_StatusTypeDef UHF_HEALTH_CHECK(){
 	sprintf(&dataline[0], ("Rx Packets With Errors: %lu\n!"),longdata);
 	HCKappend(dataline);
 	longdata = 0;
-	debug_printf("After Rex Packets Errors");
+	debug_printf("After Rx Packets Errors");
 
 	GET_UHF_TEMP(&temp);
 	memset(&dataline[0], 0x00, 64);
@@ -223,14 +223,14 @@ HAL_StatusTypeDef UHF_HEALTH_CHECK(){
 
 	GET_ANTENNA_STATUS(data);
 	memset(&dataline[0], 0x00, 64);
-	sprintf(&dataline[0], ("Antenna Status:%s\n!"),data);
+	sprintf(&dataline[0], ("Antenna Status: %s\n!"),data);
 	HCKappend(dataline);
 	memset(&data[0], 0x00, 23);
 	debug_printf("After Antenna Status");
 
 	GET_ANTENNA_CONFIG(data);
 	memset(&dataline[0], 0x00, 64);
-	sprintf(&dataline[0], ("Antenna Status:%s\n!"),data);
+	sprintf(&dataline[0], ("Antenna Config: %s\n!"),data);
 	HCKappend(dataline);
 	memset(&data[0], 0x00, 23);
 	debug_printf("After Antenna Config Read");
