@@ -103,7 +103,7 @@ extern uint8_t METaddress[256];
 extern uint8_t DATaddress[10800];
 extern uint8_t KELaddress[1080];
 extern uint8_t TESaddress[65536];
-extern uint8_t HCKaddress[1024];
+extern uint8_t HCKaddress[2048];
 extern uint8_t* start_of_rx_buffer;
 
 extern uint32_t DATlength;
@@ -118,8 +118,14 @@ extern uint16_t METposition;
 extern int MESnum;
 extern uint8_t TESnum;
 
+extern uint8_t sat_charged;
+extern uint8_t ADCS_poll;
+extern uint8_t MAIN_poll;
+
 extern HAL_StatusTypeDef HCKappend(char* content);
 extern HAL_StatusTypeDef METappend(char* content);
+
+
 /*
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * EXTERNAL ROUTINES DECLARATIONS 

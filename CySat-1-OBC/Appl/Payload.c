@@ -209,7 +209,7 @@ HAL_StatusTypeDef GET_PAYLOAD_VALUES(float* bandwidth, float* calib_1,
  * @param delay: How long until the measurement starts. Allow an additional 30 seconds for power on sequence.
  * @param measurement_status: The status of taking the measurement. (0=error, 1=success)
  */
-HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
+HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay, uint8_t tesfile){
 	HAL_StatusTypeDef status = HAL_OK;
     // Create file variables
 
@@ -242,18 +242,42 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
 	sprintf(&dataline[0], "Entry ID: %d\n\rCurrent Time: %ld\n\rScheduled Time For Measurement Start: %ld\n\rEPS Battery Voltage: %f\n\rPlanned Duration: %d\n\r",MESnum,data1,data1+delay+30,data3,time);
 	METappend(dataline);
 
+	if(time>60*10){
+		METappend("Measurement longer than 10 minutes, aborting due to battery concerns");
+		debug_printf("Measurement longer than 10 minutes, aborting due to battery concerns");
+		return HAL_ERROR;
+	}
+	if(delay>60*60*6){
+		METappend("Delay longer than 6 hours, aborting because that's probably wrong");
+		debug_printf("Delay longer than 6 hours, aborting because that's probably wrong");
+		return HAL_ERROR;
+	}
+
+	if(data3<4.1){
+		METappend("Voltage below 4.1, aborting");
+		debug_printf("Voltage %f below 4.1, aborting",data3);
+		return HAL_ERROR;
+	}
+
 
 
 	// Delays until measurement start time
 	debug_printf("Delaying for %i seconds",delay);
 	osDelay(delay*1000);
-	debug_printf("Ending beacon");
-	END_BEACON();
 
 	READ_EPS_BATTERY_VOLTAGE(&data3);
 	dataline[0] = '\0';
 	sprintf(&dataline[0], "EPS VBATT before power on: %f\n\r",data3);
 	METappend(dataline);
+
+	if(data3<4.1){
+		METappend("Voltage below 4.1, aborting");
+		debug_printf("Voltage %f below 4.1, aborting",data3);
+		return HAL_ERROR;
+	}
+
+	debug_printf("Ending beacon");
+	END_BEACON();
 
 	debug_printf("Power on sequence starting");
 	// Powers on payload and RF chain
@@ -274,6 +298,15 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
 	dataline[0] = '\0';
 	sprintf(&dataline[0], "EPS VBATT before measurement start: %f\n\r",data3);
 	METappend(dataline);
+
+	if(data3<3.8){
+		METappend("Voltage below 3.8, aborting");
+		debug_printf("Voltage %f below 3.8, aborting",data3);
+		disable_Payload();
+		disable_LNAs();
+		START_BEACON();
+		return HAL_ERROR;
+	}
 
 	osDelay(5000);
 	char power_status;
@@ -362,16 +395,21 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay){
     }
 
     // Measurement has successfully taken place, transfer the files
+
     debug_printf("File transfer 1 starting");
-    osDelay(2000);
+    osDelay(1500);
     FILE_TRANSFER(0, MESnum);
     debug_printf("File transfer 2 starting");
-    osDelay(2000);
+    osDelay(1500);
     FILE_TRANSFER(1, MESnum);
-    osDelay(1000);
+    if(tesfile>=2 && tesfile<=27){
+    	debug_printf("File transfer 3 starting");
+    	osDelay(1500);
+    	FILE_TRANSFER(tesfile, tesfile);
+    }
 
     // Disable power to the payload
-    // TODO: Turn off payload and LNAs, also do that in any of the returns above
+    //osDelay(12000); // To get log files to save on SDR, remove before flight probably, not critical but a good thing to do
 	debug_printf("Disabling LNA and SDR power");
 	disable_Payload();
 	disable_LNAs();
@@ -393,17 +431,22 @@ HAL_StatusTypeDef FILE_TRANSFER(uint8_t file_type, int file_num){
 	uint8_t* bigdata_ptr;
 	uint32_t file_size;
 	uint32_t* lendata_ptr;
+	//uint8_t stupidoffset; //This is stupid but there's variable length stuff I don't have time to fix
 	if(file_type == 0x00){
 		bigdata_ptr = &DATaddress[0];
 		lendata_ptr = &DATlength;
+		//stupidoffset = 0;
 		debug_printf("Dat Transfer");
 	}else if(file_type == 0x01){
 		bigdata_ptr = &KELaddress[0];
 		lendata_ptr = &KELlength;
+		//stupidoffset = 1;
 		debug_printf("Kel Transfer");
-
 	}else{
-		debug_printf("File type not supported");
+		bigdata_ptr = &TESaddress[0];
+		lendata_ptr = &TESlength;
+		//stupidoffset = 1; //Might have to be 2
+		debug_printf("Tes Transfer");
 	}
 
     CySat_Packet_t packet;
@@ -418,26 +461,120 @@ HAL_StatusTypeDef FILE_TRANSFER(uint8_t file_type, int file_num){
     }
     // Start transfer response with file size
     uint8_t data_ptr[8];
-    status = HAL_UART_Receive(&huart6, data_ptr, 8+file_type, PAYLOAD_UART_TIMEOUT); //Plus file type because kevin be giving us an extra byte???
+    status = HAL_UART_Receive(&huart6, data_ptr, 8, PAYLOAD_UART_TIMEOUT); //Plus file type because kevin be giving us an extra byte???
     if(status != HAL_OK){
+    	osDelay(12000);
         return status;
     }
-    uint8_t header[17+6] = {0}; // parse packet function discards UHF header so we are simulating UHF header
+    uint8_t header[17+20] = {0}; // parse packet function discards UHF header so we are simulating UHF header
     memcpy(&header[16],&data_ptr[0],8);
     packet = parseCySatPacket(header);
-    if(packet.Subsystem_Type != PAYLOAD_SUBSYSTEM_TYPE)
-        return HAL_ERROR;
-    else if(packet.Command != 0x1A)
-        return HAL_ERROR;
-    else if(validateCySatChecksum(packet) != 1)
+    if(packet.Subsystem_Type != PAYLOAD_SUBSYSTEM_TYPE){
+    	debug_printf("Didn't get file size, consulting look up table");
+    	switch(file_type){ // For the space memes because for some reason the size of the space memes isn't transmitting properly
+    		case 2:
+    			file_size = 61791;
+    			break;
+    		case 3:
+    			file_size = 58300;
+    			break;
+    		case 4:
+    			file_size = 59629;
+    			break;
+    		case 5:
+    			file_size = 18208;
+    			break;
+    		case 6:
+    			file_size = 60440;
+    			break;
+    		case 7:
+    			file_size = 60898;
+    			break;
+    		case 8:
+    			file_size = 8674;
+    			break;
+    		case 9:
+				file_size = 57561;
+				break;
+    		case 10:
+				file_size = 60656;
+				break;
+    		case 11:
+				file_size = 64006;
+				break;
+    		case 12:
+				file_size = 54472;
+				break;
+    		case 13:
+				file_size = 62650;
+				break;
+    		case 14:
+				file_size = 53162;
+				break;
+    		case 15:
+				file_size = 63358;
+				break;
+    		case 16:
+				file_size = 38321;
+				break;
+    		case 17:
+				file_size = 56729;
+				break;
+    		case 18:
+				file_size = 44948;
+				break;
+    		case 19:
+				file_size = 50701;
+				break;
+    		case 20:
+				file_size = 53048;
+				break;
+    		case 21:
+    			file_size = 49568;
+    			break;
+    		case 22:
+				file_size = 62013;
+				break;
+    		case 23:
+				file_size = 48573;
+				break;
+    		case 24:
+				file_size = 48976;
+				break;
+    		case 25:
+				file_size = 34924;
+				break;
+    		case 26:
+				file_size = 11744;
+				break;
+    		case 27:
+				file_size = 33359;
+				break;
+    		default:
+    			file_size = 65000;
+    			debug_printf("File not in lookup table, assuming largest");
+    	}
+    	//osDelay(12000);
+        //return HAL_ERROR;
+    }
+//    else if(packet.Command != 0x1A){
+//    	debug_printf("Didn't get file size, assuming largest");
+//    	file_size = 65000;
+//    	//osDelay(12000);
+//        //return HAL_ERROR;
+//    }
+    else if(validateCySatChecksum(packet) != 1){
         debug_printf("Checksum is wrong likely becuse of two FFs in a row");
-    file_size = convert_to_int(packet.Data, 3);
+        file_size = convert_to_int(packet.Data, 3);
+    }else{
+    	file_size = convert_to_int(packet.Data, 3);
+    }
     debug_printf("Size of file being transferred: %lu %ld",file_size, file_size);
     memcpy(lendata_ptr, &file_size, 4);
     debug_printf("Size of new lendata_ptr: %ld, %lu",*lendata_ptr, *lendata_ptr);
     osDelay(500);
     // Transfer of data occurs
-    //uint8_t data[file_size];
+
     status = HAL_UART_Receive(&huart6, bigdata_ptr, file_size, PAYLOAD_UART_TIMEOUT);
     if(status != HAL_OK){
     	debug_printf("Data return timeout");
@@ -715,8 +852,8 @@ HAL_StatusTypeDef RAM_PACKET_SEPARATOR(int measurementID, int dataType, int star
 			debug_printf("HCK file");
 			break;
 		case 4: //TES
-			dat_ptr = &HCKaddress[0];
-			dat_len = HCKlength;
+			dat_ptr = &TESaddress[0];
+			dat_len = TESlength;
 			debug_printf("TES file");
 			break;
 		case 5: //MET
@@ -790,7 +927,7 @@ HAL_StatusTypeDef RAM_PACKET_SEPARATOR(int measurementID, int dataType, int star
 			bytesRead = 113;
 			memcpy(&data[0], dat_ptr+i*113,113);
 		}
-		debug_printf("Packet data: %s",data);
+		//debug_printf("Packet data: %s",data);
 
 		toscramble[12] = bytesRead;
 		for (int j = 0; j < bytesRead; j++) // Copy the data into the packet

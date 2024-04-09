@@ -86,7 +86,7 @@ bool PAYLOAD_TEST_SETTING_VALUES(){
  */
 bool PAYLOAD_TEST_RETRIEVING_DATA(){
     HAL_StatusTypeDef status;
-    status = TAKE_MEASUREMENT(30, 10);
+    status = TAKE_MEASUREMENT(30, 10, 0);
     if(status != HAL_OK)
         return false;
     status = DAT_FILE_TRANSFER(1);

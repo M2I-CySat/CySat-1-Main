@@ -13,7 +13,7 @@
 #include "MCU_Init.h"
 
 #define UHF_I2C_ADDRESS 0x22
-#define UHF_UART_TIMEOUT 100
+#define UHF_UART_TIMEOUT 1000
 
 /*************************** BEACON FUNCTIONS **********************************/
 HAL_StatusTypeDef START_BEACON();

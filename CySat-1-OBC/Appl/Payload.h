@@ -32,7 +32,7 @@ HAL_StatusTypeDef GET_PAYLOAD_VALUES(float*, float*, float*, float*, float*,
                                     float*, float*, float*, float*);
 
 /*************************** MEASUREMENT FUNCTIONS *****************************/
-HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t, uint16_t);
+HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t, uint16_t, uint8_t);
 HAL_StatusTypeDef FILE_TRANSFER(uint8_t, int);
 HAL_StatusTypeDef DAT_FILE_TRANSFER(int);
 HAL_StatusTypeDef KELVIN_FILE_TRANSFER(int);

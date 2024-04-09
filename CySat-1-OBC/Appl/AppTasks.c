@@ -15,6 +15,17 @@
 #include <fatfs.h>
 #include <string.h>
 
+osMutexId (EPS_I2C_Mutex);
+osMutexId (UART_Mutex);
+osMutexId Num_I2C_Errors_Mutex;
+osMutexId Battery_Capacity_Mutex;
+osMutexId ADCS_Active_Mutex;
+osMutexId Low_Power_Mode_Mutex;
+osMutexId UHF_UART_Mutex;
+
+osMutexDef(EPS_I2C_Mutex_not_id);
+osMutexDef(UART_Mutex_not_id);
+
 const float MAX_BATTERY_CAP = 17.8829; // Max capacity EPS batteries can hold
 float BATTERY_CAPACITY = MAX_BATTERY_CAP; // Current capacity batteries are at
 int NUM_I2C_ERRORS = 0;
@@ -54,13 +65,12 @@ void Main_Task(void const *argument) {
 	 * Mutex INITIALIZATION WITH CMSIS RTOS
 	 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 */
+
 	// EPS I2C
-	osMutexDef(EPS_I2C_Mutex);
-	EPS_I2C_Mutex = osMutexCreate(osMutex(EPS_I2C_Mutex));
+	EPS_I2C_Mutex = osMutexCreate(osMutex(EPS_I2C_Mutex_not_id));
 
 	// UART
-	osMutexDef(UART_Mutex);
-	UART_Mutex = osMutexCreate(osMutex(UART_Mutex));
+	UART_Mutex = osMutexCreate(osMutex(UART_Mutex_not_id));
 
 	// I2C Errors
 	osMutexDef(Num_I2C_Errors_Mutex);
@@ -98,6 +108,15 @@ void Main_Task(void const *argument) {
 	 * EPS INITIALIZATION
 	 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 */
+	float data4 = 0;
+
+	while(data4<3.7){
+		osDelay(20000);
+		READ_EPS_BATTERY_VOLTAGE(&data4);
+		debug_printf("Current voltage: %f",data4);
+	}
+	debug_printf("Battery is over 3.7 Volts, starting systems.");
+
 	debug_printf("Starting EPS Configuration");
 	if (startup_EPS() == HAL_OK){
 		debug_printf("Successful EPS Configuration");
@@ -109,14 +128,7 @@ void Main_Task(void const *argument) {
 	 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 */
 
-	osDelay(50);
 	debug_printf("Starting UHF Configuration");
-	// Deploy the Antenna
-	// TODO: Antenna Deployment Function Goes Here
-	// CONFIGURE_ANTENNA();
-	// osDelay(1500);
-	// DEPLOY_ANTENNA(30); // DON'T TOUCH UNLESS YOU KNOW WHAT YOU'RE DOING
-	//debug_printf("Sending 0x1F to I2C slave address 0x33");
 
 	mainStatus = SET_BEACON_PERIOD(20);
 	if (mainStatus != HAL_OK) {
@@ -157,8 +169,46 @@ void Main_Task(void const *argument) {
 	}
 	osDelay(50);
 
-	/* Temperature sensor test. This is not important but it is one of the first things I (Steven) got working on this project so I've left it here for nostalgia */
+
+	// DEPLOY ANTENNA
+	// See if power is high enough to deploy antenna
+	float data3 = 0;
+
+	while(data3<4.05){
+		sat_charged = 0;
+		osDelay(20000);
+		READ_EPS_BATTERY_VOLTAGE(&data3);
+		debug_printf("Current voltage: %f",data3);
+	}
+	debug_printf("Voltage is over 4.05, deploying antenna and starting ADCS.");
+	sat_charged = 1;
+
+	// After an antenna command, the next UHF command will fail, so adding in a junk UHF command after every antenna command
 	float uhfTemperature;
+	mainStatus = GET_UHF_TEMP(&uhfTemperature);
+
+	osDelay(50);
+	debug_printf("Starting UHF Configuration");
+	// Deploy the Antenna
+	// TODO: Antenna Deployment Function Goes Here
+	// CONFIGURE_ANTENNA();
+
+	mainStatus = GET_UHF_TEMP(&uhfTemperature);
+	// osDelay(1500);
+	//debug_printf("Sending 0x1F to I2C slave address 0x33");
+	// DEPLOY_ANTENNA(30); // DON'T TOUCH UNLESS YOU KNOW WHAT YOU'RE DOING
+
+	mainStatus = GET_UHF_TEMP(&uhfTemperature);
+
+//	osDelay(1000*60*35); // Makes sure previous antenna deploy sequence has finished
+//	debug_printf("Beginning backup antenna deployment sequence");
+//	Enable_EPS_Output_3();
+//	osDelay(1000*29);
+//	Disable_EPS_Output_3();
+
+
+	/* Temperature sensor test. This is not important but it is one of the first things I (Steven) got working on this project so I've left it here for nostalgia */
+	//float uhfTemperature;
 	mainStatus = GET_UHF_TEMP(&uhfTemperature);
 	if (mainStatus != HAL_OK) {
 		debug_printf("[Main Thread/ERROR]: Failed to read UHF temperature");
@@ -253,10 +303,11 @@ void Main_Task(void const *argument) {
 		osDelay(500);
 		GREEN_LED_ON();
 		randregen = rand();
+		MAIN_poll = 1;
 		osDelay(500);
 
 
-		// Every 6 seconds check if a message has been received
+		// Every 1 second check if a message has been received
 		//debug_printf("\rPacket: ");
 		//for (int i = 0; i<100; i++){
 		//	debug_printf_no_newline("%x ",GroundStationRxBuffer[i]);
@@ -298,12 +349,45 @@ void Main_Task(void const *argument) {
  * @brief main UHF Task/Thread
  */
 void Restart_Task(void const *argument) {
+	while(sat_charged == 0){
+		osDelay(20000);
+	}
 	debug_printf("######## RESTART TASK ########\r\n");
-	osDelay(86400000);
-	//osDelay(60000);		//waiting 1 minute
-	debug_printf("Restarting Satellite");
-	shutdown_EPS();
-	NVIC_SystemReset();
+	uint32_t maincounter = 0;
+	uint32_t adcscounter = 0;
+	uint32_t Sat_Restart_Timeout = 60*6;
+
+	while (1){
+		osDelay(60*1000);
+		if(MAIN_poll == 1){ // Main task set poll to 1 and is responding
+			maincounter = 0;
+			MAIN_poll = 0;
+		}else{
+			// Main task not responding
+			maincounter = maincounter + 1;
+		}
+
+		if(maincounter>Sat_Restart_Timeout){
+			debug_printf("Restarting Satellite (Main UHF Loop Timeout)");
+			shutdown_EPS();
+			NVIC_SystemReset();
+		}
+
+		if(ADCS_poll == 1){ // ADCS task set poll to 1 and is responding
+			adcscounter = 0;
+			ADCS_poll = 0;
+		}else{
+			// ADCS task not responding
+			adcscounter = adcscounter + 1;
+		}
+
+		if(adcscounter>Sat_Restart_Timeout){
+			debug_printf("Restarting Satellite (ADCS Timeout)");
+			shutdown_EPS();
+			NVIC_SystemReset();
+		}
+	}
+
 
 }
 
@@ -312,15 +396,25 @@ void Restart_Task(void const *argument) {
  * Magnetometer Deployment is done by this function
  */
 void ADCS_Task(void const *argument) {
+
+	while(sat_charged == 0){
+		osDelay(20000);
+	}
+
 	HAL_StatusTypeDef adcsStatus = HAL_OK;
 	osDelay(60000);
 	debug_printf("######## ADCS TASK ########\r\n");
 	//Magnetometer_Deployment(); //TODO: ENABLE FOR FLIGHT
 
 
+
+//	debug_printf("Detumbling");
 //	Detumbling_To_Y_Thomson();
 //	y_ramp_result_t result;
+//	debug_printf("Ramp test");
 //	result = Y_Wheel_Ramp_Up_Test();
+//  osDelay(1000*60*90); // Delay so that  momentum is held for an orbit
+//	debug_printf("Y Momentum");
 //	Y_Momentum_Activation();
 //	if(result == NO_ERROR)
 //		debug_printf("Y Wheel Ramp Test is Success!!!\r\n");
@@ -332,13 +426,14 @@ void ADCS_Task(void const *argument) {
 //		debug_printf("Did not go to 0 y-rate and then back up to Y-Thompson rate.\r\n");
 //	else
 //		debug_printf("Some other error.");
-	osMutexWait(ADCS_Active_Mutex, 500);
-	ADCS_ACTIVE = 1;
-	osMutexRelease(ADCS_Active_Mutex);
+//	osMutexWait(ADCS_Active_Mutex, 500);
+//	ADCS_ACTIVE = 1;
+//	osMutexRelease(ADCS_Active_Mutex);
 
 	/* ADCS Test */
 	while (1) {
 		osDelay(5000);
+		ADCS_poll = 1;
 	}
 }
 

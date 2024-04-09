@@ -93,7 +93,6 @@ int handleCySatPacket(CySat_Packet_t packet){
 					int startPacket = 0;
 					int endPacket = 0;
 
-
 					memcpy(&measurementID, &packet.Data[0], 4);
 					memcpy(&dataType, &packet.Data[4], 4);
 					memcpy(&startPacket, &packet.Data[8], 4);
@@ -101,7 +100,11 @@ int handleCySatPacket(CySat_Packet_t packet){
 
 					debug_printf("Packet separator called.\r\nID: %d\r\ndataType: %d\r\nstartPacket: %d\r\nendPacket: %d\r\n",measurementID,dataType,startPacket,endPacket);
 
-					status = RAM_PACKET_SEPARATOR(MESnum, dataType, startPacket, endPacket);
+					if (dataType == 3){
+						status = RAM_PACKET_SEPARATOR(measurementID, dataType, startPacket, endPacket);
+					}else{
+						status = RAM_PACKET_SEPARATOR(MESnum, dataType, startPacket, endPacket);
+					}
                     if(status != HAL_OK){
                         return -1;
                     }
@@ -277,7 +280,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 					ADCS_HEALTH_CHECK();
 
 
-					PACKET_SEPARATOR(3,3,0,30,0x01,"");
+					RAM_PACKET_SEPARATOR(3,3,0,30);
 
 					outgoingPacket.Subsystem_Type = ADCS_SUBSYSTEM_TYPE;
 					outgoingPacket.Command = 0x08;
@@ -764,9 +767,11 @@ int handleCySatPacket(CySat_Packet_t packet){
                 	//osDelay(5100); // Delay to allow end beacon to go through properly
                 	//END_BEACON();
                 	uint16_t duration, delay;
+                	uint8_t tesfile;
                 	memcpy(&duration, &packet.Data[0], 2);
                 	memcpy(&delay, &packet.Data[2], 2);
-					status = TAKE_MEASUREMENT(duration, delay); //read the Solar Panel Z axis voltage
+                	memcpy(&tesfile, &packet.Data[4], 1);
+					status = TAKE_MEASUREMENT(duration, delay, tesfile);
 					if(status != HAL_OK){
 						START_BEACON();
 						return -1;
@@ -1129,9 +1134,9 @@ int handleCySatPacket(CySat_Packet_t packet){
                 	UHF_HEALTH_CHECK();
 
 
-					osDelay(5100);
-
-					PACKET_SEPARATOR(1,3,0,10,0x01,"");
+					osDelay(100);
+                	// Packet sep doesn't work with UHF right now?
+					RAM_PACKET_SEPARATOR(1,3,0,10);
 
                     outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
                     outgoingPacket.Command = 0x32;

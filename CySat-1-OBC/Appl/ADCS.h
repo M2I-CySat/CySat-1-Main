@@ -13,7 +13,7 @@
 #include "MCU_Init.h"
 #include "helper_functions.h"
 
-#define ADCS_UART_TIMEOUT 100
+#define ADCS_UART_TIMEOUT 1000
 
 /*************************** TELECOMMAND FUNCTIONS **********************************/
 HAL_StatusTypeDef TC_2(uint32_t, uint16_t);

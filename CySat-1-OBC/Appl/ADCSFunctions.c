@@ -325,17 +325,17 @@ y_ramp_result_t Y_Wheel_Ramp_Up_Test(){
  */
 void Y_Momentum_Activation(){
     //To-Do: Need to obtain these from ground station
-    uint32_t sec;
-    uint16_t millisec;
-    double inclination, eccentricity, right_ascension, argument, b_star, mean_motion, mean_anomaly, epoch;
+//    uint32_t sec;
+//    uint16_t millisec;
+//    double inclination, eccentricity, right_ascension, argument, b_star, mean_motion, mean_anomaly, epoch;
     // Enable ADCS
     TC_10(1);
-    // Set Current Unix Time
-    TC_2(sec, millisec);
-    // Set Current TLEs
-    TC_45(inclination, eccentricity, right_ascension, argument, b_star, mean_motion, mean_anomaly, epoch);
-    // Save to orbit parameters to flash memory
-    TC_64();
+//    // Set Current Unix Time
+//    TC_2(sec, millisec);
+//    // Set Current TLEs
+//    TC_45(inclination, eccentricity, right_ascension, argument, b_star, mean_motion, mean_anomaly, epoch);
+//    // Save to orbit parameters to flash memory
+//    TC_64();
     // Set Estimation Paramters 2 (Default parameters inserted)
     TC_44(0.001, 0.01, 0.0, 0, 0, 0,0,0,17);
     // Set Estimation Mode to Magnetometer Rate Filter with pitch estimation
@@ -357,6 +357,9 @@ void Y_Momentum_Activation(){
     // Satellite Position LLH
     TLM_150(&latitude, &longitude, &altitude);
     //To-Do
+
+    // Y-Momentum forever
+    TC_13(3, 1, 0xFFFF); //TODO: Review with Lexi
 
 }
 

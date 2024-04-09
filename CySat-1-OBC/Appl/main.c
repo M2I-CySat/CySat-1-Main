@@ -88,7 +88,7 @@ uint8_t METaddress[256];
 uint8_t DATaddress[10800];
 uint8_t KELaddress[1080];
 uint8_t TESaddress[65536];
-uint8_t HCKaddress[1024];
+uint8_t HCKaddress[2048];
 
 uint32_t DATlength;
 uint32_t KELlength;
@@ -98,6 +98,10 @@ uint32_t HCKlength;
 
 uint16_t HCKposition;
 uint16_t METposition;
+
+uint8_t sat_charged;
+uint8_t ADCS_poll;
+uint8_t MAIN_poll;
 
 int MESnum;
 uint8_t TESnum;
@@ -112,13 +116,13 @@ FILE *PAYLOAD = COM4;
 FILE *SYSCON = COM6;
 
 /* Mutexes */
-osMutexId EPS_I2C_Mutex;
-osMutexId UART_Mutex;
-osMutexId Num_I2C_Errors_Mutex;
-osMutexId Battery_Capacity_Mutex;
-osMutexId ADCS_Active_Mutex;
-osMutexId Low_Power_Mode_Mutex;
-osMutexId UHF_UART_Mutex;
+//osMutexId EPS_I2C_Mutex;
+//osMutexId UART_Mutex;
+//osMutexId Num_I2C_Errors_Mutex;
+//osMutexId Battery_Capacity_Mutex;
+//osMutexId ADCS_Active_Mutex;
+//osMutexId Low_Power_Mode_Mutex;
+//osMutexId UHF_UART_Mutex;
 
 /* Threads */
 osThreadId myRestartTask;
@@ -191,8 +195,10 @@ HAL_StatusTypeDef startup_EPS() {
 	status[7] = enable_EPS_Batt_Heater_1();
 	status[8] = enable_EPS_Batt_Heater_2();
 	status[9] = enable_EPS_Batt_Heater_3();
+	status[10] = disable_Payload();
+	status[11] = disable_LNAs();
 	debug_printf("EPS STATUS: ");
-	for (int i = 0; i<10; i++){
+	for (int i = 0; i<12; i++){
 		debug_printf_no_newline("%d",status[i]);
 		if (status[i] != HAL_OK){
 			HalStatus = HAL_ERROR;
@@ -200,6 +206,12 @@ HAL_StatusTypeDef startup_EPS() {
 		}
 	}
 	return HalStatus;
+}
+
+void recover_SDR() {
+	disable_Payload();
+	disable_LNAs();
+	disable_EPS_Output_3();
 }
 
 HAL_StatusTypeDef HCKappend(char* content){
@@ -240,7 +252,7 @@ int main(void) {
 
     /* Awake message */
 	debug_printf("This is Cy-Sat 1 from Iowa State University\nBEEP BEEP BOOP BOOP Systems Starting!\n\rWait period starting");
-
+	recover_SDR();
 
 	/* Initialize Random Number Generator */
 	srand(291843);

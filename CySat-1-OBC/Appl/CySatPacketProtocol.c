@@ -40,6 +40,13 @@ CySat_Packet_t parseCySatPacket(uint8_t* packet){
     memcpy(cySatPacket.Data, packet+offset+3, cySatPacket.Data_Length);
     cySatPacket.Checksum = packet[cySatPacket.Data_Length+offset+3];
     debug_printf("Checksum (hex): %02x", cySatPacket.Checksum);
+    debug_printf_no_newline("\nFull Packet Data With Header: ");
+    //uint8_t size = sizeof(packet);
+    for(int i=0; i<30; i++){
+    	debug_printf_no_newline("%02x ", packet[i]);
+    }
+    debug_printf("\n");
+
     return cySatPacket;
 }
 
@@ -67,16 +74,16 @@ HAL_StatusTypeDef sendCySatPacket(CySat_Packet_t packet){
     debug_printf("Subsystem type: %02x", packet.Subsystem_Type);
     debug_printf("Command: %02x", packet.Command);
     debug_printf("Data length (dec): %d (hex): %02x", packet.Data_Length ,packet.Data_Length);
-    debug_printf("Full message: %s", message);
-    debug_printf("Full message hex:");
-    for(int i = 0; i<packet.Data_Length+5; i++){
-    	debug_printf("%d %x",message[i],message[i]);
-    }
+    //debug_printf("Full message: %s", message);
+    //debug_printf("Full message hex:");
+    //for(int i = 0; i<packet.Data_Length+5; i++){
+    //	debug_printf("%d %x",message[i],message[i]);
+    //}
 
     HAL_StatusTypeDef status = HAL_ERROR;
     if(packet.Subsystem_Type == PAYLOAD_SUBSYSTEM_TYPE){
     	debug_printf("Delaying a bit to avoid confusing the SDR");
-    	osDelay(3000);
+    	osDelay(4000);
         status = HAL_UART_Transmit(&huart6, &message, packet.Data_Length + 5, 1000); //send the message over uart, but timeout after 1s
     }else{
     	status = START_PIPE();

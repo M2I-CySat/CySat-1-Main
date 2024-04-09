@@ -889,6 +889,7 @@ HAL_StatusTypeDef TLM_199(float* roll, float* pitch, float* yaw){
 HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out_byte){
         HAL_StatusTypeDef status = HAL_ERROR;
         osStatus osStatus = osOK;
+        osDelay(500);
         uint8_t telemetry[5];
         telemetry[0] = 0x1F;
         telemetry[1] = 0x7F;
@@ -900,49 +901,62 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
         }
         osStatus = osMutexWait(UART_Mutex, 2500);
         if(osStatus != osOK){
-        	debug_printf("ADCS Telemetry: Mutex acquire error, aborting");
-        	osMutexRelease(UART_Mutex);
+        	debug_printf("ADCS Telemetry: Mutex acquire error, status: %d, aborting",osStatus);
+        	osStatus = osMutexRelease(UART_Mutex);
+        	debug_printf("ADCS Telemetry: Mutex release status: %d",osStatus);
 			return status;
         }
         status = HAL_UART_Transmit(&huart4, telemetry, 5, ADCS_UART_TIMEOUT);
         if(status != HAL_OK){
-            osMutexRelease(UART_Mutex);
+            osStatus = osMutexRelease(UART_Mutex);
+            debug_printf("ADCS Telemetry: Mutex release status: %d",osStatus);
             return status;
         }
         uint8_t data[out_byte+5];
-        status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
-        if(status != HAL_OK)
-        	osMutexRelease(UART_Mutex);
-            return status;
-
-        int counter=0;
-        while((data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F)&&counter<=200){
-        	counter=counter+1; //If this breaks telemetry request it is probably breaking telecommand too
-            if(data[2] == 0x1F){
-                data[0] = 0x1F;
-                status = HAL_UART_Receive(&huart4, data+1, 2, ADCS_UART_TIMEOUT);
-            }
-            else if(data[1]== 0x1F && data[2] == 0x7F){
-                data[0] = 0x1F;
-                data[1] = 0x7F;
-                status = HAL_UART_Receive(&huart4, data+2, 1, ADCS_UART_TIMEOUT);
-            }
-            else
-                status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
+        status = HAL_UART_Receive(&huart4, data, out_byte+5, ADCS_UART_TIMEOUT);
+        if(status != HAL_OK){
+        	osStatus = osMutexRelease(UART_Mutex);
+        	debug_printf("ADCS Telemetry: Rx error. Mutex release status: %d",osStatus);
+        	return status;
         }
-        status = HAL_UART_Receive(&huart4, data+3, out_byte+2, ADCS_UART_TIMEOUT);
+    	osStatus = osMutexRelease(UART_Mutex);
+    	debug_printf("ADCS Telemetry: Rx success. Mutex release status: %d",osStatus);
+
+//        status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
+//        if(status != HAL_OK)
+//        	osStatus = osMutexRelease(UART_Mutex);
+//            debug_printf("ADCS Telemetry: Mutex release status: %d",osStatus);
+//            return status;
+//
+//        int counter=0;
+//        while((data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F)&&counter<=200){
+//        	counter=counter+1; //If this breaks telemetry request it is probably breaking telecommand too
+//            if(data[2] == 0x1F){
+//                data[0] = 0x1F;
+//                status = HAL_UART_Receive(&huart4, data+1, 2, ADCS_UART_TIMEOUT);
+//            }
+//            else if(data[1]== 0x1F && data[2] == 0x7F){
+//                data[0] = 0x1F;
+//                data[1] = 0x7F;
+//                status = HAL_UART_Receive(&huart4, data+2, 1, ADCS_UART_TIMEOUT);
+//            }
+//            else
+//                status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
+//        }
+//        status = HAL_UART_Receive(&huart4, data+3, out_byte+2, ADCS_UART_TIMEOUT);
         debug_printf_no_newline("ADCS Telemetry:");
         for(int i = 0; i<out_byte+5; i++){
         	debug_printf("%d %x",data[i],data[i]);
         }
         debug_printf("\r\n");
         memcpy(data_ptr, &data[3], out_byte);
-        osMutexRelease(UART_Mutex);
+//        osStatus = osMutexRelease(UART_Mutex);
+//        debug_printf("ADCS Telemetry: Mutex release status: %d",osStatus);
 
-        if(counter>199){
-        	debug_printf("ADCS Telemetry While Loop Overflow, exiting");
-        	return status;
-        }
+//        if(counter>199){
+//        	debug_printf("ADCS Telemetry While Loop Overflow, exiting");
+//        	return status;
+//        }
 
 
         if(status != HAL_OK)
@@ -962,6 +976,7 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
 HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
         HAL_StatusTypeDef status = HAL_ERROR;
         osStatus osStatus = osOK;
+        osDelay(500);
         uint8_t telecommand[in_byte+4];
         telecommand[0] = 0x1F;
         telecommand[1] = 0x7F;
@@ -977,8 +992,9 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
         debug_printf("\r\n");
         osStatus = osMutexWait(UART_Mutex, 2500);
         if(osStatus != osOK){
-        	debug_printf("ADCS Telecommand: Mutex acquire error, aborting");
-        	osMutexRelease(UART_Mutex);
+        	debug_printf("ADCS Telecommand: Mutex acquire error, status: %d, aborting",osStatus);
+        	osStatus = osMutexRelease(UART_Mutex);
+        	debug_printf("ADCS Telecommand: Mutex release status: %d",osStatus);
 			return status;
         }
         status = HAL_UART_Transmit(&huart4, telecommand, in_byte+4, ADCS_UART_TIMEOUT);
@@ -988,33 +1004,35 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
             //return status;
         }
         uint8_t data[6]; // I want to test just doing it the normal way with a large timeout, UART should pull low to signal start. This should compensate for that.
-        int counter=0;
-        status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
-        while((data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F)&&counter<=200){ //If the documentation is wrong this might fail on command number 0x1F but shouldn't
-        	counter=counter+1;
-            if(data[2] == 0x1F){
-                data[0] = 0x1F;
-                status = HAL_UART_Receive(&huart4, data+1, 2, ADCS_UART_TIMEOUT);
-            }
-            else if(data[1]== 0x1F && data[2] == 0x7F){
-                data[0] = 0x1F;
-                data[1] = 0x7F;
-                status = HAL_UART_Receive(&huart4, data+2, 1, ADCS_UART_TIMEOUT);
-            }
-            else
-                status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
-        }
-        status = HAL_UART_Receive(&huart4, data+3, 3, ADCS_UART_TIMEOUT);
-        osMutexRelease(UART_Mutex);
+        status = HAL_UART_Receive(&huart4, data, 6, ADCS_UART_TIMEOUT);
+//        int counter=0;
+//        status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
+//        while((data[0]!=0x1F || data[1] != 0x7F || data[2] == 0x1F)&&counter<=200){ //If the documentation is wrong this might fail on command number 0x1F but shouldn't
+//        	counter=counter+1;
+//            if(data[2] == 0x1F){
+//                data[0] = 0x1F;
+//                status = HAL_UART_Receive(&huart4, data+1, 2, ADCS_UART_TIMEOUT);
+//            }
+//            else if(data[1]== 0x1F && data[2] == 0x7F){
+//                data[0] = 0x1F;
+//                data[1] = 0x7F;
+//                status = HAL_UART_Receive(&huart4, data+2, 1, ADCS_UART_TIMEOUT);
+//            }
+//            else
+//                status = HAL_UART_Receive(&huart4, data, 3, ADCS_UART_TIMEOUT);
+//        }
+//        status = HAL_UART_Receive(&huart4, data+3, 3, ADCS_UART_TIMEOUT);
+        osStatus = osMutexRelease(UART_Mutex);
+        debug_printf("ADCS Telemetry: Mutex release status: %d",osStatus);
         //debug_printf("[ADCS_TELECOMMAND]: Received Data: %d %d %d %d %d %d", data[0],data[1],data[2],data[3],data[4],data[5]); //shows received data
         debug_printf("ADCS Telecommand response:");
         for(int i = 0; i<6; i++){
         	debug_printf("%d %x",data[i],data[i]);
         }
-        if(counter>199){
-        	debug_printf("ADCS Telecommand While Loop Overflow, exiting");
-        	return status;
-        }
+//        if(counter>199){
+//        	debug_printf("ADCS Telecommand While Loop Overflow, exiting");
+//        	return status;
+//        }
 
 
 
