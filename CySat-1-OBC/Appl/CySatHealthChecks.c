@@ -215,6 +215,14 @@ HAL_StatusTypeDef UHF_HEALTH_CHECK(){
 	longdata = 0;
 	debug_printf("After Rx Packets Errors");
 
+	GET_ANTENNA_STATUS(data);
+	memset(&dataline[0], 0x00, 64);
+	sprintf(&dataline[0], ("Antenna Status: %s\n!"),data);
+	HCKappend(dataline);
+	memset(&data[0], 0x00, 23);
+	debug_printf("After Antenna Status");
+	GET_UHF_TEMP(&temp);
+
 	GET_ANTENNA_CONFIG(data);
 	memset(&dataline[0], 0x00, 64);
 	sprintf(&dataline[0], ("Antenna Config: %s\n!"),data);
@@ -222,6 +230,7 @@ HAL_StatusTypeDef UHF_HEALTH_CHECK(){
 	memset(&data[0], 0x00, 23);
 	debug_printf("After Antenna Config Read");
 	GET_UHF_TEMP(&temp);
+
 	GET_UHF_TEMP(&temp);
 	memset(&dataline[0], 0x00, 64);
 	sprintf(&dataline[0], ("Temperature: %f\n!"),temp);
@@ -236,13 +245,13 @@ HAL_StatusTypeDef UHF_HEALTH_CHECK(){
 //	debug_printf("After Antenna Status");
 
 
-	GET_ANTENNA_STATUS(data);
-	memset(&dataline[0], 0x00, 64);
-	sprintf(&dataline[0], ("Antenna Status: %s\n!"),data);
-	HCKappend(dataline);
-	memset(&data[0], 0x00, 23);
-	debug_printf("After Antenna Status");
-	GET_UHF_TEMP(&temp);
+//	GET_ANTENNA_STATUS(data);
+//	memset(&dataline[0], 0x00, 64);
+//	sprintf(&dataline[0], ("Antenna Status: %s\n!"),data);
+//	HCKappend(dataline);
+//	memset(&data[0], 0x00, 23);
+//	debug_printf("After Antenna Status");
+//	GET_UHF_TEMP(&temp);
 }
 
 HAL_StatusTypeDef ADCS_HEALTH_CHECK(){

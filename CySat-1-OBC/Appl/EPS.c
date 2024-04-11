@@ -588,6 +588,15 @@ HAL_StatusTypeDef disable_EPS_5v_Bus(){
     return EPS_WRITE(4, 2); //turn command 4 to the FORCE OFF state
 }
 
+HAL_StatusTypeDef enable_EPS_3v3_Bus(){
+	return EPS_WRITE(3, 3);
+}
+
+HAL_StatusTypeDef disable_EPS_3v3_Bus(){ // EOL COMMAND!!!
+	return EPS_WRITE(3, 2);
+}
+
+
 HAL_StatusTypeDef enable_EPS_LUP_3v(){
     return EPS_WRITE(5, 0); //turn command 5 to the ON state
 }
@@ -695,11 +704,13 @@ HAL_StatusTypeDef disable_EPS_Batt_Heater_3(){
   * @retval Returns if the hal function call succeeded, or if it failed
   */
 HAL_StatusTypeDef EPS_READ(uint8_t command, uint8_t* data_ptr){
+	osDelay(50);
     osMutexWait(EPS_I2C_Mutex, 2500);
 
     HAL_StatusTypeDef status = HAL_ERROR;
     status = HAL_I2C_Master_Transmit(&hi2c1, (uint16_t) (EPS_I2C_ADDRESS << 0x1), &command, 1, EPS_I2C_TIMEOUT);
     if(status != HAL_OK){
+    	debug_printf("EPS Read Tx status not ok: %d",status);
         osMutexWait(Num_I2C_Errors_Mutex, 500);
         NUM_I2C_ERRORS++;
         osMutexRelease(Num_I2C_Errors_Mutex);
@@ -707,8 +718,8 @@ HAL_StatusTypeDef EPS_READ(uint8_t command, uint8_t* data_ptr){
         return status;
     }
     status = HAL_I2C_Master_Receive(&hi2c1, (uint16_t) (EPS_I2C_ADDRESS << 0x1), data_ptr, 2, EPS_I2C_TIMEOUT);
-
     if(status != HAL_OK){
+    	debug_printf("EPS Read Rx status not ok: %d",status);
         osMutexWait(Num_I2C_Errors_Mutex, 500);
         NUM_I2C_ERRORS++;
         osMutexRelease(Num_I2C_Errors_Mutex);
@@ -733,9 +744,10 @@ HAL_StatusTypeDef EPS_WRITE(uint8_t command, uint8_t state){
     status = HAL_I2C_Master_Transmit(&hi2c1, (EPS_I2C_ADDRESS << 0x1), data, 2, EPS_I2C_TIMEOUT); //Possibly size needs to be 3, and data should maybe be replaced with data buffer
 
     if(status != HAL_OK){
-        osMutexWait(Num_I2C_Errors_Mutex, 500);
-        NUM_I2C_ERRORS++;
-        osMutexRelease(Num_I2C_Errors_Mutex);
+    	debug_printf("EPS Write Tx Status not ok: %d",status);
+        //osMutexWait(Num_I2C_Errors_Mutex, 500);
+        //NUM_I2C_ERRORS++;
+        //osMutexRelease(Num_I2C_Errors_Mutex);
         if(status == HAL_ERROR){
             //debug_led_green(50,50);
         }

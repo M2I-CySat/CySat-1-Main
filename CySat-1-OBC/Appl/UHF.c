@@ -579,9 +579,9 @@ HAL_StatusTypeDef GET_ANTENNA_STATUS(uint8_t *read) {
     uint8_t command[] = "ES+R22F3 5DE401D5\r";
     //uint8_t command[] = "ES+R33F3 E49A0C87\r";
 	//uint8_t command[] = "ES+R33F3 4F51AE3B\r";
-    uint8_t response[20] = {"A"}; // Was 17
+    uint8_t response[21] = {"A"}; // Was 17
 
-    HAL_StatusTypeDef status = UHF_READ(command, response, 19, 20);
+    HAL_StatusTypeDef status = UHF_READ(command, response, 19, 21);
     //HAL_StatusTypeDef status = ANT_I2C_READ(0, response);
     for(int i=0; i<21; i++){
 		debug_printf("Response %d: Hex: %x, Int: %d, Char: %c",i,response[i],response[i],response[i]);
@@ -609,7 +609,7 @@ HAL_StatusTypeDef GET_ANTENNA_STATUS(uint8_t *read) {
  */
 HAL_StatusTypeDef GET_ANTENNA_CONFIG(uint8_t *read) {
     uint8_t command[] = "ES+R22F2 2AE33143\r";
-    uint8_t response[16] = {"Z"};
+    uint8_t response[17] = {"Z"};
     HAL_StatusTypeDef status = UHF_READ(command, response, 19, 16);
     for(int i=0; i<17; i++){
     	debug_printf("Response %d: Hex: %x, Int: %d, Char: %c",i,response[i],response[i],response[i]);
@@ -724,11 +724,12 @@ HAL_StatusTypeDef UHF_WRITE(uint8_t command[], uint8_t in_byte) {
  * @param in_byte  :The size of the command that is being sent
  */
 HAL_StatusTypeDef ANT_I2C_READ(uint8_t command, uint8_t* data_ptr) {
-	//osMutexWait(EPS_I2C_Mutex, 2500);
+	osMutexWait(EPS_I2C_Mutex, 2500);
 
 	HAL_StatusTypeDef status = HAL_ERROR;
 	status = HAL_I2C_Master_Transmit(&hi2c1, (0x33 << 0x1), &command, 1, EPS_I2C_TIMEOUT);
 	if(status != HAL_OK){
+		debug_printf("Antenna I2C Tx not okay: %d",status);
 		osMutexWait(Num_I2C_Errors_Mutex, 500);
 		NUM_I2C_ERRORS++;
 		osMutexRelease(Num_I2C_Errors_Mutex);
@@ -738,12 +739,13 @@ HAL_StatusTypeDef ANT_I2C_READ(uint8_t command, uint8_t* data_ptr) {
 	status = HAL_I2C_Master_Receive(&hi2c1, (uint16_t) (0x33 << 0x1), data_ptr, 2, EPS_I2C_TIMEOUT);
 
 	if(status != HAL_OK){
+		debug_printf("Antenna I2c Rx not okay: %d",status);
 		osMutexWait(Num_I2C_Errors_Mutex, 500);
 		NUM_I2C_ERRORS++;
 		osMutexRelease(Num_I2C_Errors_Mutex);
 	}
 
-	//osMutexRelease(EPS_I2C_Mutex);
+	osMutexRelease(EPS_I2C_Mutex);
 	return status;
 }
 

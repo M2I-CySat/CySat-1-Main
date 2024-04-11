@@ -110,7 +110,7 @@ int handleCySatPacket(CySat_Packet_t packet){
                     }
                     outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
                     outgoingPacket.Command = 0x10;
-                    outgoingPacket.Data_Length = 0x00;
+                    outgoingPacket.Data_Length = 0x01;
                     outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
                     outgoingPacket.Data[0] = 0x01;
                     outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
@@ -150,11 +150,87 @@ int handleCySatPacket(CySat_Packet_t packet){
 
                     outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
                     outgoingPacket.Command = 0x10;
-                    outgoingPacket.Data_Length = 0x00;
+                    outgoingPacket.Data_Length = 0x01;
                     outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
                     outgoingPacket.Data[0] = status;
                     outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
                     return sendCySatPacket(outgoingPacket);
+                }
+                case 0x19: { //All Health Checks Request
+                	UHF_HEALTH_CHECK();
+					RAM_PACKET_SEPARATOR(MESnum,6,0,10);
+					osDelay(2000);
+					RAM_PACKET_SEPARATOR(MESnum,6,0,10);
+                	EPS_HEALTH_CHECK();
+					RAM_PACKET_SEPARATOR(MESnum,7,0,10);
+					osDelay(2000);
+					RAM_PACKET_SEPARATOR(MESnum,7,0,10);
+					ADCS_HEALTH_CHECK();
+					RAM_PACKET_SEPARATOR(MESnum,8,0,30);
+					osDelay(2000);
+					RAM_PACKET_SEPARATOR(MESnum,8,0,30);
+                    outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x18;
+                    outgoingPacket.Data_Length = 0x01;
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
+                    outgoingPacket.Data[0] = 0x01;
+                    outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
+                    return sendCySatPacket(outgoingPacket);
+                }
+                case 0x21: { //All Measurement File returns Request
+                	RAM_PACKET_SEPARATOR(MESnum, 5, 0, 600);
+                	osDelay(2000);
+                	RAM_PACKET_SEPARATOR(MESnum, 5, 0, 600);
+                	osDelay(2000);
+                	RAM_PACKET_SEPARATOR(MESnum, 0, 0, 600);
+                	osDelay(2000);
+                	RAM_PACKET_SEPARATOR(MESnum, 0, 0, 600);
+                	osDelay(2000);
+                	RAM_PACKET_SEPARATOR(MESnum, 1, 0, 600);
+                	osDelay(2000);
+                	RAM_PACKET_SEPARATOR(MESnum, 1, 0, 600);
+                	osDelay(2000);
+                	RAM_PACKET_SEPARATOR(MESnum, 4, 0, 600);
+                	osDelay(2000);
+                	RAM_PACKET_SEPARATOR(MESnum, 4, 0, 600);
+                	osDelay(2000);
+
+
+                    outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x20;
+                    outgoingPacket.Data_Length = 0x00;
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 1);
+                    outgoingPacket.Data[0] = 0x01;
+                    outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
+                    return sendCySatPacket(outgoingPacket);
+                }
+                case 0x23: { // Update File ID Number Request
+
+                	debug_printf("Update File ID");
+					memcpy(&MESnum, &packet.Data[0], 2);
+					debug_printf("New File ID number: %d",MESnum);
+                    outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
+                    outgoingPacket.Command = 0x22;
+                    outgoingPacket.Data_Length = 0x02;
+                    outgoingPacket.Data = (uint8_t*) malloc(sizeof(uint8_t) * 2);
+                    outgoingPacket.Data[0] = MESnum & 0xFF;
+                    outgoingPacket.Data[1] = MESnum << 8 & 0xFF;
+                    outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
+                    return sendCySatPacket(outgoingPacket);
+                }
+                case 0x25: { // SHUT DOWN CYSAT-1
+                	char message[83] = "Thank you for all of your hard work. I'm going to go to get some rest now. Goodbye!"; // Check Length
+					outgoingPacket.Subsystem_Type = OBC_SUBSYSTEM_TYPE;
+					outgoingPacket.Command = 0x24;
+					outgoingPacket.Data_Length = 0x53;
+					outgoingPacket.Data = (uint8_t*) malloc(sizeof(char) * 83);
+					memcpy(outgoingPacket.Data,message,83);
+					outgoingPacket.Checksum = generateCySatChecksum(outgoingPacket);
+					status = sendCySatPacket(outgoingPacket); //send the response
+					osDelay(18000);
+					disable_EPS_5v_Bus();
+					disable_EPS_3v3_Bus();
+					return status; // Even if it never gets the chance to run, it feels like the right thing to do
                 }
                 break;
 
@@ -280,7 +356,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 					ADCS_HEALTH_CHECK();
 
 
-					RAM_PACKET_SEPARATOR(3,3,0,30);
+					RAM_PACKET_SEPARATOR(MESnum,8,0,30);
 
 					outgoingPacket.Subsystem_Type = ADCS_SUBSYSTEM_TYPE;
 					outgoingPacket.Command = 0x08;
@@ -735,12 +811,12 @@ int handleCySatPacket(CySat_Packet_t packet){
                     free(outgoingPacket.Data);
                     return status; //send the response
                 }
-                case 0x13: { //Heath checks
+                case 0x13: { //EPS Health Check
                 	EPS_HEALTH_CHECK();
 
 
 
-					RAM_PACKET_SEPARATOR(2,3,0,10);
+					RAM_PACKET_SEPARATOR(MESnum,7,0,10);
 
 					outgoingPacket.Subsystem_Type = EPS_SUBSYSTEM_TYPE;
 					outgoingPacket.Command = 0x12;
@@ -1136,7 +1212,7 @@ int handleCySatPacket(CySat_Packet_t packet){
 
 					osDelay(100);
                 	// Packet sep doesn't work with UHF right now?
-					RAM_PACKET_SEPARATOR(1,3,0,10);
+					RAM_PACKET_SEPARATOR(MESnum,6,0,10);
 
                     outgoingPacket.Subsystem_Type = UHF_SUBSYSTEM_TYPE;
                     outgoingPacket.Command = 0x32;

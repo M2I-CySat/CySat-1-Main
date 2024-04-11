@@ -15,6 +15,9 @@
 #include <fatfs.h>
 #include <string.h>
 
+#define INITIAL_WAIT (30 * 60 * 1000) // waits 30 minutes
+#define DEBUG_WAIT (1 * 1 * 1000) // waits 1 second
+
 osMutexId (EPS_I2C_Mutex);
 osMutexId (UART_Mutex);
 osMutexId Num_I2C_Errors_Mutex;
@@ -25,6 +28,7 @@ osMutexId UHF_UART_Mutex;
 
 osMutexDef(EPS_I2C_Mutex_not_id);
 osMutexDef(UART_Mutex_not_id);
+osMutexDef(Num_I2C_Errors_Mutex_not_id);
 
 const float MAX_BATTERY_CAP = 17.8829; // Max capacity EPS batteries can hold
 float BATTERY_CAPACITY = MAX_BATTERY_CAP; // Current capacity batteries are at
@@ -59,6 +63,7 @@ void Main_Task(void const *argument) {
 	debug_printf("MAIN TASK ########\r\n");
 
 	HAL_StatusTypeDef mainStatus = HAL_OK;
+	MESnum = 0;
 
 	/*
 	 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,8 +78,8 @@ void Main_Task(void const *argument) {
 	UART_Mutex = osMutexCreate(osMutex(UART_Mutex_not_id));
 
 	// I2C Errors
-	osMutexDef(Num_I2C_Errors_Mutex);
-	Num_I2C_Errors_Mutex = osMutexCreate(osMutex(Num_I2C_Errors_Mutex));
+	//osMutexDef(Num_I2C_Errors_Mutex);
+	Num_I2C_Errors_Mutex = osMutexCreate(osMutex(Num_I2C_Errors_Mutex_not_id));
 
 	// Battery
 	osMutexDef(Battery_Capacity_Mutex);
@@ -99,6 +104,14 @@ void Main_Task(void const *argument) {
 	}else{
 		debug_printf("SD Card Successfully mounted");
 	}
+	recover_SDR();
+	debug_printf("Post SDR Recovery");
+
+    /* TODO: Uncomment before launch: Delay for the specified 30 minutes required by NASA */
+	HAL_Delay(DEBUG_WAIT);
+	//osDelay(DEBUG_WAIT);
+    // HAL_Delay(INITIAL_WAIT);
+	debug_printf("Post wait");
 
 
 
@@ -111,9 +124,11 @@ void Main_Task(void const *argument) {
 	float data4 = 0;
 
 	while(data4<3.7){
-		osDelay(20000);
 		READ_EPS_BATTERY_VOLTAGE(&data4);
 		debug_printf("Current voltage: %f",data4);
+		if(data4<3.7){
+			osDelay(20000);
+		}
 	}
 	debug_printf("Battery is over 3.7 Volts, starting systems.");
 
@@ -174,13 +189,15 @@ void Main_Task(void const *argument) {
 	// See if power is high enough to deploy antenna
 	float data3 = 0;
 
-	while(data3<4.05){
+	while(data3<4){
 		sat_charged = 0;
-		osDelay(20000);
 		READ_EPS_BATTERY_VOLTAGE(&data3);
 		debug_printf("Current voltage: %f",data3);
+		if(data3<4){
+			osDelay(20000);
+		}
 	}
-	debug_printf("Voltage is over 4.05, deploying antenna and starting ADCS.");
+	debug_printf("Voltage is over 4, deploying antenna and starting ADCS.");
 	sat_charged = 1;
 
 	// After an antenna command, the next UHF command will fail, so adding in a junk UHF command after every antenna command
@@ -443,64 +460,73 @@ void ADCS_Task(void const *argument) {
 void BatteryCapacity_Task(void const *argument) {
 	osDelay(100000); //TODO: Remove, this is for testing
 	debug_printf("######## BATTERY CHECK TASK ########\r\n");
-
-	float Five_Bus_Current, Three_Bus_Current;
-	uint16_t input_conditions;
-	float x_voltage, x_neg_current, x_pos_current;
-	float y_voltage, y_neg_current, y_pos_current;
-	float z_voltage, z_neg_current, z_pos_current;
-	float total_input_power;
-	float total_output_power;
-
-	uint32_t PreviousWakeTime = osKernelSysTick();
-
-	while (1) {
-		READ_EPS_INPUT_CONDITION(&input_conditions);
-		if ((input_conditions & 0x20) == 0x20) { // Charge Complete
-			osMutexWait(Battery_Capacity_Mutex, 500);
-			BATTERY_CAPACITY = MAX_BATTERY_CAP;
-			osMutexRelease(Battery_Capacity_Mutex);
-		} else { // Not Fully Charged
-			READ_EPS_5V_CURRENT(&Five_Bus_Current);
-			READ_EPS_3V_CURRENT(&Three_Bus_Current);
-
-			total_output_power = (5 * Five_Bus_Current) + (3 * Three_Bus_Current);
-			osMutexWait(Battery_Capacity_Mutex, 500);
-			BATTERY_CAPACITY -= total_output_power / 3600;
-			osMutexRelease(Battery_Capacity_Mutex);
+	float data3;
+	while(1){
+		osDelay(1000);
+		READ_EPS_BATTERY_VOLTAGE(&data3);
+		if(data3<3.65){
+			recover_SDR();
+			debug_printf("Voltage too low (%f), turning off measurement (simulated for now).",data3);
+			METappend("Battery Capacity detected low voltage (%f), measurement aborted.",data3);
 		}
-
-		if ((input_conditions & 0x40) == 0x40) { // Charge in Progress
-			READ_EPS_SOLAR_X_VOLTAGE(&x_voltage);
-			READ_EPS_SOLAR_X_NEG_CURRENT(&x_neg_current);
-			READ_EPS_SOLAR_X_POS_CURRENT(&x_pos_current);
-
-			READ_EPS_SOLAR_Y_VOLTAGE(&y_voltage);
-			READ_EPS_SOLAR_Y_NEG_CURRENT(&y_neg_current);
-			READ_EPS_SOLAR_Y_POS_CURRENT(&y_pos_current);
-
-			READ_EPS_SOLAR_Z_VOLTAGE(&z_voltage);
-			READ_EPS_SOLAR_Z_NEG_CURRENT(&z_neg_current);
-			READ_EPS_SOLAR_Z_POS_CURRENT(&z_pos_current);
-
-			total_input_power = (x_voltage * (x_neg_current + x_pos_current));
-			total_input_power += (y_voltage * (y_neg_current + y_pos_current));
-			total_input_power += (z_voltage * (z_neg_current + z_pos_current));
-
-			osMutexWait(Battery_Capacity_Mutex, 500);
-			BATTERY_CAPACITY += total_input_power / 3600;
-			osMutexRelease(Battery_Capacity_Mutex);
-		}
-		osMutexWait(Battery_Capacity_Mutex, 500);
-		osMutexWait(Low_Power_Mode_Mutex, 500);
-		if (BATTERY_CAPACITY < 3) {
-			LOW_POWER_MODE = 1;
-		} else if ((LOW_POWER_MODE == 1) & (BATTERY_CAPACITY > 8)) {
-			LOW_POWER_MODE = 0;
-		}
-		osMutexRelease(Low_Power_Mode_Mutex);
-		osMutexRelease(Battery_Capacity_Mutex);
-
-		osDelayUntil(&PreviousWakeTime, 1000); // Delay for 1 second
 	}
+//	float Five_Bus_Current, Three_Bus_Current;
+//	uint16_t input_conditions;
+//	float x_voltage, x_neg_current, x_pos_current;
+//	float y_voltage, y_neg_current, y_pos_current;
+//	float z_voltage, z_neg_current, z_pos_current;
+//	float total_input_power;
+//	float total_output_power;
+//
+//	uint32_t PreviousWakeTime = osKernelSysTick();
+//
+//	while (1) {
+//		READ_EPS_INPUT_CONDITION(&input_conditions);
+//		if ((input_conditions & 0x20) == 0x20) { // Charge Complete
+//			osMutexWait(Battery_Capacity_Mutex, 500);
+//			BATTERY_CAPACITY = MAX_BATTERY_CAP;
+//			osMutexRelease(Battery_Capacity_Mutex);
+//		} else { // Not Fully Charged
+//			READ_EPS_5V_CURRENT(&Five_Bus_Current);
+//			READ_EPS_3V_CURRENT(&Three_Bus_Current);
+//
+//			total_output_power = (5 * Five_Bus_Current) + (3 * Three_Bus_Current);
+//			osMutexWait(Battery_Capacity_Mutex, 500);
+//			BATTERY_CAPACITY -= total_output_power / 3600;
+//			osMutexRelease(Battery_Capacity_Mutex);
+//		}
+//
+//		if ((input_conditions & 0x40) == 0x40) { // Charge in Progress
+//			READ_EPS_SOLAR_X_VOLTAGE(&x_voltage);
+//			READ_EPS_SOLAR_X_NEG_CURRENT(&x_neg_current);
+//			READ_EPS_SOLAR_X_POS_CURRENT(&x_pos_current);
+//
+//			READ_EPS_SOLAR_Y_VOLTAGE(&y_voltage);
+//			READ_EPS_SOLAR_Y_NEG_CURRENT(&y_neg_current);
+//			READ_EPS_SOLAR_Y_POS_CURRENT(&y_pos_current);
+//
+//			READ_EPS_SOLAR_Z_VOLTAGE(&z_voltage);
+//			READ_EPS_SOLAR_Z_NEG_CURRENT(&z_neg_current);
+//			READ_EPS_SOLAR_Z_POS_CURRENT(&z_pos_current);
+//
+//			total_input_power = (x_voltage * (x_neg_current + x_pos_current));
+//			total_input_power += (y_voltage * (y_neg_current + y_pos_current));
+//			total_input_power += (z_voltage * (z_neg_current + z_pos_current));
+//
+//			osMutexWait(Battery_Capacity_Mutex, 500);
+//			BATTERY_CAPACITY += total_input_power / 3600;
+//			osMutexRelease(Battery_Capacity_Mutex);
+//		}
+//		osMutexWait(Battery_Capacity_Mutex, 500);
+//		osMutexWait(Low_Power_Mode_Mutex, 500);
+//		if (BATTERY_CAPACITY < 3) {
+//			LOW_POWER_MODE = 1;
+//		} else if ((LOW_POWER_MODE == 1) & (BATTERY_CAPACITY > 8)) {
+//			LOW_POWER_MODE = 0;
+//		}
+//		osMutexRelease(Low_Power_Mode_Mutex);
+//		osMutexRelease(Battery_Capacity_Mutex);
+//
+//		osDelayUntil(&PreviousWakeTime, 1000); // Delay for 1 second
+//	}
 }

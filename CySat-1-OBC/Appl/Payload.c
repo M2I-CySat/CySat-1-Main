@@ -224,8 +224,8 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay, uint8_t tesfil
 //	fres = f_write(&fil, &number, 4, &byteswritten);
 //	fres = f_close (&fil);
 	METposition = 0;
-	MESnum = rand();
-	debug_printf("Generated measurement number %d",MESnum);
+	//MESnum = rand();
+	//debug_printf("Generated measurement number %d",MESnum);
 	// Creates .MET file for the measurement with time, duration, delay, vbatt, etc, orbit data if we have time
 
 
@@ -253,16 +253,16 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay, uint8_t tesfil
 		return HAL_ERROR;
 	}
 
-	if(data3<4.1){
-		METappend("Voltage below 4.1, aborting");
-		debug_printf("Voltage %f below 4.1, aborting",data3);
+	if(data3<4){
+		METappend("Voltage below 4.0, aborting");
+		debug_printf("Voltage %f below 4.0, aborting",data3);
 		return HAL_ERROR;
 	}
 
 
 
 	// Delays until measurement start time
-	debug_printf("Delaying for %i seconds",delay);
+	debug_printf("Delaying for %d seconds",delay);
 	osDelay(delay*1000);
 
 	READ_EPS_BATTERY_VOLTAGE(&data3);
@@ -270,9 +270,9 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay, uint8_t tesfil
 	sprintf(&dataline[0], "EPS VBATT before power on: %f\n\r",data3);
 	METappend(dataline);
 
-	if(data3<4.1){
-		METappend("Voltage below 4.1, aborting");
-		debug_printf("Voltage %f below 4.1, aborting",data3);
+	if(data3<4){
+		METappend("Voltage below 4.0, aborting");
+		debug_printf("Voltage %f below 4.0, aborting",data3);
 		return HAL_ERROR;
 	}
 
@@ -299,9 +299,9 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay, uint8_t tesfil
 	sprintf(&dataline[0], "EPS VBATT before measurement start: %f\n\r",data3);
 	METappend(dataline);
 
-	if(data3<3.8){
-		METappend("Voltage below 3.8, aborting");
-		debug_printf("Voltage %f below 3.8, aborting",data3);
+	if(data3<3.6){
+		METappend("Voltage below 3.6, aborting");
+		debug_printf("Voltage %f below 3.6, aborting",data3);
 		disable_Payload();
 		disable_LNAs();
 		START_BEACON();
@@ -860,6 +860,21 @@ HAL_StatusTypeDef RAM_PACKET_SEPARATOR(int measurementID, int dataType, int star
 			dat_ptr = &METaddress[0];
 			dat_len = METlength;
 			debug_printf("MET file");
+			break;
+		case 6: //UHFHCK
+			dat_ptr = &HCKaddress[0];
+			dat_len = HCKlength;
+			debug_printf("UHFHCK file");
+			break;
+		case 7: //EPSHCK
+			dat_ptr = &HCKaddress[0];
+			dat_len = HCKlength;
+			debug_printf("EPSHCK file");
+			break;
+		case 8: //ADCSHCK
+			dat_ptr = &HCKaddress[0];
+			dat_len = HCKlength;
+			debug_printf("ADCSHCK file");
 			break;
 		default:
 			debug_printf("Invalid data type");

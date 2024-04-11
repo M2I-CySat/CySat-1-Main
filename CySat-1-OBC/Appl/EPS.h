@@ -80,6 +80,9 @@ HAL_StatusTypeDef disable_EPS_Batt_Heater_2();
 HAL_StatusTypeDef enable_EPS_Batt_Heater_3();
 HAL_StatusTypeDef disable_EPS_Batt_Heater_3();
 
+HAL_StatusTypeDef disable_EPS_3v3_Bus(); // EOL!!!
+HAL_StatusTypeDef enable_EPS_3v3_Bus();
+
 /*************************** HELPER FUNCTIONS **********************************/
 HAL_StatusTypeDef EPS_READ(uint8_t command, uint8_t* data_ptr);
 HAL_StatusTypeDef EPS_WRITE(uint8_t command, uint8_t state);

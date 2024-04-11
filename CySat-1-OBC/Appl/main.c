@@ -59,8 +59,8 @@
 * INTERNAL DEFINES
 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-#define INITIAL_WAIT (30 * 60 * 1000) // waits 30 minutes
-#define DEBUG_WAIT (1 * 1 * 1000) // waits 1 second
+//#define INITIAL_WAIT (30 * 60 * 1000) // waits 30 minutes
+//#define DEBUG_WAIT (1 * 1 * 1000) // waits 1 second
 uint8_t GroundStationPacketLength = 255;
 
 
@@ -184,7 +184,7 @@ void shutdown_EPS(void) {
 HAL_StatusTypeDef startup_EPS() {
 	debug_printf("Inside EPS Startup");
 	HAL_StatusTypeDef HalStatus = HAL_OK;
-	uint8_t status[10];
+	uint8_t status[13];
 	status[0] = enable_EPS_Vbatt_Bus();
 	status[1] = enable_EPS_BCR_Bus();
 	status[2] = enable_EPS_5v_Bus();
@@ -197,6 +197,7 @@ HAL_StatusTypeDef startup_EPS() {
 	status[9] = enable_EPS_Batt_Heater_3();
 	status[10] = disable_Payload();
 	status[11] = disable_LNAs();
+	status[12] = enable_EPS_3v3_Bus();
 	debug_printf("EPS STATUS: ");
 	for (int i = 0; i<12; i++){
 		debug_printf_no_newline("%d",status[i]);
@@ -251,9 +252,7 @@ int main(void) {
     MX_FATFS_Init();
 
     /* Awake message */
-	debug_printf("This is Cy-Sat 1 from Iowa State University\nBEEP BEEP BOOP BOOP Systems Starting!\n\rWait period starting");
-	recover_SDR();
-
+	debug_printf("This is Cy-Sat 1 from Iowa State University\n\rBEEP BEEP BOOP BOOP Systems Starting!\n\rWait period starting");
 	/* Initialize Random Number Generator */
 	srand(291843);
 	debug_printf("Random Number Generator Initialized");
@@ -261,17 +260,17 @@ int main(void) {
 	//startupfile = f_open(&fil, "STARTUP.TXT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS)
 
 
-    /* TODO: Uncomment before launch: Delay for the specified 30 minutes required by NASA */
-	HAL_Delay(DEBUG_WAIT);
-	//osDelay(DEBUG_WAIT);
-    // HAL_Delay(INITIAL_WAIT);
-	debug_printf("Post wait");
+//    /* TODO: Uncomment before launch: Delay for the specified 30 minutes required by NASA */
+//	HAL_Delay(DEBUG_WAIT);
+//	//osDelay(DEBUG_WAIT);
+//    // HAL_Delay(INITIAL_WAIT);
+//	debug_printf("Post wait");
     /*
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     * TRHEADS INITIALIZATION - Tasks specified in AppTasks.c
     *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
-    osThreadDef(myMainTask, Main_Task, osPriorityHigh, 0, 10000); // System initialization
+    osThreadDef(myMainTask, Main_Task, osPriorityHigh, 0, 11000); // System initialization
     osThreadCreate(osThread(myMainTask), NULL);
 
     osThreadDef(myRestartTask, Restart_Task, osPriorityRealtime, 0, 512); // Automatic Restart
@@ -281,7 +280,7 @@ int main(void) {
     osThreadCreate(osThread(myADCSTask), NULL);
 
     osThreadDef(myBatteryCapacityTask, BatteryCapacity_Task, osPriorityNormal, 0, 256); // Batteries
-    // TODO: Uncomment osThreadCreate(osThread(myBatteryCapacityTask), NULL);
+    osThreadCreate(osThread(myBatteryCapacityTask), NULL);
 
     /*
      *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
