@@ -810,13 +810,13 @@ HAL_StatusTypeDef TLM_172(float* current_3v, float* current_5v, float* current_V
 
 	/*CubeControl 3V3 Current. Formatted value is obtained using the formula: (formatted value) [mA] = RAWVAL*0.48828125*/
 	memcpy(&temp_3v, &data[0], 2);
-    *current_3v = (float)temp_3v * .48828125;
+    *current_3v =temp_3v * .48828125;
 	/*CubeControl 5V Current. Formatted value is obtained using the formula: (formatted value) [mA] = RAWVAL*0.48828125*/
     memcpy(&temp_5v, &data[2], 2);
-    *current_5v = (float)temp_5v * .48828125;
+    *current_5v = temp_5v * .48828125;
 	/*CubeControl Vbat Current. Formatted value is obtained using the formula: (formatted value) [mA] = RAWVAL*0.48828125*/
     memcpy(&temp_Vbat, &data[4], 2);
-    *current_Vbat = (float)temp_Vbat * .48828125;
+    *current_Vbat = temp_Vbat * .48828125;
 
 	return status;
 }
@@ -949,7 +949,11 @@ HAL_StatusTypeDef ADCS_TELEMETRY(uint8_t command, uint8_t* data_ptr, uint8_t out
         	debug_printf("%d %x",data[i],data[i]);
         }
         debug_printf("\r\n");
-        memcpy(data_ptr, &data[3], out_byte);
+        if(data[0] == 0xFF){
+        	memcpy(data_ptr, &data[4], out_byte);
+        }else{
+        	memcpy(data_ptr, &data[3], out_byte);
+        }
 //        osStatus = osMutexRelease(UART_Mutex);
 //        debug_printf("ADCS Telemetry: Mutex release status: %d",osStatus);
 
@@ -1033,14 +1037,18 @@ HAL_StatusTypeDef ADCS_TELECOMMAND(uint8_t command[], uint8_t in_byte){
 //        	debug_printf("ADCS Telecommand While Loop Overflow, exiting");
 //        	return status;
 //        }
-
-
+        int dataoffset = 0;
+        if( data[0] == 0xFF){
+        	dataoffset = 1;
+        }else{
+        	dataoffset = 0;
+        }
 
         if(status != HAL_OK){
         	debug_printf("ADCS TC Status not ok");
             return status;
-        }else if(data[2]!= command[0] || data[3]==1 || data[3] == 2){
-            debug_printf("There was an error: %d\r\n", data[3]);
+        }else if(data[2+dataoffset]!= command[0] || data[3+dataoffset]==1 || data[3+dataoffset] == 2){
+            debug_printf("There was an error: %d\r\n", data[3+dataoffset]);
             return HAL_ERROR;
         }
         else

@@ -359,7 +359,7 @@ void Y_Momentum_Activation(){
     //To-Do
 
     // Y-Momentum forever
-    TC_13(3, 1, 0xFFFF); //TODO: Review with Lexi
+    TC_13(3, 1, 0xFFFF);
 
 }
 

@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <ADCS.h>
 #include <EPS.h>
+#include <AppTasks.h>
 
 
 
@@ -270,9 +271,9 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay, uint8_t tesfil
 	sprintf(&dataline[0], "EPS VBATT before power on: %f\n\r",data3);
 	METappend(dataline);
 
-	if(data3<4){
-		METappend("Voltage below 4.0, aborting");
-		debug_printf("Voltage %f below 4.0, aborting",data3);
+	if(data3<4.1){
+		METappend("Voltage below 4.1, aborting");
+		debug_printf("Voltage %f below 4.1, aborting",data3);
 		return HAL_ERROR;
 	}
 
@@ -281,7 +282,6 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay, uint8_t tesfil
 
 	debug_printf("Power on sequence starting");
 	// Powers on payload and RF chain
-	//TODO: Power on payload, delay a bit for power spike, turn on LNAs, delay until SDR is warmed up (30 seconds? More? Less?), maybe check power status.
 
 	debug_printf("Payload power on");
 	status = enable_Payload();
@@ -291,17 +291,17 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay, uint8_t tesfil
 	debug_printf("LNA power on");
 	status = enable_LNAs();
 	debug_printf("LNA power status: %d",status);
-	debug_printf("Delaying 10 seconds");
-	osDelay(5000);
+	debug_printf("Delaying 20 seconds");
+	osDelay(20000);
 
 	READ_EPS_BATTERY_VOLTAGE(&data3);
 	dataline[0] = '\0';
 	sprintf(&dataline[0], "EPS VBATT before measurement start: %f\n\r",data3);
 	METappend(dataline);
 
-	if(data3<3.6){
-		METappend("Voltage below 3.6, aborting");
-		debug_printf("Voltage %f below 3.6, aborting",data3);
+	if(data3<3.65){
+		METappend("Voltage below 3.65, aborting");
+		debug_printf("Voltage %f below 3.65, aborting",data3);
 		disable_Payload();
 		disable_LNAs();
 		START_BEACON();
@@ -349,7 +349,12 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay, uint8_t tesfil
     debug_printf("Message sent successfully, waiting for measurement.");
     //osDelay(time*1000-1000-PAYLOAD_UART_TIMEOUT); // One second earier as a conservative barrier against payload-OBC synchronization issues. PAYLOAD_UART_TIMEOUT is 10 seconds to protect in the other direction.
     uint8_t data_ptr[6];
+	osStatus2 = osMutexWait(SDR_UART_Mutex, 1500);
+	if(osStatus2 != osOK){
+		return HAL_ERROR;
+	}
     status = HAL_UART_Receive(&huart6, data_ptr, 6, time*1000+20000);
+    osMutexRelease(SDR_UART_Mutex);
     debug_printf("Message from SDR:");
     for(int i = 0; i<6; i++){
     	//data_ptr[i] = data_ptr[i+1]; // Shifts everything over one byte to get rid of the carriage return the SDR sends for some reason
@@ -373,7 +378,7 @@ HAL_StatusTypeDef TAKE_MEASUREMENT(uint16_t time, uint16_t delay, uint8_t tesfil
     	disable_Payload();
     	disable_LNAs();
     	START_BEACON();
-        return HAL_ERROR; //TODO: Turn off payload power at all these returns including the one above here a section or two back
+        return HAL_ERROR;
     }else if(packet.Subsystem_Type != PAYLOAD_SUBSYSTEM_TYPE){
     	debug_printf("Subsystem not payload. Disabling LNA and SDR power");
     	disable_Payload();
@@ -461,7 +466,12 @@ HAL_StatusTypeDef FILE_TRANSFER(uint8_t file_type, int file_num){
     }
     // Start transfer response with file size
     uint8_t data_ptr[8];
+	osStatus2 = osMutexWait(SDR_UART_Mutex, 1500);
+	if(osStatus2 != osOK){
+		return HAL_ERROR;
+	}
     status = HAL_UART_Receive(&huart6, data_ptr, 8, PAYLOAD_UART_TIMEOUT); //Plus file type because kevin be giving us an extra byte???
+    osMutexRelease(SDR_UART_Mutex);
     if(status != HAL_OK){
     	osDelay(12000);
         return status;
@@ -574,8 +584,12 @@ HAL_StatusTypeDef FILE_TRANSFER(uint8_t file_type, int file_num){
     debug_printf("Size of new lendata_ptr: %ld, %lu",*lendata_ptr, *lendata_ptr);
     osDelay(500);
     // Transfer of data occurs
-
+	osStatus2 = osMutexWait(SDR_UART_Mutex, 1500);
+	if(osStatus2 != osOK){
+		return HAL_ERROR;
+	}
     status = HAL_UART_Receive(&huart6, bigdata_ptr, file_size, PAYLOAD_UART_TIMEOUT);
+    osMutexRelease(SDR_UART_Mutex);
     if(status != HAL_OK){
     	debug_printf("Data return timeout");
         return status;
@@ -584,7 +598,12 @@ HAL_StatusTypeDef FILE_TRANSFER(uint8_t file_type, int file_num){
 
     // File checksum arrives in CySat packet
     uint8_t checksum_data[6];
+	osStatus2 = osMutexWait(SDR_UART_Mutex, 1500);
+	if(osStatus2 != osOK){
+		return HAL_ERROR;
+	}
     status = HAL_UART_Receive(&huart6, checksum_data, 6, PAYLOAD_UART_TIMEOUT);
+    osMutexRelease(SDR_UART_Mutex);
     if(status != HAL_OK){
         return status;
     }
@@ -639,7 +658,12 @@ HAL_StatusTypeDef TES_FILE_TRANSFER(uint8_t* file_num){
     }
     // Start transfer response with file size
     uint8_t data_ptr[8];
+	osStatus2 = osMutexWait(SDR_UART_Mutex, 1500);
+	if(osStatus2 != osOK){
+		return HAL_ERROR;
+	}
     status = HAL_UART_Receive(&huart6, data_ptr, 8, PAYLOAD_UART_TIMEOUT);
+    osMutexRelease(SDR_UART_Mutex);
     if(status != HAL_OK){
         return status;
     }
@@ -656,7 +680,12 @@ HAL_StatusTypeDef TES_FILE_TRANSFER(uint8_t* file_num){
 
     // Transfer of data occurs
     //uint8_t data[file_size];
+	osStatus2 = osMutexWait(SDR_UART_Mutex, 1500);
+	if(osStatus2 != osOK){
+		return HAL_ERROR;
+	}
     status = HAL_UART_Receive(&huart6, bigdata_ptr, file_size, PAYLOAD_UART_TIMEOUT);
+    osMutexRelease(SDR_UART_Mutex);
     if(status != HAL_OK){
     	debug_printf("Data return timeout");
         return status;
@@ -664,7 +693,12 @@ HAL_StatusTypeDef TES_FILE_TRANSFER(uint8_t* file_num){
 
     // File checksum arrives in CySat packet
     uint8_t checksum_data[6];
+	osStatus2 = osMutexWait(SDR_UART_Mutex, 1500);
+	if(osStatus2 != osOK){
+		return HAL_ERROR;
+	}
     status = HAL_UART_Receive(&huart6, checksum_data, 6, PAYLOAD_UART_TIMEOUT);
+    osMutexRelease(SDR_UART_Mutex);
     if(status != HAL_OK){
         return status;
     }
@@ -1170,7 +1204,7 @@ HAL_StatusTypeDef PACKET_SEPARATOR(int measurementID, int dataType, int startPac
     osDelay(5500); //Let the pipe timeout so we don't get 0x80s in the wrong places
     //END_PIPE();
 
-    //TODO: Close file
+
 
 
     return HAL_OK;
@@ -1236,7 +1270,12 @@ HAL_StatusTypeDef PAYLOAD_WRITE(uint8_t command, uint8_t* in_data_ptr, uint8_t i
     }
 
     uint8_t data_ptr[5];
+	osStatus2 = osMutexWait(SDR_UART_Mutex, 1500);
+	if(osStatus2 != osOK){
+		return HAL_ERROR;
+	}
     status = HAL_UART_Receive(&huart6, data_ptr, 5, PAYLOAD_UART_TIMEOUT);
+    osMutexRelease(SDR_UART_Mutex);
     if(status != HAL_OK){
         return status;
     }
@@ -1269,7 +1308,12 @@ HAL_StatusTypeDef PAYLOAD_READ(uint8_t command, uint8_t* out_data_ptr, uint8_t o
     }
 
     uint8_t data_ptr[out_byte+5+1]; // Plus 1 because the thing sends a carriage return smh
+	osStatus2 = osMutexWait(SDR_UART_Mutex, 1500);
+	if(osStatus2 != osOK){
+		return HAL_ERROR;
+	}
     status = HAL_UART_Receive(&huart6, data_ptr, out_byte + 5+1, PAYLOAD_UART_TIMEOUT);
+    osMutexRelease(SDR_UART_Mutex);
     debug_printf("Message from SDR:");
     for(int i = 0; i<out_byte+5; i++){
     	data_ptr[i] = data_ptr[i+1]; // Shifts everything over one byte to get rid of the carriage return the SDR sends for some reason

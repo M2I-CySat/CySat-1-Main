@@ -16,7 +16,7 @@ HAL_StatusTypeDef EPS_HEALTH_CHECK(){
 
 	HCKposition = 0;
 
-	char dataline[64] = {"\0"};
+	char dataline[256] = {"\0"};
 	float floatdata;
 	uint16_t data;
 
@@ -178,7 +178,7 @@ HAL_StatusTypeDef UHF_HEALTH_CHECK(){
 	uint8_t data[23] = {"\0"};
 	memset(&data[0], 0x00, 23);
 	uint32_t longdata;
-	char dataline[64] = {"\0"};
+	char dataline[256] = {"\0"};
 	float temp;
 
 	GET_UHF_STATUS(data);
@@ -258,78 +258,114 @@ HAL_StatusTypeDef ADCS_HEALTH_CHECK(){
 	HCKposition = 0;
 	debug_printf("ADCS Heath Check");
 	char dataline[256] = {'\0'};
-	float float1;
-	float float2;
-	float float3;
-	uint32_t data1;
-	uint16_t data2;
-	int16_t int1;
-	int16_t int2;
-	int16_t int3;
-	uint8_t b1;
-	uint8_t b2;
-	uint8_t b3;
-	uint8_t b4;
-	uint8_t b5;
-	uint8_t b6;
-	uint8_t b7;
-	uint8_t b8;
-	uint8_t b9;
+	float float1 = 0;
+	float float2 = 0;
+	float float3 = 0;
+	uint32_t data1 = 0;
+	uint16_t data2 = 0;
+	int16_t int1 = 0;
+	int16_t int2 = 0;
+	int16_t int3 = 0;
+	uint8_t b1 = 0;
+	uint8_t b2 = 0;
+	uint8_t b3 = 0;
+	uint8_t b4 = 0;
+	uint8_t b5 = 0;
+	uint8_t b6 = 0;
+	uint8_t b7 = 0;
+	uint8_t b8 = 0;
+	uint8_t b9 = 0;
 
 	//Telemetry requests:
 	TLM_140(&data1, &data2);
 	sprintf(&dataline[0], "Current Unix time: %lu seconds, %i milliseconds\n\r", data1, data2);
 	HCKappend(dataline);
+	data1 = 0;
+	data2 = 0;
 
 	dataline[0] = '\0';
 	TLM_146(&float1, &float2, &float3);
 	sprintf(&dataline[0], "Estimated attitude angles: %f deg (roll), %f deg (pitch), %f deg (yaw)\n\r", float1, float2, float3);
 	HCKappend(dataline);
+	float1 = 0;
+	float2 = 0;
+	float3 = 0;
 
 	dataline[0] = '\0';
 	TLM_147(&float1, &float2, &float3);
 	sprintf(&dataline[0], "Estimated angular rates: %f deg/s (x), %f deg/s (y), %f deg/s (z)\n\r", float1, float2, float3);
 	HCKappend(dataline);
+	float1 = 0;
+	float2 = 0;
+	float3 = 0;
 
 	dataline[0] = '\0';
 	TLM_150(&float1, &float2, &float3);
 	sprintf(&dataline[0], "Satellite position: %f deg (lattitude), %f deg (longitude)\nAltitude: %f km\n\r", float1, float2, float3);
 	HCKappend(dataline);
+	float1 = 0;
+	float2 = 0;
+	float3 = 0;
 
 	dataline[0] = '\0';
 	TLM_151(&float1, &float2, &float3);
 	sprintf(&dataline[0], "Magnetic Field Vector: %f uT (x), %f uT (y), %f uT (z)\n\r", float1, float2, float3);
 	HCKappend(dataline);
+	float1 = 0;
+	float2 = 0;
+	float3 = 0;
 
 	dataline[0] = '\0';
 	TLM_154(&float1, &float2, &float3);
 	sprintf(&dataline[0], "Nadir Vector: %f (x), %f (y), %f (z)\n\r", float1, float2, float3);
 	HCKappend(dataline);
+	float1 = 0;
+	float2 = 0;
+	float3 = 0;
 
 	dataline[0] = '\0';
 	TLM_155(&float1, &float2, &float3);
 	sprintf(&dataline[0], "Rate Sensor Rates: %f deg/s (x), %f deg/s (y), %f deg/s (z)\n\r", float1, float2, float3);
 	HCKappend(dataline);
+	float1 = 0;
+	float2 = 0;
+	float3 = 0;
 
 	dataline[0] = '\0';
 	TLM_156(&int1);
 	sprintf(&dataline[0], "Wheel Speed Measurement: %i rpm\n\r", int1);
 	HCKappend(dataline);
+	int1 = 0;
 
 	dataline[0] = '\0';
 	TLM_157(&float1, &float2, &float3);
 	sprintf(&dataline[0], "Magnetorquer Commanded on-time: %f s (x), %f s (y), %f s (z)\n\r", float1, float2, float3);
 	HCKappend(dataline);
+	float1 = 0;
+	float2 = 0;
+	float3 = 0;
 
 	dataline[0] = '\0';
 	TLM_158(&int1, &int2, &int3);
 	sprintf(&dataline[0], "Wheel Speed Commanded: %d rpm (x), %d rpm (y), %d rpm (z)\n\r", int1, int2, int3);
 	HCKappend(dataline);
+	int1 = 0;
+	int2 = 0;
+	int3 = 0;
 
 	dataline[0] = '\0';
 	TLM_168(&b1, &b2, &b3, &b4, &b5, &b6);
 	sprintf(&dataline[0], "Raw CSS Measurements:\n1: %d\n2: %d\n3: %d\n4: %d\n5: %d\n6: %d\n", b1, b2, b3, b4, b5, b6);
 	HCKappend(dataline);
+	b1 = 0;
+	b2 = 0;
+	b3 = 0;
+	b4 = 0;
+	b5 = 0;
+	b6 = 0;
+	b7 = 0;
+	b8 = 0;
+	b9 = 0;
 
 	dataline[0] = '\0';
 	TLM_169(&b1, &b2, &b3, &b4);
@@ -345,14 +381,29 @@ HAL_StatusTypeDef ADCS_HEALTH_CHECK(){
 	TLM_172(&float1, &float2, &float3);
 	sprintf(&dataline[0], "Current Measurements:\n3V3 Current: %f mA\n5V Current: %f mA\nVbat Current: %f mA\n\r", float1, float2, float3);
 	HCKappend(dataline);
+	float1 = 0;
+	float2 = 0;
+	float3 = 0;
 
 	dataline[0] = '\0';
 	TLM_197(&b1, &b2, &b3, &b4, &b5, &b6, &b7, &b8, &b9);
 	sprintf(&dataline[0], "Control Power Selections:\nCubeControl Signal PIC: %d\nCubeControl Motor PIC: %d\nCubeSense: %d\nCubeStar: %d\nCubeWheel1: %d\nCubeWheel2: %d\nCubeWheel3: %d\nMotor Electronics: %d\nGPS LNA: %d\n\r", b1, b2, b3, b4, b5, b6, b7, b8, b9);
 	HCKappend(dataline);
+	b1 = 0;
+	b2 = 0;
+	b3 = 0;
+	b4 = 0;
+	b5 = 0;
+	b6 = 0;
+	b7 = 0;
+	b8 = 0;
+	b9 = 0;
 
 	dataline[0] = '\0';
 	TLM_199(&float1, &float2, &float3);
 	sprintf(&dataline[0], "Commanded Attitude Angles: %f deg (roll), %f deg (pitch), %f deg (yaw)\n\r", float1, float2, float3);
+	float1 = 0;
+	float2 = 0;
+	float3 = 0;
 	HCKappend(dataline);
 }

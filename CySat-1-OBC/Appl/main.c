@@ -26,6 +26,15 @@
 // Becuase Steven was a fool and let a loose 5V wire near the OBC destroying its capability to read SD Cards
 // Don't be like Steven
 
+// Flight RBFs:
+// * Uncomment 30 minute delay                        - DONE
+// * Uncomment antenna deployment code                - DONE
+// * Uncomment magnetometer deployment code           - DONE
+// * Uncomment ADCS tasks code                        - DONE
+// * Revert testing duration for restart task         - DONE
+// * Uncomment Backup antenna deployment function     - DONE
+// * Revert testing duration for voltage watchdog     - N/A, Watchdog disabled as it causes problems
+// * Comment out debug_printf stuff                   - DONE
 
 
 
@@ -252,10 +261,10 @@ int main(void) {
     MX_FATFS_Init();
 
     /* Awake message */
-	debug_printf("This is Cy-Sat 1 from Iowa State University\n\rBEEP BEEP BOOP BOOP Systems Starting!\n\rWait period starting");
+	//debug_printf("This is Cy-Sat 1 from Iowa State University\n\rBEEP BEEP BOOP BOOP Systems Starting!\n\rWait period starting");
 	/* Initialize Random Number Generator */
 	srand(291843);
-	debug_printf("Random Number Generator Initialized");
+	//debug_printf("Random Number Generator Initialized");
 
 	//startupfile = f_open(&fil, "STARTUP.TXT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS)
 
@@ -273,14 +282,14 @@ int main(void) {
     osThreadDef(myMainTask, Main_Task, osPriorityHigh, 0, 11000); // System initialization
     osThreadCreate(osThread(myMainTask), NULL);
 
-    osThreadDef(myRestartTask, Restart_Task, osPriorityRealtime, 0, 512); // Automatic Restart
+    osThreadDef(myRestartTask, Restart_Task, osPriorityRealtime, 0, 512); // Automatic Restart On Freeze
     osThreadCreate(osThread(myRestartTask), NULL);
 
     osThreadDef(myADCSTask, ADCS_Task, osPriorityNormal, 0, 1024); // ADCS
     osThreadCreate(osThread(myADCSTask), NULL);
-
-    osThreadDef(myBatteryCapacityTask, BatteryCapacity_Task, osPriorityNormal, 0, 256); // Batteries
-    osThreadCreate(osThread(myBatteryCapacityTask), NULL);
+    // Battery capacity task has been commented out for flight due to its tendency to freeze the satellite
+    //osThreadDef(myBatteryCapacityTask, BatteryCapacity_Task, osPriorityNormal, 0, 256); // Batteries
+    //osThreadCreate(osThread(myBatteryCapacityTask), NULL);
 
     /*
      *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -288,8 +297,10 @@ int main(void) {
      *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
     /* FINAL TASK: Start scheduler */
-    debug_printf("Starting AppTasks.c");
+    //debug_printf("Starting AppTasks.c");
     osKernelStart();
+	shutdown_EPS();
+	NVIC_SystemReset();
 }
 
 /*
@@ -307,18 +318,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	// Amber LED is being used to indicate packet handling, green is being used to indicate activity in the main loop
 	// Due to a long series of issues, only reception is handled by the callback. Handling is handled in main loop.
 	// Issues include delay functions not working inside the callback and UHF returning junk upon transparent mode enable, but only in the callback
-    AMBER_LED_ON();
+    //AMBER_LED_ON();
     if (huart == &huart1) {
-    	debug_printf("Packet received on UART 1 (UHF)");
+    	//debug_printf("Packet received on UART 1 (UHF)");
     	//HAL_UART_Receive_IT(&huart1, start_of_rx_buffer, GroundStationPacketLength);
     }else if (huart == &huart6) {
-    	debug_printf("Packet received on UART 6 (Payload)");
+    	//debug_printf("Packet received on UART 6 (Payload)");
     }
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 	if (huart == &huart1) {
-		debug_printf("UART error. Data: %s", GroundStationRxBuffer);
+		//debug_printf("UART error. Data: %s", GroundStationRxBuffer);
 		//HAL_UART_Receive_IT(&huart1, start_of_rx_buffer, GroundStationPacketLength);
 	}
 }
@@ -371,7 +382,7 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c) {
 	uint8_t data[1];
 
     if (hi2c == &hi2c1) { //OBC connected to EPS, UHF, and ADCS
-        debug_printf("I2C connection established!");
+        //debug_printf("I2C connection established!");
         HAL_I2C_Master_Receive_IT(&hi2c1, 0x18 << 1, data, 1);
     }
 }
@@ -384,7 +395,7 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c) {
 void Error_Handler(void) {
     /* USER CODE BEGIN Error_Handler */
     /* User can add his own implementation to report the HAL error return state */
-	debug_printf("Error Handler triggered");
+	//debug_printf("Error Handler triggered");
 #ifdef DEBUG_ENABLE
     while(1)
     {

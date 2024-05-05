@@ -18,6 +18,7 @@
 #define INITIAL_WAIT (30 * 60 * 1000) // waits 30 minutes
 #define DEBUG_WAIT (1 * 1 * 1000) // waits 1 second
 
+osMutexId (SDR_UART_Mutex);
 osMutexId (EPS_I2C_Mutex);
 osMutexId (UART_Mutex);
 osMutexId Num_I2C_Errors_Mutex;
@@ -26,9 +27,12 @@ osMutexId ADCS_Active_Mutex;
 osMutexId Low_Power_Mode_Mutex;
 osMutexId UHF_UART_Mutex;
 
+osMutexDef(SDR_UART_Mutex_not_id);
 osMutexDef(EPS_I2C_Mutex_not_id);
 osMutexDef(UART_Mutex_not_id);
 osMutexDef(Num_I2C_Errors_Mutex_not_id);
+
+osStatus osStatus2;
 
 const float MAX_BATTERY_CAP = 17.8829; // Max capacity EPS batteries can hold
 float BATTERY_CAPACITY = MAX_BATTERY_CAP; // Current capacity batteries are at
@@ -60,10 +64,10 @@ uint8_t tempbuffer[255] = {'\0'};
  * @brief Main Task/Thread
  */
 void Main_Task(void const *argument) {
-	debug_printf("MAIN TASK ########\r\n");
 
 	HAL_StatusTypeDef mainStatus = HAL_OK;
 	MESnum = 0;
+	sat_charged = 0;
 
 	/*
 	 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,6 +85,9 @@ void Main_Task(void const *argument) {
 	//osMutexDef(Num_I2C_Errors_Mutex);
 	Num_I2C_Errors_Mutex = osMutexCreate(osMutex(Num_I2C_Errors_Mutex_not_id));
 
+	// Payload UART
+	SDR_UART_Mutex = osMutexCreate(osMutex(SDR_UART_Mutex_not_id));
+
 	// Battery
 	osMutexDef(Battery_Capacity_Mutex);
 	Battery_Capacity_Mutex = osMutexCreate(osMutex(Battery_Capacity_Mutex));
@@ -96,7 +103,7 @@ void Main_Task(void const *argument) {
 	// UHF
 	osMutexDef(UHF_UART_Mutex);
 	UHF_UART_Mutex = osMutexCreate(osMutex(UHF_UART_Mutex));
-
+	debug_printf("MAIN TASK ########\r\n"); // Earliest point to safely use debug printf
 
 	if(f_mount(&FatFs, "", 0) != FR_OK) //Checks to make sure drive mounted successfully
 	{
@@ -108,9 +115,8 @@ void Main_Task(void const *argument) {
 	debug_printf("Post SDR Recovery");
 
     /* TODO: Uncomment before launch: Delay for the specified 30 minutes required by NASA */
-	HAL_Delay(DEBUG_WAIT);
-	//osDelay(DEBUG_WAIT);
-    // HAL_Delay(INITIAL_WAIT);
+	//HAL_Delay(DEBUG_WAIT);
+    HAL_Delay(INITIAL_WAIT);
 	debug_printf("Post wait");
 
 
@@ -136,6 +142,7 @@ void Main_Task(void const *argument) {
 	if (startup_EPS() == HAL_OK){
 		debug_printf("Successful EPS Configuration");
 	}
+	osDelay(15000);
 
 	/*
 	 *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -189,15 +196,14 @@ void Main_Task(void const *argument) {
 	// See if power is high enough to deploy antenna
 	float data3 = 0;
 
-	while(data3<4){
-		sat_charged = 0;
+	while(data3<4.05){
 		READ_EPS_BATTERY_VOLTAGE(&data3);
 		debug_printf("Current voltage: %f",data3);
-		if(data3<4){
+		if(data3<4.05){
 			osDelay(20000);
 		}
 	}
-	debug_printf("Voltage is over 4, deploying antenna and starting ADCS.");
+	debug_printf("Voltage is over 4.05, deploying antenna and starting ADCS.");
 	sat_charged = 1;
 
 	// After an antenna command, the next UHF command will fail, so adding in a junk UHF command after every antenna command
@@ -207,21 +213,24 @@ void Main_Task(void const *argument) {
 	osDelay(50);
 	debug_printf("Starting UHF Configuration");
 	// Deploy the Antenna
-	// TODO: Antenna Deployment Function Goes Here
-	// CONFIGURE_ANTENNA();
+	CONFIGURE_ANTENNA();
+	osDelay(1500);
+	mainStatus = GET_UHF_TEMP(&uhfTemperature);
+	osDelay(1500);
+	//debug_printf("ANTENNA DEPLOY SEQUENCE ACTIVE!!! You have one minute to abort it.");
+	//osDelay(1000*60);
+	debug_printf("Sending 0x1F to I2C slave address 0x33");
+	DEPLOY_ANTENNA(30); // DON'T TOUCH UNLESS YOU KNOW WHAT YOU'RE DOING
 
 	mainStatus = GET_UHF_TEMP(&uhfTemperature);
-	// osDelay(1500);
-	//debug_printf("Sending 0x1F to I2C slave address 0x33");
-	// DEPLOY_ANTENNA(30); // DON'T TOUCH UNLESS YOU KNOW WHAT YOU'RE DOING
 
-	mainStatus = GET_UHF_TEMP(&uhfTemperature);
-
-//	osDelay(1000*60*35); // Makes sure previous antenna deploy sequence has finished
-//	debug_printf("Beginning backup antenna deployment sequence");
-//	Enable_EPS_Output_3();
-//	osDelay(1000*29);
-//	Disable_EPS_Output_3();
+	osDelay(1000*60*35); // Makes sure previous antenna deploy sequence has finished
+	//debug_printf("ANTENNA DEPLOY SEQUENCE ACTIVE!!! You have one minute to abort it.");
+	//osDelay(1000*60);
+	debug_printf("Beginning backup antenna deployment sequence");
+	enable_EPS_Output_3();
+	osDelay(1000*29);
+	disable_EPS_Output_3();
 
 
 	/* Temperature sensor test. This is not important but it is one of the first things I (Steven) got working on this project so I've left it here for nostalgia */
@@ -234,25 +243,10 @@ void Main_Task(void const *argument) {
 	}
 	osDelay(50);
 
-//	debug_printf("New Incrementer Tests");
-//
-//	UINT byteswritten, bytesread; // File write/read counts
-//	fres = f_open(&fil, "entry.txt", FA_OPEN_ALWAYS | FA_READ | FA_WRITE);
-//	int number = 0;
-//	fres = f_read(&fil, &number, 4, &bytesread);
-//	debug_printf("Old number %d",number);
-//	number = number+1;
-//	debug_printf("New number %d",number);
-//	fres = f_lseek(&fil, 0);
-//	fres = f_write(&fil, &number, 4, &byteswritten);
-//	fres = f_close (&fil);
 
-	// De-tumbling Sequence
-	// TODO: De-tumbling functions (ADCS) go here
-	// debug_printf("Beginning de-tumbling sequence (unfinished)");
 
 	/** Ground station will send "Initial Health Check Request" command
-	 * TODO: Create health checks:
+	 *
 	 * EPS, ADCS, SDR, OBC, UHF transceiver
 	 */
 
@@ -274,43 +268,12 @@ void Main_Task(void const *argument) {
 //	TC_17(4000);
 //	osDelay(5000);
 //	TC_17(0);
-//	debug_printf("Payload power on");
-//	mainStatus = enable_Payload();
-//	debug_printf("Payload power status: %d",mainStatus);
-//	debug_printf("Delaying 20 seconds");
-//	osDelay(20000);
-//	debug_printf("LNA power on");
-//	mainStatus = enable_LNAs();
-//	debug_printf("LNA power status: %d",mainStatus);
-//	debug_printf("Delaying 10 seconds");
-//	osDelay(10000);
-//	char power_status;
-//	debug_printf("Testing payload power status command");
-//	mainStatus = GET_PAYLOAD_POWER_STATUS(&power_status);
-//	debug_printf("Power status: %d", power_status);
-//	if (mainStatus != HAL_OK){
-//		debug_printf("Payload comms error");
-//	}else{
-//		debug_printf("Payload comms success");
-//	}
-//	osDelay(3000);
-//	debug_printf("Disabling LNA and SDR power");
-//	disable_Payload();
-//	disable_LNAs();
 
-	//f_open(&fil, "1.DAT", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS); //I have no idea why but if we remove this data transmission breaks
-	//DELETE_DATA_FILE(3);
-	//PACKET_SEPARATOR(8, 0, 0, 80, 0x01, "0");
-	//PACKET_SEPARATOR(8,0,0,80,".DAT");
-
-	//list_dir();
-	//FILE_TRANSFER(0,1);
-	//FILE_TRANSFER(1,0);
 
 	// Loop for handling communications
 	GroundStationRxBuffer[0] = '\0';
 
-	int randregen = 0;
+	//int randregen = 0;
 
 	debug_printf("[Main Thread/INFO]: Main Task config complete. LED sequence begin.");
 	while (1) {
@@ -319,7 +282,7 @@ void Main_Task(void const *argument) {
 		GREEN_LED_OFF(); //Flashes LEDs
 		osDelay(500);
 		GREEN_LED_ON();
-		randregen = rand();
+		//randregen = rand();
 		MAIN_poll = 1;
 		osDelay(500);
 
@@ -332,7 +295,7 @@ void Main_Task(void const *argument) {
 		//debug_printf("\r\r\r");
 		//debug_printf("Buffer: %x %x %x %x %x %x",GroundStationRxBuffer[15],GroundStationRxBuffer[16],GroundStationRxBuffer[17],GroundStationRxBuffer[18],GroundStationRxBuffer[19],GroundStationRxBuffer[20]);
 		if (GroundStationRxBuffer[16]==0xFF){
-			AMBER_LED_ON();
+			//AMBER_LED_ON();
 			//Undo the conversion of an 0x00 to 5 0xAA
 			uint8_t offset = 0;
 			for(int i = 0; i<255; i++){
@@ -356,7 +319,7 @@ void Main_Task(void const *argument) {
 			}
 			memset(tempbuffer, '\0', sizeof(tempbuffer)); //Reset tempbuffer
 			osDelay(5100); //Delay for pipe mode to shut off, can probably work around this if needed
-			AMBER_LED_OFF();
+			//AMBER_LED_OFF();
 		}
 		memset(GroundStationRxBuffer, '\0', sizeof(GroundStationRxBuffer)); //Reset GroundStationRxBuffer
 	}
@@ -373,9 +336,15 @@ void Restart_Task(void const *argument) {
 	uint32_t maincounter = 0;
 	uint32_t adcscounter = 0;
 	uint32_t Sat_Restart_Timeout = 60*6;
+	uint32_t ADCS_Restart_Timeout = 60*24;
 
 	while (1){
-		osDelay(60*1000);
+		for(int i=1; i<60; i++){
+			osDelay(500);
+			AMBER_LED_ON();
+			osDelay(500);
+			AMBER_LED_OFF();
+		}
 		if(MAIN_poll == 1){ // Main task set poll to 1 and is responding
 			maincounter = 0;
 			MAIN_poll = 0;
@@ -385,7 +354,7 @@ void Restart_Task(void const *argument) {
 		}
 
 		if(maincounter>Sat_Restart_Timeout){
-			debug_printf("Restarting Satellite (Main UHF Loop Timeout)");
+			//debug_printf("Restarting Satellite (Main UHF Loop Timeout)");
 			shutdown_EPS();
 			NVIC_SystemReset();
 		}
@@ -398,8 +367,8 @@ void Restart_Task(void const *argument) {
 			adcscounter = adcscounter + 1;
 		}
 
-		if(adcscounter>Sat_Restart_Timeout){
-			debug_printf("Restarting Satellite (ADCS Timeout)");
+		if(adcscounter>ADCS_Restart_Timeout){
+			//debug_printf("Restarting Satellite (ADCS Timeout)");
 			shutdown_EPS();
 			NVIC_SystemReset();
 		}
@@ -421,18 +390,21 @@ void ADCS_Task(void const *argument) {
 	HAL_StatusTypeDef adcsStatus = HAL_OK;
 	osDelay(60000);
 	debug_printf("######## ADCS TASK ########\r\n");
-	//Magnetometer_Deployment(); //TODO: ENABLE FOR FLIGHT
+	Magnetometer_Deployment();
 
 
 
-//	debug_printf("Detumbling");
-//	Detumbling_To_Y_Thomson();
+	debug_printf("Detumbling");
+	Detumbling_To_Y_Thomson();
 //	y_ramp_result_t result;
-//	debug_printf("Ramp test");
-//	result = Y_Wheel_Ramp_Up_Test();
-//  osDelay(1000*60*90); // Delay so that  momentum is held for an orbit
+	debug_printf("Ramp test");
+	Y_Wheel_Ramp_Up_Test();
+    osDelay(1000*60*90); // Delay so that  momentum is held for an orbit
 //	debug_printf("Y Momentum");
-//	Y_Momentum_Activation();
+	//TC_11(1,1,0,0,0,0,0,1,0);
+	//osDelay(1000);
+	Y_Momentum_Activation();
+	debug_printf("Done");
 //	if(result == NO_ERROR)
 //		debug_printf("Y Wheel Ramp Test is Success!!!\r\n");
 //	else if(result == FAULT_COMMAND_SPEED)
@@ -462,12 +434,15 @@ void BatteryCapacity_Task(void const *argument) {
 	debug_printf("######## BATTERY CHECK TASK ########\r\n");
 	float data3;
 	while(1){
+		data3 = 0;
 		osDelay(1000);
 		READ_EPS_BATTERY_VOLTAGE(&data3);
 		if(data3<3.65){
 			recover_SDR();
 			debug_printf("Voltage too low (%f), turning off measurement (simulated for now).",data3);
-			METappend("Battery Capacity detected low voltage (%f), measurement aborted.",data3);
+			osDelay(20000);
+			debug_printf("Still working");
+			//METappend("Battery Capacity detected low voltage, measurement aborted.");
 		}
 	}
 //	float Five_Bus_Current, Three_Bus_Current;

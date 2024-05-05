@@ -12,6 +12,7 @@
 #include "stm32f4xx_hal_def.h"
 #include <string.h>
 #include <stdlib.h>
+#include <AppTasks.h>
 
 
 
@@ -29,51 +30,63 @@ long ConvertCharToLong(char *pSrc) {
   * @brief Formats and prints data out on to the debug UART line. Formatting works in standard printf fashion
   * @retval Returns the status of the HAL UART transmission
   */
-HAL_StatusTypeDef debug_printf(char* format, ...){
+HAL_StatusTypeDef debug_printf(char* format, ...){ // Commented out for flight due to interference concerns
 
-    uint32_t bufferSize = 512;
-    uint8_t formatBuffer[bufferSize];
-
-    va_list args;
-    va_start(args, format);
-    int len = vsnprintf(formatBuffer, bufferSize, format, args); //warning due to use of uint8_t instead of int8_t
-    va_end(args);
-
-    HAL_StatusTypeDef status = HAL_ERROR;
-    if (len > 0) {
-        status = HAL_UART_Transmit(&huart6, formatBuffer, len, 1000);
-        uint8_t crlf[] = "\r\n";
-        status = HAL_UART_Transmit(&huart6, crlf, 2, 1000); //sends a carrige return and a line feed to UART (meant for putty/windows)
-    }
-    else{
-        status = HAL_ERROR;
-    }
-
-    return status;
+//    uint32_t bufferSize = 512;
+//    uint8_t formatBuffer[bufferSize];
+//
+//    va_list args;
+//    va_start(args, format);
+//    int len = vsnprintf(formatBuffer, bufferSize, format, args); //warning due to use of uint8_t instead of int8_t
+//    va_end(args);
+//
+//    HAL_StatusTypeDef status = HAL_ERROR;
+//    if (len > 0) {
+//    	osStatus2 = osMutexWait(SDR_UART_Mutex, 1500);
+//    	if(osStatus2 != osOK){
+//    		return HAL_ERROR;
+//    	}
+//        status = HAL_UART_Transmit(&huart6, formatBuffer, len, 1000);
+//        uint8_t crlf[] = "\r\n";
+//        status = HAL_UART_Transmit(&huart6, crlf, 2, 1000); //sends a carrige return and a line feed to UART (meant for putty/windows)
+//        osMutexRelease(SDR_UART_Mutex);
+//    }
+//    else{
+//        status = HAL_ERROR;
+//    }
+//
+//    return status;
+	return HAL_OK;
 }
 
 
 HAL_StatusTypeDef debug_printf_no_newline(char* format, ...){
 
-    uint32_t bufferSize = 512;
-    uint8_t formatBuffer[bufferSize];
-
-    va_list args;
-    va_start(args, format);
-    int len = vsnprintf(formatBuffer, bufferSize, format, args); //warning due to use of uint8_t instead of int8_t
-    va_end(args);
-
-    HAL_StatusTypeDef status = HAL_ERROR;
-    if (len > 0) {
-        status = HAL_UART_Transmit(&huart6, formatBuffer, len, 1000);
-        //uint8_t crlf[] = "\r\n";
-        //status = HAL_UART_Transmit(&huart6, crlf, 2, 1000); //sends a carrige return and a line feed to UART (meant for putty/windows)
-    }
-    else{
-        status = HAL_ERROR;
-    }
-
-    return status;
+//    uint32_t bufferSize = 512;
+//    uint8_t formatBuffer[bufferSize];
+//
+//    va_list args;
+//    va_start(args, format);
+//    int len = vsnprintf(formatBuffer, bufferSize, format, args); //warning due to use of uint8_t instead of int8_t
+//    va_end(args);
+//
+//    HAL_StatusTypeDef status = HAL_ERROR;
+//    if (len > 0) {
+//    	osStatus2 = osMutexWait(SDR_UART_Mutex, 1500);
+//    	if(osStatus2 != osOK){
+//    		return HAL_ERROR;
+//    	}
+//        status = HAL_UART_Transmit(&huart6, formatBuffer, len, 1000);
+//        osMutexRelease(SDR_UART_Mutex);
+//        //uint8_t crlf[] = "\r\n";
+//        //status = HAL_UART_Transmit(&huart6, crlf, 2, 1000); //sends a carrige return and a line feed to UART (meant for putty/windows)
+//    }
+//    else{
+//        status = HAL_ERROR;
+//    }
+//
+//    return status;
+	return HAL_OK;
 }
 
 /**
@@ -101,9 +114,9 @@ void debug_led_amber(int count, int period){
     int i;
     for (i = 0; i < count; ++i)
     {
-        AMBER_LED_ON();
+        //AMBER_LED_ON();
         HAL_Delay(period);
-        AMBER_LED_OFF();
+        //AMBER_LED_OFF();
         HAL_Delay(period);
     }
 }

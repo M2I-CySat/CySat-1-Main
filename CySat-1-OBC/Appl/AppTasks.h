@@ -24,10 +24,13 @@ extern osMutexId Battery_Capacity_Mutex;
 extern osMutexId ADCS_Active_Mutex;
 extern osMutexId Low_Power_Mode_Mutex;
 extern osMutexId UHF_UART_Mutex;
+extern osMutexId SDR_UART_Mutex;
 extern osThreadId myMainTask;
 extern osThreadId myADCSTask;
 extern osThreadId myUHFRxTask;
 extern osThreadId myUHFTxTask;
+
+extern osStatus osStatus2;
 
 void Main_Task(void const * argument);
 void ADCS_Task(void const * argument);
